@@ -46,8 +46,9 @@ local capRaiResponse = {
   hmiZoneCapabilities = hmiCapabilities.UI.hmiZoneCapabilities,
   softButtonCapabilities = hmiCapabilities.UI.softButtonCapabilities,
   displayCapabilities = hmiCapabilities.UI.displayCapabilities,
-  vrCapabilities = hmiCapabilities.VR.capabilities,
-  speechCapabilities = hmiCapabilities.TTS.capabilities
+  vrCapabilities = hmiCapabilities.VR.vrCapabilities,
+  speechCapabilities = hmiCapabilities.TTS.speechCapabilities,
+  prerecordedSpeech = hmiCapabilities.TTS.prerecordedSpeechCapabilities
 }
 
 --[[ Scenario ]]

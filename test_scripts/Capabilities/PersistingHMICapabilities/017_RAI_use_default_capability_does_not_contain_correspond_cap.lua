@@ -78,12 +78,13 @@ local function expCapRaiResponse(pMod, pReq)
         hmiDisplayLanguage =  hmiCapabilities.UI.language }},
     VR = {
       GetCapabilities = {
-        vrCapabilities = hmiCapabilities.VR.capabilities },
+        vrCapabilities = hmiCapabilities.VR.vrCapabilities },
       GetLanguage = {
         language = hmiCapabilities.VR.language }},
     TTS = {
       GetCapabilities = {
-        speechCapabilities = hmiCapabilities.TTS.capabilities },
+        speechCapabilities = hmiCapabilities.TTS.speechCapabilities,
+        prerecordedSpeech = hmiCapabilities.TTS.prerecordedSpeechCapabilities },
       GetLanguage = {
         language = hmiCapabilities.TTS.language }},
     Buttons = {
