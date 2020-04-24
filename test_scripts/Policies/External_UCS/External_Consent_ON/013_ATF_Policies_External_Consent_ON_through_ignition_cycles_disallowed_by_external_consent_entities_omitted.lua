@@ -171,3 +171,7 @@ CheckRPCisDisallowed()
 Test["Stop_SDL"] = function()
   StopSDL()
 end
+
+Test["RestoreIniFile"] = function()
+  preconditions:RestoreFile("smartDeviceLink.ini")
+end
