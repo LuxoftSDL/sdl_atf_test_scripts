@@ -1,37 +1,39 @@
---  Requirement summary:
---  TBD
+---------------------------------------------------------------------------------------------------
+-- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
---  Description:
---  Check that SDL doesn't close the connection with WebEngine 
---  projection app if the app was closed (HMILevel NONE is assigned)
+-- Description:
+-- Check that SDL doesn't close the connection with WebEngine
+-- projection app if the app was closed (HMILevel NONE is assigned)
 --
---  Used precondition
---  SDL, HMI are running on the system.
---  WebEngine projection app is connected to SDL, successfully 
---  registered and activated (HMI level is FULL)
+-- Precondition:
+-- 1. SDL and HMI are started
+-- 2. WebEngine projection app is connected to SDL, successfully 
+--    registered and activated (HMI level is FULL)
 --
---  Performed steps
---  HMI->SDL: BasicCommunication.OnExitApplication(reason = "USER_EXIT")
---
---  Expected behavior:
---  1. SDL assigns HMILevel (NONE) to the WebEngine projection app and doesn't close the WebSocket connection
---  2. WebEngine projection app can be successfully activated using remained connection to SDL 
+-- Sequence:
+-- 1. Application register with WEB_VIEW appHMIType
+--  a. SDL succesfuly registers application (resultCode SUCCESS, success:"true")
+--  b. SDL assigns HMILevel (NONE) to the WebEngine projection app and doesn't close the WebSocket connection
+-- 2. Activate web application
+--  a. WebEngine projection application successfully activated using remained connection to SDL
+-- 3. Deactivate web application to NONE and check connection
+--  a. Exit from application (reason = "USER_EXIT")
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
---[[ Test Configuration ]]
-config.defaultMobileAdapterType = "WS"
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
-
 --[[ Local Variables ]]
+local appSessionId = 1
 local appHMIType = "WEB_VIEW"
 
 --[[ General configuration parameters ]]
 config.application1.registerAppInterfaceParams.appHMIType = { appHMIType }
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
+config.defaultMobileAdapterType = "WS"
+common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 
+--[[ Local Functions ]]
 local function deactivateAppToNoneAndCheckConnection()
   common.getHMIConnection():SendNotification("BasicCommunication.OnExitApplication",
     { appID = common.getHMIAppId(), reason = "USER_EXIT" })
@@ -46,14 +48,15 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update WS Server Certificate parameters in smartDeviceLink.ini file", common.commentAllCertInIniFile)
+common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT, { appSessionId, appHMIType })
 common.Step("Start SDL, HMI", common.startWOdeviceConnect)
-common.Step("Connect WebEngine device", common.connectWebEngine, { 1, config.defaultMobileAdapterType })
+common.Step("Connect WebEngine device", common.connectWebEngine, { appSessionId, config.defaultMobileAdapterType })
 
 common.Title("Test")
-common.Step("Register App", common.registerApp)
-common.Step("Activate web app", common.activateApp, { 1 })
+common.Step("Register App without PTU", common.registerAppWOPTU, { appSessionId })
+common.Step("Activate web app", common.activateApp, { appSessionId })
 common.Step("Deactivate web app to NONE and check connection", deactivateAppToNoneAndCheckConnection)
-common.Step("Check connection via successful activation", common.activateApp, { 1 })
+common.Step("Check connection via successful activation", common.activateApp, { appSessionId })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
