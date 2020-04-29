@@ -13,15 +13,19 @@
 --  a. Web app is unregistered
 --  b. Mobile session is disconnected
 ---------------------------------------------------------------------------------------------------
---[[ General test configuration ]]
-config.defaultMobileAdapterType = "WS"
-config.application1.registerAppInterfaceParams.appHMIType = { "WEB_VIEW" }
-config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
-config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
-
 --[[ Required Shared libraries ]]
 local events = require("events")
 local common = require('test_scripts/WebEngine/commonWebEngine')
+
+--[[ Local Variables ]]
+local appSessionId = 1
+local appHMIType = "WEB_VIEW"
+
+--[[ General test configuration ]]
+config.defaultMobileAdapterType = "WS"
+config.application1.registerAppInterfaceParams.appHMIType = { appHMIType }
+config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
+config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
 
 --[[ Local Functions ]]
 local function onExitApp()
@@ -40,12 +44,14 @@ end
 -- [[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
+common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT,
+  { appSessionId, appHMIType })
 common.Step("Start SDL, HMI", common.startWOdeviceConnect)
 
 common.Title("Test")
 common.Step("Connect WebEngine device", common.connectWebEngine,
-    { 1, config.defaultMobileAdapterType })
-common.Step("Register App", common.registerApp)
+  { appSessionId, config.defaultMobileAdapterType })
+common.Step("Register App without PTU", common.registerAppWOPTU, { appSessionId })
 common.Step("OnExitApplication", onExitApp)
 
 common.Title("Postconditions")
