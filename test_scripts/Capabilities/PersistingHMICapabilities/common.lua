@@ -119,7 +119,7 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
         for _, param in ipairs(params) do
           local message = mod .. "." .. param
           if param == "audioPassThruCapabilitiesList" then
-            if not (cacheTable[mod].audioPassThruCapabilities == expHmiCapabilities[mod][req].params[param]) then
+            if not utils.isTableEqual(cacheTable[mod].audioPassThruCapabilities, expHmiCapabilities[mod][req].params[param]) then
               errorMessages = errorMessages ..
                 errorMessage(message, cacheTable[mod].audioPassThruCapabilities,
                   expHmiCapabilities[mod][req].params[param])
