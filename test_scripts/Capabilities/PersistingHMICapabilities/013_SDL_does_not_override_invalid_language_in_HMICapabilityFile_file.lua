@@ -3,10 +3,12 @@
 --
 -- Description: Check that SDL does not override in "hmi_capabilities_cache.json" file
 -- in case HMI sends TTS/VR/UI.OnLanguageChange notification with invalid language
+--
 -- Preconditions:
 -- 1. hmi_capabilities_cache.json file doesn't exist on file system
 -- 2. SDL and HMI are started
 -- 3. HMI sends all HMI capability to SDL
+--
 -- Sequence:
 -- 1. HMI sends "TTS/VR/UI.OnLanguageChange" notifications with invalid language to SDL
 --   a. SDL does not override TTS/VR/UI.language in "hmi_capabilities_cache.json" file

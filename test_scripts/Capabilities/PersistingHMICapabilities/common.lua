@@ -185,7 +185,7 @@ function m.updatedHMICapabilitiesFile()
   actions.sdl.setHMICapabilitiesToFile(hmiCapTbl)
 end
 
-function m.checkIfCapabilityCashFileExists(pIsShouldExists, pFileName)
+function m.checkIfCapabilityCacheFileExists(pIsShouldExists, pFileName)
   if not pFileName then pFileName = SDL.INI.get("HMICapabilitiesCacheFile") end
   if pIsShouldExists == nil or pIsShouldExists == true then
     if SDL.AppStorage.isFileExist(pFileName) then

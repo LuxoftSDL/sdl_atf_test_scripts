@@ -75,7 +75,7 @@ common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Start SDL, HMI", common.startWoHMIonReady)
-common.Step("Check that capability file exists", common.checkIfCapabilityCashFileExists)
+common.Step("Check that capability file exists", common.checkIfCapabilityCacheFileExists)
 common.Step("Check suspending App registration", common.registerAppSuspend,
   { appSessionId, capRaiResponse, updateHMISystemInfo("cppu_version_2") })
 

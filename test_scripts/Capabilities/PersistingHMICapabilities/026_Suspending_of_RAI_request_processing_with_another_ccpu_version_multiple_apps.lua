@@ -10,7 +10,6 @@
 -- 2. SDL and HMI are started
 -- 3. HMI sends all HMI capabilities (VR/TTS/RC/UI etc) to SDL
 -- 4. HMI sends "BasicCommunication.GetSystemInfo" response with the other ccpu_version than SDL has in its LPT
-
 -- Sequence:
 -- 1. Mobile App1 sends RegisterAppInterface request from Mobile device1 to SDL
 --  a. SDL suspend of RAI request processing from mobile

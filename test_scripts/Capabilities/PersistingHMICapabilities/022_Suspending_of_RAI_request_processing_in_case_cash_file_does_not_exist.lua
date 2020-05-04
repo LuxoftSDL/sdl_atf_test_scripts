@@ -10,7 +10,6 @@
 -- 2. SDL and HMI are started
 -- 3. HMI sends all HMI capabilities (VR/TTS/RC/UI etc) to SDL
 -- 4. Local ccpu_version matches with received ccpu_version from HMI
-
 -- Sequence:
 -- 1. Mobile sends RegisterAppInterface request to SDL
 --  a. SDL suspend of RAI request processing from mobile
@@ -58,7 +57,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
 common.Step("Start SDL, HMI", common.start, { noResponseGetHMIParams(ccpuVersion) })
-common.Step("Check that capability file doesn't exist", common.checkIfCapabilityCashFileExists, { false })
+common.Step("Check that capability file doesn't exist", common.checkIfCapabilityCacheFileExists, { false })
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
