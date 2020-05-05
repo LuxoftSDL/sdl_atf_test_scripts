@@ -118,30 +118,31 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
       for req, params in pairs(requests) do
         for _, param in ipairs(params) do
           local message = mod .. "." .. param
+          local expectedResult = expHmiCapabilities[mod][req].params[param]
+          local function validationCapabilities(pActual, pExpect)
+            if not utils.isTableEqual(pActual, pExpect) then
+              errorMessages = errorMessages .. errorMessage(message, pActual, pExpect)
+            end
+          end
+
           if not cacheTable[mod][param] then
             errorMessages = errorMessages ..
-              errorMessage(message, "does not exist", expHmiCapabilities[mod][req].params[param])
-          elseif param == "audioPassThruCapabilitiesList" then
-            if not utils.isTableEqual(cacheTable[mod].audioPassThruCapabilities,
-              expHmiCapabilities[mod][req].params[param]) then
-                errorMessages = errorMessages ..
-                  errorMessage(message, cacheTable[mod].audioPassThruCapabilities,
-                    expHmiCapabilities[mod][req].params[param])
-            end
-          elseif param == "remoteControlCapability" then
-            for _, buttonCap in ipairs(expHmiCapabilities[mod][req].params[param].buttonCapabilities) do
-              if buttonCap.moduleInfo.allowMultipleAccess == nil then
-                buttonCap.moduleInfo.allowMultipleAccess = true
+              errorMessage(message, "does not exist", expectedResult)
+          else
+            if param == "audioPassThruCapabilitiesList" then
+              validationCapabilities(cacheTable[mod].audioPassThruCapabilitie, expectedResult)
+            else
+              if param == "remoteControlCapability" then
+              for _, buttonCap in ipairs(expectedResult.buttonCapabilities) do
+                if buttonCap.moduleInfo.allowMultipleAccess == nil then
+                  buttonCap.moduleInfo.allowMultipleAccess = true
+                end
+              end
+              validationCapabilities(cacheTable[mod][param], expectedResult)
+              else
+                validationCapabilities(cacheTable[mod][param], expectedResult)
               end
             end
-            if not utils.isTableEqual(cacheTable[mod][param], expHmiCapabilities[mod][req].params[param]) then
-              errorMessages = errorMessages ..
-                errorMessage(message, cacheTable[mod][param],
-                  expHmiCapabilities[mod][req].params[param])
-            end
-          elseif not utils.isTableEqual(cacheTable[mod][param], expHmiCapabilities[mod][req].params[param]) then
-            errorMessages = errorMessages ..
-              errorMessage(message, cacheTable[mod][param], expHmiCapabilities[mod][req].params[param])
           end
         end
       end
