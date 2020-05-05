@@ -114,23 +114,22 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
       }
     }
     local errorMessages = ""
+    local function validationCapabilities(pMessage, pActual, pExpect)
+      if not utils.isTableEqual(pActual, pExpect) then
+        errorMessages = errorMessages .. errorMessage(pMessage, pActual, pExpect)
+      end
+    end
     for mod, requests  in pairs(hmiCheckingParametersMap) do
       for req, params in pairs(requests) do
         for _, param in ipairs(params) do
           local message = mod .. "." .. param
           local expectedResult = expHmiCapabilities[mod][req].params[param]
-          local function validationCapabilities(pActual, pExpect)
-            if not utils.isTableEqual(pActual, pExpect) then
-              errorMessages = errorMessages .. errorMessage(message, pActual, pExpect)
-            end
-          end
-
           if not cacheTable[mod][param] then
             errorMessages = errorMessages ..
               errorMessage(message, "does not exist", expectedResult)
           else
             if param == "audioPassThruCapabilitiesList" then
-              validationCapabilities(cacheTable[mod].audioPassThruCapabilitie, expectedResult)
+              validationCapabilities(message, cacheTable[mod].audioPassThruCapabilitie, expectedResult)
             else
               if param == "remoteControlCapability" then
               for _, buttonCap in ipairs(expectedResult.buttonCapabilities) do
@@ -138,9 +137,9 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
                   buttonCap.moduleInfo.allowMultipleAccess = true
                 end
               end
-              validationCapabilities(cacheTable[mod][param], expectedResult)
+              validationCapabilities(message, cacheTable[mod][param], expectedResult)
               else
-                validationCapabilities(cacheTable[mod][param], expectedResult)
+                validationCapabilities(message, cacheTable[mod][param], expectedResult)
               end
             end
           end
