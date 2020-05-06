@@ -1,42 +1,39 @@
---  Requirement summary:
---  TBD
+---------------------------------------------------------------------------------------------------
+-- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
---  Description:
---  Check that SDL forwards OnSystemCapabilityUpdated notification 
---  to the WebEngine projection app 
+-- Description:
+-- Check that SDL forwards OnSystemCapabilityUpdated notification 
+-- to the WebEngine projection app 
 --
---  Used precondition
---  SDL, HMI are running on system.
+-- Precondition:
+-- 1. SDL and HMI are started
+-- 2. WebEngine device is connected to SDL
 --
---  Performed steps
---  1) WebEngine projection app tries to register
---  SDL does:
---  - proceed with `RAI` request successfully
---  - not send `OnSystemCapabilityUpdated` to the WebEngine projection app
---  2) HMI sends `OnSystemCapabilityUpdated` to SDL
---
---  Expected behavior:
---  SDL transfers `OnSystemCapabilityUpdated` notification to the WebEngine projection app 
+-- Sequence:
+-- 1. WebEngine projection application tries to register
+--  a. SDL proceed with `RAI` request successfully
+--  b. SDL not send `OnSystemCapabilityUpdated` to the WebEngine projection app
+-- 2. HMI sends `OnSystemCapabilityUpdated` to SDL
+--  a. SDL transfers `OnSystemCapabilityUpdated` notification to the WebEngine projection app
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
---[[ Test Configuration ]]
-config.defaultMobileAdapterType = "WS"
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = {"ON"} }}
-
 --[[ Local Variables ]]
+local appSessionId = 1
 local appHMIType = "WEB_VIEW"
 
 --[[ General configuration parameters ]]
 config.application1.registerAppInterfaceParams.appHMIType = { appHMIType }
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
+config.defaultMobileAdapterType = "WS"
+common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 
 --[[ Local Functions ]]
 local function sendRegisterApp()
   common.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated"):Times(0)
-  common.registerAppWOPTU()
+  common.registerAppWOPTU(appSessionId)
 end
 
 local function sendOnSCU()
@@ -50,8 +47,9 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update WS Server Certificate parameters in smartDeviceLink.ini file", common.commentAllCertInIniFile)
+common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT, { appSessionId, appHMIType })
 common.Step("Start SDL, HMI", common.startWOdeviceConnect)
-common.Step("Connect WebEngine device", common.connectWebEngine, { 1, config.defaultMobileAdapterType })
+common.Step("Connect WebEngine device", common.connectWebEngine, { appSessionId, config.defaultMobileAdapterType })
 
 common.Title("Test")
 common.Step("App sends RAI RPC no OnSCU notification", sendRegisterApp)

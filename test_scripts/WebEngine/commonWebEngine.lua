@@ -49,6 +49,9 @@ common.backupSDLIniFile = actions.sdl.backupSDLIniFile
 common.setSDLIniParameter = actions.sdl.setSDLIniParameter
 common.disconnectedEvent = events.disconnectedEvent
 common.getHMIAppId = actions.getHMIAppId
+common.createSession = actions.mobile.createSession
+common.getParams = actions.app.getParams
+common.getAppDataForPTU = actions.getAppDataForPTU
 
 --[[ Local Variables ]]
 common.defaultAppProperties = {
@@ -97,6 +100,29 @@ function common.validation(actualData, expectedData, pMessage)
     "Actual table: " .. common.tableToString(actualData) .. "\n"
   end
   return true
+end
+
+function common.updatePreloadedPT(pAppId, pAppHMIType)
+  local preloadedTable = common.getPreloadedPT()
+  local appId = config["application" .. pAppId].registerAppInterfaceParams.fullAppID
+  local appPermissions = common.cloneTable(preloadedTable.policy_table.app_policies.default)
+  appPermissions.AppHMIType = { pAppHMIType }
+  appPermissions.enabled = true
+  appPermissions.transportType = "WS"
+  appPermissions.hybridAppPreference = "CLOUD"
+  preloadedTable.policy_table.app_policies[appId] = appPermissions
+  preloadedTable.policy_table.functional_groupings["DataConsent-2"].rpcs = common.null
+  common.setPreloadedPT(preloadedTable)
+end
+
+function common.rejectedRegisterApp(pAppSessionId)
+  local session = common.createSession(pAppSessionId)
+  session:StartService(7)
+  :Do(function()
+      local corId = session:SendRPC("RegisterAppInterface", common.getParams(pAppSessionId))
+      common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered"):Times(0)
+      session:ExpectResponse(corId, { success = false, resultCode = "REJECTED" })
+  end)
 end
 
 function common.setAppProperties(pData)
