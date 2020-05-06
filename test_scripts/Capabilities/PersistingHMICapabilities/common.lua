@@ -26,9 +26,6 @@ m.setSDLIniParameter = actions.sdl.setSDLIniParameter
 m.cloneTable = utils.cloneTable
 m.getDefaultHMITable = hmi_values.getDefaultHMITable
 
---[[ Local Variables ]]
-local hmiCapCacheFile = SDL.AppStorage.path() .. SDL.INI.get("HMICapabilitiesCacheFile")
-
 --[[ Common Functions ]]
 function m.noRequestsGetHMIParams()
   local params = m.getDefaultHMITable()
@@ -83,8 +80,8 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
   else
     expHmiCapabilities = pExpHmiCapabilities
   end
-  if SDL.AppStorage.isFileExist(actions.sdl.getSDLIniParameter("HMICapabilitiesCacheFile")) then
-    local  cacheTable = utils.jsonFileToTable(hmiCapCacheFile)
+  local cacheTable = SDL.HMICapCache.get()
+  if cacheTable ~= nil then
     local hmiCheckingParametersMap = {
       UI = {
         GetLanguage = { "language" },
@@ -114,24 +111,32 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
       }
     }
     local errorMessages = ""
+    local function validationCapabilities(pMessage, pActual, pExpect)
+      if not utils.isTableEqual(pActual, pExpect) then
+        errorMessages = errorMessages .. errorMessage(pMessage, pActual, pExpect)
+      end
+    end
     for mod, requests  in pairs(hmiCheckingParametersMap) do
       for req, params in pairs(requests) do
         for _, param in ipairs(params) do
           local message = mod .. "." .. param
-          if param == "audioPassThruCapabilitiesList" then
-            if not utils.isTableEqual(cacheTable[mod].audioPassThruCapabilities, expHmiCapabilities[mod][req].params[param]) then
-              errorMessages = errorMessages ..
-                errorMessage(message, cacheTable[mod].audioPassThruCapabilities,
-                  expHmiCapabilities[mod][req].params[param])
-            end
+          local expectedResult = expHmiCapabilities[mod][req].params[param]
+          if not cacheTable[mod][param] then
+            errorMessages = errorMessages ..
+              errorMessage(message, "does not exist", expectedResult)
           else
-            if not cacheTable[mod][param] then
-              errorMessages = errorMessages ..
-                errorMessage(message, "does not exist", expHmiCapabilities[mod][req].params[param])
+            if param == "audioPassThruCapabilitiesList" then
+              validationCapabilities(message, cacheTable[mod].audioPassThruCapabilitie, expectedResult)
             else
-              if not utils.isTableEqual(cacheTable[mod][param], expHmiCapabilities[mod][req].params[param]) then
-                errorMessages = errorMessages ..
-                  errorMessage(message, cacheTable[mod][param], expHmiCapabilities[mod][req].params[param])
+              if param == "remoteControlCapability" then
+              for _, buttonCap in ipairs(expectedResult.buttonCapabilities) do
+                if buttonCap.moduleInfo.allowMultipleAccess == nil then
+                  buttonCap.moduleInfo.allowMultipleAccess = true
+                end
+              end
+              validationCapabilities(message, cacheTable[mod][param], expectedResult)
+              else
+                validationCapabilities(message, cacheTable[mod][param], expectedResult)
               end
             end
           end
@@ -233,8 +238,10 @@ function m.changeLanguage(pLanguage)
 end
 
 function m.checkLanguageCapability(pLanguage)
-  local data = utils.jsonFileToTable(hmiCapCacheFile)
-  if data.VR.language == pLanguage and data.TTS.language == pLanguage and data.UI.language == pLanguage then
+  local data = SDL.HMICapCache.get()
+  if data and data.VR and data.VR.language == pLanguage
+      and data.TTS and data.TTS.language == pLanguage
+      and data.UI and data.UI.language == pLanguage then
     utils.cprint(35, "Languages were changed")
   else
     actions.run.fail("SDL doesn't updated cache file")
