@@ -81,7 +81,7 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
     expHmiCapabilities = pExpHmiCapabilities
   end
   local cacheTable = SDL.HMICapCache.get()
-  if next(cacheTable) ~= nil then
+  if cacheTable ~= nil then
     local hmiCheckingParametersMap = {
       UI = {
         GetLanguage = { "language" },
