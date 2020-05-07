@@ -133,10 +133,10 @@ local function VehicleDataItemsWithDataTableCreation()
     common.VehicleDataItemsWithData.instantFuelConsumption.APItype = "VEHICLEDATA_FUELCONSUMPTION"
     common.VehicleDataItemsWithData.fuelRange.value = {
       { type = "GASOLINE" , range = 20 }, { type = "BATTERY", range = 100 }}
-    common.VehicleDataItemsWithData.stabilityControlsStatus.value = {
-      escSystem = "ON" , trailerSwayControl = "OFF"}     
-    common.VehicleDataItemsWithData.stabilityControlsStatus.APItype = "VEHICLEDATA_STABILITYCONTROLSSTATUS"
     common.VehicleDataItemsWithData.fuelRange.APItype = "VEHICLEDATA_FUELRANGE"
+    common.VehicleDataItemsWithData.stabilityControlsStatus.value = {
+      escSystem = "ON" , trailerSwayControl = "OFF" }
+    common.VehicleDataItemsWithData.stabilityControlsStatus.APItype = "VEHICLEDATA_STABILITYCONTROLSSTATUS"
     common.VehicleDataItemsWithData.externalTemperature.value = 24.1
     common.VehicleDataItemsWithData.externalTemperature.APItype = "VEHICLEDATA_EXTERNTEMP"
     common.VehicleDataItemsWithData.turnSignal.value = "OFF"
