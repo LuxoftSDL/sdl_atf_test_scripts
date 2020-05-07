@@ -22,6 +22,10 @@
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/VehicleData/commonVehicleData')
 
+--[[ Local Constants ]]
+local APP1 = 1
+local APP2 = 2
+
 --[[ Local Functions ]]
 local function getVDParams()
   local out = {}
@@ -32,8 +36,8 @@ local function getVDParams()
 end
 
 local function ptUpdate(pTbl)
-  pTbl.policy_table.app_policies[common.getConfigAppParams(2).fullAppID].groups = { "Base-4", "Emergency-1" }
-  pTbl.policy_table.app_policies[common.getConfigAppParams(1).fullAppID].groups = { "Base-4", "Emergency-1" }
+  pTbl.policy_table.app_policies[common.getConfigAppParams(APP2).fullAppID].groups = { "Base-4", "Emergency-1" }
+  pTbl.policy_table.app_policies[common.getConfigAppParams(APP1).fullAppID].groups = { "Base-4", "Emergency-1" }
 
   local grp = pTbl.policy_table.functional_groupings["Emergency-1"]
   local vdParams = getVDParams()
@@ -89,24 +93,24 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, init HMI, connect default mobile", common.start)
-common.Step("Register App1", common.registerApp)
+common.Step("Register App1", common.registerApp, { APP1 })
 common.Step("PTU", common.policyTableUpdate)
-common.Step("Register App2", common.registerApp, { 2 })
+common.Step("Register App2", common.registerApp, { APP2 })
 common.Step("PTU 2", common.policyTableUpdate, { ptUpdate })
-common.Step("Activate App1", common.activateApp)
+common.Step("Activate App1", common.activateApp, { APP1 })
 common.Step("Subscribe on StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
-  {"SubscribeVehicleData", "stabilityControlsStatus", 1, false })
-common.Step("Activate App2", common.activateApp, { 2 })
+  {"SubscribeVehicleData", "stabilityControlsStatus", APP1, false })
+common.Step("Activate App2", common.activateApp, { APP2 })
 common.Step("Subscribe on StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
-  {"SubscribeVehicleData", "stabilityControlsStatus", 2, true })
+  {"SubscribeVehicleData", "stabilityControlsStatus", APP2, true })
 
 common.Title("Test")
 common.Step("Expect OnVehicleData with StabilityControlsStatus data on both Apps", checkNotificationSuccess,
-  { "stabilityControlsStatus", { { id = 1, isNotified = true }, { id = 2, isNotified = true } } })
+  { "stabilityControlsStatus", {{ id = APP1, isNotified = true }, { id = APP2, isNotified = true }}})
 common.Step("Unsubscribe App1 from StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
-  {"UnsubscribeVehicleData", "stabilityControlsStatus", 1, true })
+  {"UnsubscribeVehicleData", "stabilityControlsStatus", APP1, true })
 common.Step("Expect OnVehicleData with StabilityControlsStatus data on App2 only", checkNotificationSuccess,
-  { "stabilityControlsStatus", { { id = 1, isNotified = false }, { id = 2, isNotified = true } } })
+  { "stabilityControlsStatus", {{ id = APP1, isNotified = false }, { id = APP2, isNotified = true }}})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)
