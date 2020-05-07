@@ -8,7 +8,7 @@
 -- 2) App is registered
 -- 3) PTU is successfully performed
 -- 4) App is activated
-
+--
 -- Steps:
 -- 1) App send SubscribeVehicleData (with stabilityControlsStatus = true) request to SDL
 -- SDL does:
@@ -26,13 +26,11 @@
 --  - not send OnVehicleData notification with received from HMI data to App
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
--- local common = require('test_scripts/API/VehicleData/StabilityControlsStatus/commonVDStabilityControlsStatus')
 local common = require('test_scripts/API/VehicleData/commonVehicleData')
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
--- common.Step("Prepare preloaded policy table", common.preparePreloadedPT)
 common.Step("Start SDL, init HMI, connect default mobile", common.start)
 common.Step("Register App", common.registerApp)
 common.Step("PTU", common.policyTableUpdate, { common.ptUpdate })

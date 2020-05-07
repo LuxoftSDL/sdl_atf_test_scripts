@@ -5,24 +5,24 @@
 --
 -- Precondition:
 -- 1) SDL and HMI are started
--- 2) App is registered
+-- 2) App1 and App2 are registered
 -- 3) PTU is successfully performed
--- 4) App is activated
--- 5) App is subscribed on StabilityControlsStatus vehicle data and is not subscribed on GPS data
-
+-- 4) App1 and App2 are activated
+-- 5) App1 and App2 are subscribed on StabilityControlsStatus vehicle data
+--
 -- Steps:
 -- 1) HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus data
---   (escSystem = "ON", trailerSwayControl = "OFF")
 -- SDL does:
---  - send OnVehicleData notification with received from HMI data to App
--- 2) HMI sends VehicleInfo.OnVehicleData notification with GPS data
+--  - send OnVehicleData notification with received from HMI data to App1 and App2
+-- 2) App1 unsubscribes from StabilityControlsStatus vehicle data.
+--   HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus data
 -- SDL does:
---  - not send OnVehicleData notification with received from HMI data to App
+--  - send OnVehicleData notification with received from HMI data to App2 only
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
--- local common = require('test_scripts/API/VehicleData/StabilityControlsStatus/commonVDStabilityControlsStatus')
 local common = require('test_scripts/API/VehicleData/commonVehicleData')
 
+--[[ Local Functions ]]
 local function getVDParams()
   local out = {}
   for k in pairs(common.allVehicleData) do
@@ -83,22 +83,20 @@ local function checkNotificationSuccess(pData, pApps)
     end
   end
   common.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", hmiNotParams)
-
 end
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
--- common.Step("Prepare preloaded policy table", common.preparePreloadedPT)
 common.Step("Start SDL, init HMI, connect default mobile", common.start)
-common.Step("Register App", common.registerApp)
+common.Step("Register App1", common.registerApp)
 common.Step("PTU", common.policyTableUpdate)
-common.Step("Register App", common.registerApp, { 2 })
+common.Step("Register App2", common.registerApp, { 2 })
 common.Step("PTU 2", common.policyTableUpdate, { ptUpdate })
-common.Step("Activate App", common.activateApp)
+common.Step("Activate App1", common.activateApp)
 common.Step("Subscribe on StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
   {"SubscribeVehicleData", "stabilityControlsStatus", 1, false })
-common.Step("Activate App", common.activateApp, { 2 })
+common.Step("Activate App2", common.activateApp, { 2 })
 common.Step("Subscribe on StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
   {"SubscribeVehicleData", "stabilityControlsStatus", 2, true })
 
