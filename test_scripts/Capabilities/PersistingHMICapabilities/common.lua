@@ -17,7 +17,7 @@ config.defaultProtocolVersion = 2
 local m = {}
 m.Title = runner.Title
 m.Step = runner.Step
-m.preconditions = actions.preconditions
+--m.preconditions = actions.preconditions
 m.postconditions = actions.postconditions
 m.getHMICapabilitiesFromFile = actions.sdl.getHMICapabilitiesFromFile
 m.activateApp = actions.app.activate
@@ -64,6 +64,37 @@ function m.noResponseGetHMIParams()
     hmiCaps.VR.GetLanguage = nil
     hmiCaps.TTS.GetLanguage = nil
   return hmiCaps
+end
+
+function m.preconditions()
+  actions.preconditions()
+  actions.setSDLIniParameter("HMICapabilitiesCacheFile", "hmi_capabilities_cache.json")
+end
+
+function m.removedRaduantDisplayCapParameters(pDisplayCapabilities)
+  local displayCapabilities = pDisplayCapabilities
+  displayCapabilities.imageCapabilities = nil  -- no Mobile_API.xml
+  displayCapabilities.menuLayoutsAvailable = nil --since 6.0
+  return displayCapabilities
+end
+
+function m.expCapRaiResponse()
+  local hmiCapabilities = m.getDefaultHMITable()
+  local capRaiResponse = {
+    buttonCapabilities = hmiCapabilities.Buttons.GetCapabilities.params.capabilities,
+    vehicleType = hmiCapabilities.VehicleInfo.GetVehicleType.params.vehicleType,
+    audioPassThruCapabilities = hmiCapabilities.UI.GetCapabilities.params.audioPassThruCapabilitiesList,
+    hmiDisplayLanguage =  hmiCapabilities.UI.GetCapabilities.params.language,
+    language = hmiCapabilities.VR.GetLanguage.params.language, -- or TTS.language
+    pcmStreamCapabilities = hmiCapabilities.UI.GetCapabilities.params.pcmStreamCapabilities,
+    hmiZoneCapabilities = hmiCapabilities.UI.GetCapabilities.params.hmiZoneCapabilities,
+    softButtonCapabilities = hmiCapabilities.UI.GetCapabilities.params.softButtonCapabilities,
+    displayCapabilities = m.removedRaduantDisplayCapParameters(hmiCapabilities.UI.GetCapabilities.params.displayCapabilities),
+    vrCapabilities = hmiCapabilities.VR.GetCapabilities.params.vrCapabilities,
+    speechCapabilities = hmiCapabilities.TTS.GetCapabilities.params.speechCapabilities,
+    prerecordedSpeech = hmiCapabilities.TTS.GetCapabilities.params.prerecordedSpeechCapabilities
+  }
+  return capRaiResponse
 end
 
 local function errorMessage(pMessage, pActualValue, pExpectedValue)
@@ -179,7 +210,7 @@ function m.updatedHMICapabilitiesTable()
     hmiCapTbl.VR.language = "JA-JP"
     hmiCapTbl.TTS.language = "JA-JP"
     hmiCapTbl.VR.vrCapabilities[2] = "TEXT"
-    hmiCapTbl.TTS.prerecordedSpeechCapabilities = "NEGATIVE_JINGLE"
+    hmiCapTbl.TTS.prerecordedSpeechCapabilities = { "POSITIVE_JINGLE" }
     table.remove(hmiCapTbl.RC.remoteControlCapability.buttonCapabilities, 1)
     hmiCapTbl.RC.seatLocationCapability.rows = 1
   return hmiCapTbl
@@ -545,9 +576,9 @@ function m.registerAppsSuspend( pCapResponse, pHMIParams )
 
   local function HMIonReady()
     actions.init.HMI_onReady(pHMIParams)
-     :Do(function()
+    :Do(function()
         isHMIonReady = true
-        end)
+      end)
   end
 
   actions.run.runAfter(HMIonReady, timeRunAfter)
@@ -556,19 +587,43 @@ function m.registerAppsSuspend( pCapResponse, pHMIParams )
   local mobSession2 = actions.mobile.getSession(appSessionId2)
   local mobSession3 = actions.mobile.getSession(appSessionId3)
 
-  actions.hmi.getConnection():ExpectNotification("BasicCommunication.OnAppRegistered",
-    { application = { appName = actions.app.getParams(appSessionId1).appName }},
-    { application = { appName = actions.app.getParams(appSessionId2).appName }},
-    { application = { appName = actions.app.getParams(appSessionId3).appName }})
-  :Do(function(exp, data)
-      if exp.occurences == 1 then
-        actions.app.setHMIId(data.params.application.appID, appSessionId1)
-      elseif exp.occurences == 2 then
-        actions.app.setHMIId(data.params.application.appID, appSessionId2)
-      else
-        actions.app.setHMIId(data.params.application.appID, appSessionId3)
-      end
-    end)
+  local isAppSessionId = {
+    [1] = false,
+    [2] = false,
+    [3] = false
+  }
+  local function validationBCOnAppRegistered(pAppId)
+    if isAppSessionId[pAppId] == false then
+      isAppSessionId[pAppId] = true
+    else
+      actions.run.fail("SDL sends BasicCommunication.OnAppRegistered notification twice for app" .. pAppId)
+    end
+  end
+  actions.hmi.getConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
+  :ValidIf(function(_,data)
+    local appName = data.params.application.appName
+    if appName == actions.app.getParams(appSessionId1).appName then
+      validationBCOnAppRegistered(appSessionId1)
+    elseif appName == actions.app.getParams(appSessionId2).appName then
+      validationBCOnAppRegistered(appSessionId2)
+    elseif appName == actions.app.getParams(appSessionId3).appName then
+      validationBCOnAppRegistered(appSessionId3)
+    else
+      actions.run.fail("SDL sends unexpected BasicCommunication.OnAppRegistered notification for app" .. appName)
+    end
+    return true
+  end)
+  :Do(function(_, data)
+    local appName = data.params.application.appName
+    local appID = data.params.application.appID
+    if appName == actions.app.getParams(appSessionId1).appName then
+      actions.app.setHMIId(appID, appSessionId1)
+    elseif appName == actions.app.getParams(appSessionId2).appName then
+      actions.app.setHMIId(appID, appSessionId2)
+    elseif appName == actions.app.getParams(appSessionId3).appName then
+      actions.app.setHMIId(appID, appSessionId3)
+    end
+  end)
   :Timeout(timeout)
   :Times(3)
 

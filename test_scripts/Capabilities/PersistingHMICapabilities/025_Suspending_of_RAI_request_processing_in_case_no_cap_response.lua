@@ -5,8 +5,9 @@
 --  (VR/TTS/RC/UI etc) and ccpu_version do not match
 --
 -- Preconditions:
--- 1. HMI capabilities cache file doesn't exist on file system
--- 2. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1" to SDL
+-- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
+-- 2. HMI capabilities cache file doesn't exist on file system
+-- 3. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1" to SDL
 -- Sequence:
 -- 1. Mobile sends RegisterAppInterface request to SDL
 --  a. SDL suspend of RAI request processing from mobile
@@ -45,7 +46,7 @@ local capRaiResponse = {
   pcmStreamCapabilities = changeInternalNameRate(hmiCapabilities.UI.pcmStreamCapabilities),
   hmiZoneCapabilities = hmiCapabilities.UI.hmiZoneCapabilities,
   softButtonCapabilities = hmiCapabilities.UI.softButtonCapabilities,
-  displayCapabilities = hmiCapabilities.UI.displayCapabilities,
+  displayCapabilities = common.removedRaduantDisplayCapParameters(hmiCapabilities.UI.displayCapabilities),
   vrCapabilities = hmiCapabilities.VR.vrCapabilities,
   speechCapabilities = hmiCapabilities.TTS.speechCapabilities,
   prerecordedSpeech = hmiCapabilities.TTS.prerecordedSpeechCapabilities

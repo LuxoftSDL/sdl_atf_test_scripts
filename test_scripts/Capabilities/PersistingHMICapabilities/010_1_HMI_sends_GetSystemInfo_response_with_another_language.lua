@@ -5,11 +5,12 @@
 --  in case HMI sends BC.GetSystemInfo response with another language/wersCountryCode
 --
 -- Preconditions:
--- 1. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1", language = "EN-US", wersCountryCode = "wersCountryCode_1" to SDL
--- 2. HMI sends all HMI capabilities (VR/TTS/RC/UI etc)
--- 3. SDL persists capabilities to HMI capabilities cache file ("hmi_capabilities_cache.json") in AppStorageFolder
--- 4. Ignition OFF/ON cycle performed
--- 5. SDL is started and send GetSystemInfo request
+-- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
+-- 2. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1", language = "EN-US", wersCountryCode = "wersCountryCode_1" to SDL
+-- 3. HMI sends all HMI capabilities (VR/TTS/RC/UI etc)
+-- 4. SDL persists capabilities to HMI capabilities cache file ("hmi_capabilities_cache.json") in AppStorageFolder
+-- 5. Ignition OFF/ON cycle performed
+-- 6. SDL is started and send GetSystemInfo request
 -- Sequence:
 -- 1. HMI sends GetSystemInfo with another language = "FR-FR" to SDL
 --   a) does not send requests for any HMI capabilities (VR/TTS/RC/UI etc) to HMI

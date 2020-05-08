@@ -6,7 +6,7 @@
 
 -- Preconditions:
 -- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
--- 2. HMI capability cache file (hmi_capabilities_cache.json) doesn't exist on file system
+-- 2. HMI capabilities cache file (hmi_capabilities_cache.json) doesn't exist on file system
 -- 3. SDL and HMI are started
 -- 4. HMI does not provide all HMI capabilities (VR/TTS/RC/UI etc)
 -- Sequence:
@@ -45,7 +45,7 @@ local capRaiResponse = {
   pcmStreamCapabilities = changeInternalNameRate(hmiCapabilities.UI.pcmStreamCapabilities),
   hmiZoneCapabilities = hmiCapabilities.UI.hmiZoneCapabilities,
   softButtonCapabilities = hmiCapabilities.UI.softButtonCapabilities,
-  displayCapabilities = hmiCapabilities.UI.displayCapabilities,
+  displayCapabilities = common.removedRaduantDisplayCapParameters(hmiCapabilities.UI.displayCapabilities),
   vrCapabilities = hmiCapabilities.VR.vrCapabilities,
   speechCapabilities = hmiCapabilities.TTS.speechCapabilities,
   prerecordedSpeech = hmiCapabilities.TTS.prerecordedSpeechCapabilities

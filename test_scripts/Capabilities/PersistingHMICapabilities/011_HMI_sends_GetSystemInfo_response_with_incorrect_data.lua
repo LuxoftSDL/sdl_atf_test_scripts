@@ -1,15 +1,16 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal:https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0249-Persisting-HMI-Capabilities-specific-to-headunit.md
 --
--- Description: Check that SDL is requested all capability in case HMI sends BC.GetSystemInfo notification with
+-- Description: Check that SDL is requested all capabilities in case HMI sends BC.GetSystemInfo notification with
 -- incorrect data
 --
 -- Preconditions:
--- 1. hmi_capabilities_cache.json file doesn't exist on file system
--- 2. SDL and HMI are started
--- 3. HMI sends all HMI capabilities
--- 4. SDL stored capability to "hmi_capabilities_cache.json" file in AppStorageFolder
--- 5. Ignition OFF/ON cycle performed
+-- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
+-- 2. HMI capabilities cache file (hmi_capabilities_cache.json) file doesn't exist on file system
+-- 3. SDL and HMI are started
+-- 4. HMI sends all HMI capabilities
+-- 5. SDL stored capabilities to "hmi_capabilities_cache.json" file in AppStorageFolder
+-- 6. Ignition OFF/ON cycle performed
 -- Sequence:
 -- 5. HMI sends "BasicCommunication.GetSystemInfo" response without mandatory parameter "ccpu_version"/ invalid parameter type
 --  a. sends all HMI capabilities request (VR/TTS/RC/UI etc)

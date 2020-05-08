@@ -27,7 +27,7 @@ for _, cacheFile in pairs(cacheFileNames) do
 
   common.Title("Test")
   common.Step("Start SDL, HMI", common.start)
-  common.Step("Check that SDL creates capability file with name-" .. cacheFile,
+  common.Step("Check that SDL creates capabilities file with name-" .. cacheFile,
     common.checkIfCapabilityCacheFileExists, { true, cacheFile })
   common.Step("Ignition off", common.ignitionOff)
   common.Step("Ignition on, SDL doesn't send HMI capabilities requests",

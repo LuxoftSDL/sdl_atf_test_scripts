@@ -6,10 +6,11 @@
 --  are received from HMI in case ccpu_version do not match
 --
 -- Preconditions:
--- 1. HMI capabilities cache file doesn't exist on file system
--- 2. SDL and HMI are started
--- 3. HMI sends all HMI capabilities (VR/TTS/RC/UI etc) to SDL
--- 4. HMI sends "BasicCommunication.GetSystemInfo" response with the other ccpu_version than SDL has in its LPT
+-- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
+-- 2. HMI capabilities cache file doesn't exist on file system
+-- 3. SDL and HMI are started
+-- 4. HMI sends all HMI capabilities (VR/TTS/RC/UI etc) to SDL
+-- 5. HMI sends "BasicCommunication.GetSystemInfo" response with the other ccpu_version than SDL has in its LPT
 -- Sequence:
 -- 1. Mobile App1 sends RegisterAppInterface request from Mobile device1 to SDL
 --  a. SDL suspend of RAI request processing from mobile
@@ -26,28 +27,12 @@
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')
 
 --[[ Local Variables ]]
-local hmiCapabilities = common.getDefaultHMITable()
 local anotherDeviceParams = { host = "1.0.0.1", port = config.mobilePort }
 local appSessionId1 = 1
 local appSessionId2 = 2
 local appSessionId3 = 3
 local mobConnId1 = 1
 local mobConnId2 = 2
-
-local capRaiResponse = {
-  buttonCapabilities = hmiCapabilities.Buttons.GetCapabilities.params.capabilities,
-  vehicleType = hmiCapabilities.VehicleInfo.GetVehicleType.params.vehicleType,
-  audioPassThruCapabilities = hmiCapabilities.UI.GetCapabilities.params.audioPassThruCapabilitiesList,
-  hmiDisplayLanguage =  hmiCapabilities.UI.GetCapabilities.params.language,
-  language = hmiCapabilities.VR.GetLanguage.params.language, -- or TTS.language
-  pcmStreamCapabilities = hmiCapabilities.UI.GetCapabilities.params.pcmStreamCapabilities,
-  hmiZoneCapabilities = hmiCapabilities.UI.GetCapabilities.params.hmiZoneCapabilities,
-  softButtonCapabilities = hmiCapabilities.UI.GetCapabilities.params.softButtonCapabilities,
-  displayCapabilities = hmiCapabilities.UI.GetCapabilities.params.displayCapabilities,
-  vrCapabilities = hmiCapabilities.VR.GetCapabilities.params.vrCapabilities,
-  speechCapabilities = hmiCapabilities.TTS.GetCapabilities.params.speechCapabilities,
-  prerecordedSpeech = hmiCapabilities.TTS.GetCapabilities.params.prerecordedSpeechCapabilities
-}
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -61,7 +46,7 @@ common.Step("Start service App3 on mobile device 2", common.startService, { appS
 
 common.Title("Test")
 common.Step("Check suspending multiple Apps registration", common.registerAppsSuspend,
-  { capRaiResponse, common.updateHMISystemInfo("cppu_version_1") })
+  { common.expCapRaiResponse(), common.updateHMISystemInfo("cppu_version_1") })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

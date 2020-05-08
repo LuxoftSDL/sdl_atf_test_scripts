@@ -7,7 +7,7 @@
 --
 -- Preconditions:
 -- 1. Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
--- 2. HMI capability cache file (hmi_capabilities_cache.json) exists on file system
+-- 2. HMI capabilities cache file (hmi_capabilities_cache.json) exists on file system
 -- 3. All HMI Capabilities (VR/TTS/RC/UI etc) are presented in hmi_capabilities_cache.json
 -- 4. SDL and HMI are started
 -- Sequence:
@@ -19,22 +19,6 @@ local common = require('test_scripts/Capabilities/PersistingHMICapabilities/comm
 
 --[[ Local Variables ]]
 local appSessionId = 1
-local hmiCapabilities = common.getDefaultHMITable()
-
-local capRaiResponse = {
-  buttonCapabilities = hmiCapabilities.Buttons.GetCapabilities.params.capabilities,
-  vehicleType = hmiCapabilities.VehicleInfo.GetVehicleType.params.vehicleType,
-  audioPassThruCapabilities = hmiCapabilities.UI.GetCapabilities.params.audioPassThruCapabilitiesList,
-  hmiDisplayLanguage =  hmiCapabilities.UI.GetCapabilities.params.language,
-  language = hmiCapabilities.VR.GetLanguage.params.language, -- or TTS.language
-  pcmStreamCapabilities = hmiCapabilities.UI.GetCapabilities.params.pcmStreamCapabilities,
-  hmiZoneCapabilities = hmiCapabilities.UI.GetCapabilities.params.hmiZoneCapabilities,
-  softButtonCapabilities = hmiCapabilities.UI.GetCapabilities.params.softButtonCapabilities,
-  displayCapabilities = hmiCapabilities.UI.GetCapabilities.params.displayCapabilities,
-  vrCapabilities = hmiCapabilities.VR.GetCapabilities.params.vrCapabilities,
-  speechCapabilities = hmiCapabilities.TTS.GetCapabilities.params.speechCapabilities,
-  prerecordedSpeech = hmiCapabilities.TTS.GetCapabilities.params.prerecordedSpeechCapabilities
-}
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -43,11 +27,11 @@ common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
 
 common.Title("Test")
 common.Step("Ignition on, Start SDL, HMI", common.start)
-common.Step("Check that capability file exists", common.checkIfCapabilityCacheFileExists)
+common.Step("Check that capabilities file exists", common.checkIfCapabilityCacheFileExists)
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, HMI, SDL doesn't send HMI capabilities requests to HMI",
   common.start, { common.noRequestsGetHMIParams() })
-common.Step("App registration", common.registerApp, { appSessionId, capRaiResponse })
+common.Step("App registration", common.registerApp, { appSessionId, common.expCapRaiResponse() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

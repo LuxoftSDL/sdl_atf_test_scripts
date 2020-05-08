@@ -1,15 +1,16 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal:https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0249-Persisting-HMI-Capabilities-specific-to-headunit.md
 --
--- Check that SDL suspend of RAI request processing from mobile app in case HMI capability cache file
+-- Check that SDL suspend of RAI request processing from mobile app in case HMI capabilities cache file
 -- exists on file system and ccpu_version matches with received ccpu_version from HMI
 --
 -- Preconditions:
--- 1. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1" to SDL
--- 2. HMI sends all capability to SDL
--- 3. SDL persists capability to HMI capabilities cache file ("hmi_capabilities_cache.json") in AppStorageFolderr
--- 4. Ignition OFF/ON cycle performed
--- 5. SDL is started and send GetSystemInfo request
+-- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
+-- 2. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1" to SDL
+-- 3. HMI sends all capabilities to SDL
+-- 4. SDL persists capabilities to HMI capabilities cache file ("hmi_capabilities_cache.json") in AppStorageFolderr
+-- 5. Ignition OFF/ON cycle performed
+-- 6. SDL is started and send GetSystemInfo request
 -- Sequence:
 -- 1. Mobile sends RegisterAppInterface request to SDL
 --  a. SDL suspend of RAI request processing from mobile
@@ -23,22 +24,6 @@ local common = require('test_scripts/Capabilities/PersistingHMICapabilities/comm
 --[[ Local Variables ]]
 local appSessionId = 1
 local ccpuVersion = "cppu_version_1"
-local hmiCapabilities = common.getDefaultHMITable()
-
-local capRaiResponse = {
-  buttonCapabilities = hmiCapabilities.Buttons.GetCapabilities.params.capabilities,
-  vehicleType = hmiCapabilities.VehicleInfo.GetVehicleType.params.vehicleType,
-  audioPassThruCapabilities = hmiCapabilities.UI.GetCapabilities.params.audioPassThruCapabilitiesList,
-  hmiDisplayLanguage =  hmiCapabilities.UI.GetCapabilities.params.language,
-  language = hmiCapabilities.VR.GetLanguage.params.language, -- or TTS.language
-  pcmStreamCapabilities = hmiCapabilities.UI.GetCapabilities.params.pcmStreamCapabilities,
-  hmiZoneCapabilities = hmiCapabilities.UI.GetCapabilities.params.hmiZoneCapabilities,
-  softButtonCapabilities = hmiCapabilities.UI.GetCapabilities.params.softButtonCapabilities,
-  displayCapabilities = hmiCapabilities.UI.GetCapabilities.params.displayCapabilities,
-  vrCapabilities = hmiCapabilities.VR.GetCapabilities.params.vrCapabilities,
-  speechCapabilities = hmiCapabilities.TTS.GetCapabilities.params.speechCapabilities,
-  prerecordedSpeech = hmiCapabilities.TTS.GetCapabilities.params.prerecordedSpeechCapabilities
-}
 
 --[[ Local Functions ]]
 local function noRequestsGetHMIParams(pVersion)
@@ -63,7 +48,7 @@ common.Step("Ignition off", common.ignitionOff)
 common.Title("Test")
 common.Step("Start SDL, HMI", common.startWoHMIonReady )
 common.Step("Check suspending App registration", common.registerAppSuspend,
-  { appSessionId, capRaiResponse, noRequestsGetHMIParams(ccpuVersion) })
+  { appSessionId, common.expCapRaiResponse(), noRequestsGetHMIParams(ccpuVersion) })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
