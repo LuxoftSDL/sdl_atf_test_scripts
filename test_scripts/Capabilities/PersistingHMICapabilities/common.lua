@@ -17,7 +17,6 @@ config.defaultProtocolVersion = 2
 local m = {}
 m.Title = runner.Title
 m.Step = runner.Step
---m.preconditions = actions.preconditions
 m.postconditions = actions.postconditions
 m.getHMICapabilitiesFromFile = actions.sdl.getHMICapabilitiesFromFile
 m.activateApp = actions.app.activate
