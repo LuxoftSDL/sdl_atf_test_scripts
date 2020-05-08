@@ -281,6 +281,7 @@ m.cloneTable = utils.cloneTable
 m.cprint = utils.cprint
 m.getPreloadedPT = actions.sdl.getPreloadedPT
 m.setPreloadedPT = actions.sdl.setPreloadedPT
+m.getHMIAppId = actions.getHMIAppId
 
 --[[ Common Functions ]]
 local function getVDParams()
@@ -359,31 +360,72 @@ function m.updatePreloadedFile(pUpdateFunc)
   m.setPreloadedPT(pt)
 end
 
-function m.processGetVDsuccess(pData)
+function m.processGetVDsuccess(pData, pHmiResParams)
+  pHmiResParams = pHmiResParams or m.allVehicleData[pData]
+
+  local hmiResParams = {
+    [pData] = pHmiResParams.value
+  }
   local reqParams = {
-     [pData] = true
+    [pData] = true
+  }
+
+  m.getVehicleDataSuccessExpectation(reqParams, reqParams, hmiResParams)
+end
+
+function m.processGetVDsuccessManyParameters( ... )
+  local reqParams = {}
+  local hmiResParams = {}
+
+  for _, vehicleData in ipairs( { ... } ) do
+    reqParams[vehicleData] = true
+    hmiResParams[vehicleData] = m.allVehicleData[vehicleData].value
+  end 
+
+  m.getVehicleDataSuccessExpectation(reqParams, reqParams, hmiResParams)
+end
+
+function m.processGetVDsuccessCutDisallowedParameters(pDisallowedData, pAllowedData)
+  local reqParams = {
+    [pDisallowedData] = true,
+    [pAllowedData] = true
+  }
+  local expectReqParams = {
+    [pAllowedData] = true
   }
   local hmiResParams = {
-    [pData] = m.allVehicleData[pData].value
+    [pAllowedData] = m.allVehicleData[pAllowedData].value
   }
-  local cid = m.getMobileSession():SendRPC("GetVehicleData", reqParams)
-  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", reqParams)
+
+  local info = '\'' .. pDisallowedData .. '\'' ..  " disallowed by policies."
+  m.getVehicleDataSuccessExpectation(reqParams, expectReqParams, hmiResParams, info)
+end
+
+function m.getVehicleDataSuccessExpectation(pReqParams, pExpectReqParams, pHmiResParams, pInfo)
+  local cid = m.getMobileSession():SendRPC("GetVehicleData", pReqParams)
+  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", pExpectReqParams)
   :Do(function(_, data)
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", hmiResParams)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pHmiResParams)
     end)
-  local mobResParams = m.cloneTable(hmiResParams)
+  local mobResParams = m.cloneTable(pHmiResParams)
   mobResParams.success = true
   mobResParams.resultCode = "SUCCESS"
+  if pInfo then
+    mobResParams.info = pInfo
+  end
   m.getMobileSession():ExpectResponse(cid, mobResParams)
 end
 
-function m.processGetVDunsuccess(pData)
+function m.processGetVDunsuccess(pData, pResultCode)
+  pResultCode = pResultCode or "INVALID_DATA"
+
   local reqParams = {
      [pData] = true
   }
+
   local cid = m.getMobileSession():SendRPC("GetVehicleData", reqParams)
   m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", reqParams) :Times(0)
-  m.getMobileSession():ExpectResponse(cid, { resultCode = "INVALID_DATA", success = false })
+  m.getMobileSession():ExpectResponse(cid, { resultCode = pResultCode, success = false })
 end
 
 function m.processGetVDwithCustomDataSuccess()
@@ -396,6 +438,32 @@ function m.processGetVDwithCustomDataSuccess()
   mobResParams.success = true
   mobResParams.resultCode = "SUCCESS"
   m.getMobileSession():ExpectResponse(cid, mobResParams)
+end
+
+function m.hmiLeveltoLimited(pAppId, pSystemContext)
+  pAppId = pAppId or 1
+  pSystemContext = pSystemContext or "MAIN"
+  m.getHMIConnection(pAppId):SendNotification("BasicCommunication.OnAppDeactivated",
+    { appID = m.getHMIAppId(pAppId) })
+  m.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",
+    { hmiLevel = "LIMITED", audioStreamingState = "AUDIBLE", systemContext = pSystemContext })
+end
+
+function m.hmiLeveltoBackground(pSystemContext)
+  pSystemContext = pSystemContext or "MAIN"
+  m.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged",
+    { eventName = "AUDIO_SOURCE", isActive = true })
+  m.getMobileSession():ExpectNotification("OnHMIStatus",
+    { hmiLevel = "BACKGROUND", audioStreamingState = "NOT_AUDIBLE", systemContext = pSystemContext })
+end
+
+function m.getVehicleDataGenericError( pReqParams, pHmiResParams )
+  local cid = m.getMobileSession():SendRPC("GetVehicleData", pReqParams)
+  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", pReqParams)
+  :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pHmiResParams)
+    end)
+  m.getMobileSession():ExpectResponse(cid, { success = false, resultCode = "GENERIC_ERROR" })
 end
 
 return m
