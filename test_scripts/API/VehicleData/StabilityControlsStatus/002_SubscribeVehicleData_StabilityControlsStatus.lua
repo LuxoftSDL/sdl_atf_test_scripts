@@ -34,7 +34,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("Subscribe on StabilityControlsStatus VehicleData", common.processRPCSubscriptionSuccess,
-  {"SubscribeVehicleData", "stabilityControlsStatus" })
+  { "SubscribeVehicleData", { "stabilityControlsStatus" }})
 common.Step("Expect OnVehicleData with StabilityControlsStatus data", common.checkNotificationSuccess,
   { "stabilityControlsStatus" })
 common.Step("Ignore OnVehicleData with GPS data", common.checkNotificationIgnored, { "gps" })
