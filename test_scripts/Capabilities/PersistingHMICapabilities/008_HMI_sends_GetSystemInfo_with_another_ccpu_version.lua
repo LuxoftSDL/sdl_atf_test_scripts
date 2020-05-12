@@ -6,10 +6,10 @@
 --
 -- Preconditions:
 -- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
--- 2. HMI capabilities cache file (hmi_capabilities_cache.json) file doesn't exist on file system
+-- 2. HMI capabilities cache file (hmi_capabilities_cache.json) doesn't exist on file system
 -- 3. SDL and HMI are started
 -- 4. HMI sends all HMI capabilities (VR/TTS/RC/UI etc) to SDL
--- 5. SDL stored capabilities to "hmi_capabilities_cache.json" file in AppStorageFolder
+-- 5. SDL stored capabilities to HMI capabilities cache file (hmi_capabilities_cache.json) in AppStorageFolder
 -- 6. Ignition OFF/ON cycle performed
 -- Sequence:
 -- 1. HMI sends "BasicCommunication.GetSystemInfo" response with the different ccpu_version

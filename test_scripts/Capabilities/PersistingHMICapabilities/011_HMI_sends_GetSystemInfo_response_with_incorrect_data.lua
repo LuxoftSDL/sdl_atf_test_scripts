@@ -6,7 +6,7 @@
 --
 -- Preconditions:
 -- 1  Value of HMICapabilitiesCacheFile parameter is defined (hmi_capabilities_cache.json) in smartDeviceLink.ini file
--- 2. HMI capabilities cache file (hmi_capabilities_cache.json) file doesn't exist on file system
+-- 2. HMI capabilities cache file (hmi_capabilities_cache.json) doesn't exist on file system
 -- 3. SDL and HMI are started
 -- 4. HMI sends all HMI capabilities
 -- 5. SDL stored capabilities to "hmi_capabilities_cache.json" file in AppStorageFolder
