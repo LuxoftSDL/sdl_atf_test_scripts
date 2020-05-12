@@ -12,7 +12,8 @@
 -- 5. SDL stored capabilities to "hmi_capabilities_cache.json" file in AppStorageFolder
 -- 6. Ignition OFF/ON cycle performed
 -- Sequence:
--- 5. HMI sends "BasicCommunication.GetSystemInfo" response without mandatory parameter "ccpu_version"/ invalid parameter type
+-- 5. HMI sends "BasicCommunication.GetSystemInfo" response without mandatory parameter: "ccpu_version"/
+--   invalid parameter type
 --  a. sends all HMI capabilities request (VR/TTS/RC/UI etc)
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]

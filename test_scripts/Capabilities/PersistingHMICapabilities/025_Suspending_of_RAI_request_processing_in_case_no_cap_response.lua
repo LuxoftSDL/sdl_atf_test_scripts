@@ -12,7 +12,8 @@
 -- 1. Mobile sends RegisterAppInterface request to SDL
 --  a. SDL suspend of RAI request processing from mobile
 -- 2. HMI does not provide all HMI capabilities (VR/TTS/RC/UI etc)
---  a. SDL sends RegisterAppInterface response with corresponding capabilities (stored in hmi_capabilities.json) from HMI to Mobile
+--  a. SDL sends RegisterAppInterface response with corresponding capabilities (stored in hmi_capabilities.json)
+--  from HMI to Mobile
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')

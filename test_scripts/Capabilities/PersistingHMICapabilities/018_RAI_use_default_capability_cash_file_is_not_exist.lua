@@ -11,7 +11,8 @@
 -- 4. HMI does not provide all HMI capabilities (VR/TTS/RC/UI etc)
 -- Sequence:
 -- 1. Mobile sends RegisterAppInterface request to SDL
---  a. SDL sends RegisterAppInterface response with correspond capabilities (stored in capabilities_cache.json) to Mobile
+--  a. SDL sends RegisterAppInterface response with correspond capabilities (stored in capabilities_cache.json)
+--  to Mobile
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')

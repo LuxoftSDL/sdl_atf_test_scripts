@@ -16,7 +16,8 @@
 --  a. SDL suspend of RAI request processing from mobile
 -- 2. HMI sends GetSystemInfo with ccpu_version = "ccpu_version_1" to SDL
 --   SDL does not send HMI capabilities (VR/TTS/RC/UI etc) requests to HMI
---   SDL sends RegisterAppInterface response with corresponding capabilities (stored in hmi_capabilities_cache.json) to Mobile
+--   SDL sends RegisterAppInterface response with corresponding capabilities (stored in hmi_capabilities_cache.json)
+--   to Mobile
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')

@@ -12,7 +12,8 @@
 -- 5. SDL persists capabilities to HMI capabilities cache file ("hmi_capabilities_cache.json") in AppStorageFolder
 -- Sequence:
 -- 1. HMI sends "TTS/VR/UI.OnLanguageChange" notifications with language to SDL
---  a. SDL persists TTS/VR/UI.language to HMI capabilities cache file ("hmi_capabilities_cache.json") in AppStorageFolder
+--  a. SDL persists TTS/VR/UI.language to HMI capabilities cache file ("hmi_capabilities_cache.json")
+--  in AppStorageFolder
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')
