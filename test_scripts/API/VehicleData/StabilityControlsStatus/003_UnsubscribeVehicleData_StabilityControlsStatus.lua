@@ -33,11 +33,11 @@ common.Step("Register App", common.registerApp)
 common.Step("PTU", common.policyTableUpdate, { common.ptUpdate })
 common.Step("Activate App", common.activateApp)
 common.Step("Subscribe on StabilityControlsStatus VehicleData", common.processRPCSubscriptionSuccess,
-  { "SubscribeVehicleData", "stabilityControlsStatus" })
+  { "SubscribeVehicleData", { "stabilityControlsStatus" }})
 
 common.Title("Test")
 common.Step("Unsubscribe from StabilityControlsStatus VehicleData", common.processRPCSubscriptionSuccess,
-  { "UnsubscribeVehicleData", "stabilityControlsStatus" })
+  { "UnsubscribeVehicleData", { "stabilityControlsStatus" }})
 common.Step("Ignore OnVehicleData with StabilityControlsStatus data", common.checkNotificationIgnored,
   { "stabilityControlsStatus" })
 common.Step("Ignore OnVehicleData with GPS data", common.checkNotificationIgnored, { "gps" })

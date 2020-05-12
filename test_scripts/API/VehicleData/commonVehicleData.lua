@@ -313,21 +313,24 @@ function m.ptUpdateMin(pTbl)
 end
 
 function m.processRPCSubscriptionSuccess(pRpcName, pData)
-  local reqParams = {
-    [pData] = true
-  }
-  local respData
-  if pData == "clusterModeStatus" then
-    respData = "clusterModes"
-  else
-    respData = pData
-  end
-  local hmiResParams = {
-    [respData] = {
+  local reqParams = {}
+  local respData = {}
+  local hmiResParams = {}
+
+  for _, item in pairs(pData) do
+    reqParams[item] = true
+  
+    if item == "clusterModeStatus" then
+      respData = "clusterModes"
+    else
+      respData = item
+    end
+  
+    hmiResParams[respData] = {
       resultCode = "SUCCESS",
-      dataType = m.allVehicleData[pData].type
+      dataType = m.allVehicleData[item].type
     }
-  }
+  end
   local cid = m.getMobileSession():SendRPC(pRpcName, reqParams)
   m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRpcName, reqParams)
   :Do(function(_, data)
@@ -337,6 +340,81 @@ function m.processRPCSubscriptionSuccess(pRpcName, pData)
   mobResParams.success = true
   mobResParams.resultCode = "SUCCESS"
   m.getMobileSession():ExpectResponse(cid, mobResParams)
+end
+
+function m.processRPCSubscriptionDisallowed(pRpcName, pData)
+  local reqParams = {
+    [pData] = true
+  }
+  local respData
+  if pData == "clusterModeStatus" then
+    respData = "clusterModes"
+  else
+    respData = pData
+  end
+  local mobResParams = {
+    [respData] =  {
+      resultCode = "DISALLOWED",
+      dataType = m.allVehicleData[pData].type
+    },  
+    success = false,
+    resultCode = "DISALLOWED",
+    info = "'stabilityControlsStatus' disallowed by policies."
+  }
+  local cid = m.getMobileSession():SendRPC(pRpcName, reqParams)
+  m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRpcName, reqParams):Times(0)
+  m.getMobileSession():ExpectResponse(cid, mobResParams)
+  m.getMobileSession():ExpectNotification("OnHashChange") :Times(0)
+end
+
+function m.processRPCSubscriptionPartiallyDisallowed(pRpcName, pAllowedData, pDisallowedData)
+  local mobReqParams = {
+    [pAllowedData] = true,
+    [pDisallowedData] = true
+  }
+  local hmiReqParams = {
+    [pAllowedData] = true
+  }
+  local respData
+  if pAllowedData == "clusterModeStatus" then
+    respData = "clusterModes"
+  else
+    respData = pAllowedData
+  end
+  local hmiResParams = {
+    [respData] = {
+      resultCode = "SUCCESS",
+      dataType = m.allVehicleData[pAllowedData].type
+    }
+  }
+  local cid = m.getMobileSession():SendRPC(pRpcName, mobReqParams)
+  m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRpcName, hmiReqParams)
+  :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", hmiResParams)
+    end)
+
+  local mobResParams = m.cloneTable(hmiResParams)
+  mobResParams[pDisallowedData] = {
+    resultCode = "DISALLOWED",
+    dataType = m.allVehicleData[pDisallowedData].type
+  }
+  mobResParams.success = true
+  mobResParams.resultCode = "SUCCESS"
+  mobResParams.info = '\'' .. pDisallowedData .. '\'' ..  " disallowed by policies."
+  m.getMobileSession():ExpectResponse(cid, mobResParams)
+end
+
+function m.processRPCSubscriptionGenericError(pRpcName, pReqParams, pHmiResParams)
+  local reqParams = {}
+  for _,v in pairs(pReqParams) do
+    reqParams[v] = true
+  end
+  local cid = m.getMobileSession():SendRPC(pRpcName, reqParams)
+  m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRpcName, reqParams)
+  :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pHmiResParams)
+    end)
+  m.getMobileSession():ExpectResponse(cid, { success = false, resultCode = "GENERIC_ERROR" })
 end
 
 function m.checkNotificationSuccess(pData)
