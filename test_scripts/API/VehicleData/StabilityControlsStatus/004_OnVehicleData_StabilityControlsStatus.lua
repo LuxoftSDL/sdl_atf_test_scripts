@@ -97,16 +97,16 @@ common.Step("Register App2", common.registerApp, { APP2 })
 common.Step("PTU 2", common.policyTableUpdate, { ptUpdate })
 common.Step("Activate App1", common.activateApp, { APP1 })
 common.Step("Subscribe on StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
-  {"SubscribeVehicleData", "stabilityControlsStatus", APP1, false })
+  { "SubscribeVehicleData", "stabilityControlsStatus", APP1, false })
 common.Step("Activate App2", common.activateApp, { APP2 })
 common.Step("Subscribe on StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
-  {"SubscribeVehicleData", "stabilityControlsStatus", APP2, true })
+  { "SubscribeVehicleData", "stabilityControlsStatus", APP2, true })
 
 common.Title("Test")
 common.Step("Expect OnVehicleData with StabilityControlsStatus data on both Apps", checkNotificationSuccess,
   { "stabilityControlsStatus", {{ id = APP1, isNotified = true }, { id = APP2, isNotified = true }}})
 common.Step("Unsubscribe App1 from StabilityControlsStatus VehicleData", processRPCSubscriptionSuccess,
-  {"UnsubscribeVehicleData", "stabilityControlsStatus", APP1, true })
+  { "UnsubscribeVehicleData", "stabilityControlsStatus", APP1, true })
 common.Step("Expect OnVehicleData with StabilityControlsStatus data on App2 only", checkNotificationSuccess,
   { "stabilityControlsStatus", {{ id = APP1, isNotified = false }, { id = APP2, isNotified = true }}})
 
