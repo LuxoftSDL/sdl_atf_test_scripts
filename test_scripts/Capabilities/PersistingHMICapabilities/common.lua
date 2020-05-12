@@ -586,31 +586,22 @@ function m.registerAppsSuspend( pCapResponse, pHMIParams )
   local mobSession2 = actions.mobile.getSession(appSessionId2)
   local mobSession3 = actions.mobile.getSession(appSessionId3)
 
-  local isAppSessionId = {
-    [1] = false,
-    [2] = false,
-    [3] = false
+  local isAppRegisteredReceived = {
+    [actions.app.getParams(appSessionId1).appName] = false,
+    [actions.app.getParams(appSessionId2).appName] = false,
+    [actions.app.getParams(appSessionId3).appName] = false
   }
-  local function validationBCOnAppRegistered(pAppId)
-    if isAppSessionId[pAppId] == false then
-      isAppSessionId[pAppId] = true
-    else
-      actions.run.fail("SDL sends BasicCommunication.OnAppRegistered notification twice for app" .. pAppId)
-    end
-  end
   actions.hmi.getConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
-  :ValidIf(function(_,data)
+  :ValidIf(function(_, data)
     local appName = data.params.application.appName
-    if appName == actions.app.getParams(appSessionId1).appName then
-      validationBCOnAppRegistered(appSessionId1)
-    elseif appName == actions.app.getParams(appSessionId2).appName then
-      validationBCOnAppRegistered(appSessionId2)
-    elseif appName == actions.app.getParams(appSessionId3).appName then
-      validationBCOnAppRegistered(appSessionId3)
+    if isAppRegisteredReceived[appName] == false then
+      isAppRegisteredReceived[appName] = true
+      return true
+    elseif isAppRegisteredReceived[appName] == nil then
+      return false, "SDL sends unexpected BasicCommunication.OnAppRegistered notification for app with name " .. appName
     else
-      actions.run.fail("SDL sends unexpected BasicCommunication.OnAppRegistered notification for app" .. appName)
+      return false, "SDL sends BasicCommunication.OnAppRegistered notification twice for app with name" .. appName
     end
-    return true
   end)
   :Do(function(_, data)
     local appName = data.params.application.appName
