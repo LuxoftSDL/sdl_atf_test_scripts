@@ -20,8 +20,8 @@
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')
 
 --[[ Local Functions ]]
-local function noResponseGetHMIParams(pVersion)
-  local hmiValues = common.noResponseGetHMIParams()
+local function getHMIParamsWithOutResponse(pVersion)
+  local hmiValues = common.getHMIParamsWithOutResponse()
   hmiValues.BasicCommunication.GetSystemInfo = {
     params = {
       ccpu_version = pVersion,
@@ -40,7 +40,7 @@ common.Step("Start SDL, HMI", common.start, { common.updateHMISystemInfo("cppu_v
 common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, Start SDL, GetSystemInfo notification",
-  common.start, { noResponseGetHMIParams("cppu_version_2") })
+  common.start, { getHMIParamsWithOutResponse("cppu_version_2") })
 common.Step("Check that capabilities file doesn't exist", common.checkIfCapabilityCacheFileExists, { false })
 
 common.Title("Postconditions")

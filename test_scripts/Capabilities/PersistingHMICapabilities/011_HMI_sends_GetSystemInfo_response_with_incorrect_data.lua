@@ -23,8 +23,8 @@ local common = require('test_scripts/Capabilities/PersistingHMICapabilities/comm
 local invalidTypeCcpuVersion = 1
 
 --[[ Local Functions ]]
-local function noRequestsGetHMIParams(pVersion)
-  local hmiValues = common.noRequestsGetHMIParams()
+local function getHMIParamsWithOutRequests(pVersion)
+  local hmiValues = common.getHMIParamsWithOutRequests()
   hmiValues.BasicCommunication.GetSystemInfo = {
     params = {
       ccpu_version = pVersion,
@@ -46,13 +46,13 @@ common.Step("Ignition on, Start SDL, HMI sends GetSystemInfo notification with i
   common.start, { common.updateHMISystemInfo(invalidTypeCcpuVersion) })
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, Start SDL, HMI sends the same cppu_version_1",
-  common.start, { noRequestsGetHMIParams("cppu_version_1") })
+  common.start, { getHMIParamsWithOutRequests("cppu_version_1") })
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, HMI sends GetSystemInfo notification without mandatory parameter ccpu_version",
   common.start, { common.updateHMISystemInfo() })
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, Start SDL, HMI sends the same cppu_version_1",
-  common.start, { noRequestsGetHMIParams("cppu_version_1") })
+  common.start, { getHMIParamsWithOutRequests("cppu_version_1") })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

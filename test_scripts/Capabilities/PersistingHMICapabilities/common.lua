@@ -26,7 +26,7 @@ m.cloneTable = utils.cloneTable
 m.getDefaultHMITable = hmi_values.getDefaultHMITable
 
 --[[ Common Functions ]]
-function m.noRequestsGetHMIParams()
+function m.getHMIParamsWithOutRequests()
   local params = m.getDefaultHMITable()
   params.RC.GetCapabilities.occurrence = 0
   params.UI.GetSupportedLanguages.occurrence = 0
@@ -43,7 +43,7 @@ function m.noRequestsGetHMIParams()
   return params
 end
 
-function m.noResponseGetHMIParams()
+function m.getHMIParamsWithOutResponse()
   local hmiCaps = m.getDefaultHMITable()
     hmiCaps.RC.IsReady.params.available = true
     hmiCaps.RC.GetCapabilities = nil
@@ -70,14 +70,14 @@ function m.preconditions()
   actions.setSDLIniParameter("HMICapabilitiesCacheFile", "hmi_capabilities_cache.json")
 end
 
-function m.removedRaduantDisplayCapParameters(pDisplayCapabilities)
+function m.buildDisplayCapForMobileExp(pDisplayCapabilities)
   local displayCapabilities = pDisplayCapabilities
   displayCapabilities.imageCapabilities = nil  -- no Mobile_API.xml
   displayCapabilities.menuLayoutsAvailable = nil --since 6.0
   return displayCapabilities
 end
 
-function m.expCapRaiResponse()
+function m.buildCapRaiResponse()
   local hmiCapabilities = m.getDefaultHMITable()
   local capRaiResponse = {
     buttonCapabilities = hmiCapabilities.Buttons.GetCapabilities.params.capabilities,
@@ -88,7 +88,7 @@ function m.expCapRaiResponse()
     pcmStreamCapabilities = hmiCapabilities.UI.GetCapabilities.params.pcmStreamCapabilities,
     hmiZoneCapabilities = hmiCapabilities.UI.GetCapabilities.params.hmiZoneCapabilities,
     softButtonCapabilities = hmiCapabilities.UI.GetCapabilities.params.softButtonCapabilities,
-    displayCapabilities = m.removedRaduantDisplayCapParameters(hmiCapabilities.UI.GetCapabilities.params.displayCapabilities),
+    displayCapabilities = m.buildDisplayCapForMobileExp(hmiCapabilities.UI.GetCapabilities.params.displayCapabilities),
     vrCapabilities = hmiCapabilities.VR.GetCapabilities.params.vrCapabilities,
     speechCapabilities = hmiCapabilities.TTS.GetCapabilities.params.speechCapabilities,
     prerecordedSpeech = hmiCapabilities.TTS.GetCapabilities.params.prerecordedSpeechCapabilities
@@ -141,7 +141,7 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
       }
     }
     local errorMessages = ""
-    local function validationCapabilities(pMessage, pActual, pExpect)
+    local function validateCapabilities(pMessage, pActual, pExpect)
       if not utils.isTableEqual(pActual, pExpect) then
         errorMessages = errorMessages .. errorMessage(pMessage, pActual, pExpect)
       end
@@ -152,7 +152,7 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
           local message = mod .. "." .. param
           local expectedResult = expHmiCapabilities[mod][req].params[param]
           if param == "audioPassThruCapabilitiesList" then
-            validationCapabilities(message, cacheTable[mod].audioPassThruCapabilities, expectedResult)
+            validateCapabilities(message, cacheTable[mod].audioPassThruCapabilities, expectedResult)
           else
             if not cacheTable[mod][param] then
               errorMessages = errorMessages ..
@@ -164,9 +164,9 @@ function m.checkContentOfCapabilityCacheFile(pExpHmiCapabilities)
                   buttonCap.moduleInfo.allowMultipleAccess = true
                 end
               end
-              validationCapabilities(message, cacheTable[mod][param], expectedResult)
+              validateCapabilities(message, cacheTable[mod][param], expectedResult)
               else
-                validationCapabilities(message, cacheTable[mod][param], expectedResult)
+                validateCapabilities(message, cacheTable[mod][param], expectedResult)
               end
             end
           end
@@ -193,7 +193,7 @@ function m.updateHMISystemInfo(pVersion)
   return hmiValues
 end
 
-function m.updatedHMICapabilitiesTable()
+function m.updateHMICapabilitiesTable()
   local hmiCapTbl = m.getHMICapabilitiesFromFile()
     table.remove(hmiCapTbl.UI.displayCapabilities.textFields, 1)
     hmiCapTbl.UI.hmiZoneCapabilities = "BACK"
@@ -215,8 +215,8 @@ function m.updatedHMICapabilitiesTable()
   return hmiCapTbl
 end
 
-function m.updatedHMICapabilitiesFile()
-  local hmiCapTbl = m.updatedHMICapabilitiesTable()
+function m.updateHMICapabilitiesFile()
+  local hmiCapTbl = m.updateHMICapabilitiesTable()
   actions.sdl.setHMICapabilitiesToFile(hmiCapTbl)
 end
 
@@ -274,7 +274,7 @@ function m.checkLanguageCapability(pLanguage)
       and data.UI and data.UI.language == pLanguage then
     utils.cprint(35, "Languages were changed")
   else
-    actions.run.fail("SDL doesn't updated cache file")
+    actions.run.fail("SDL doesn't update cache file")
   end
 end
 
@@ -531,7 +531,7 @@ function m.registerAppsSuspend( pCapResponse, pHMIParams )
     H  = "HTTP"
   }
 
-  local function validationCapResponse(pData)
+  local function validateCapResponse(pData)
     local errorMessages = ""
     for param, value in pairs (pCapResponse) do
       if param == "hmiZoneCapabilities" then
@@ -559,7 +559,7 @@ function m.registerAppsSuspend( pCapResponse, pHMIParams )
       if isHMIonReady == false then
         actions.run.fail("RegisterAppInterface response was received before HMI on ready")
       end
-      return validationCapResponse(data)
+      return validateCapResponse(data)
     end)
     :Do(function()
         pSession:ExpectNotification("OnHMIStatus",

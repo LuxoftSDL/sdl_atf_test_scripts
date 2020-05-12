@@ -25,8 +25,8 @@ local appSessionId = 1
 local ccpuVersion = "cppu_version_1"
 
 --[[ Local Functions ]]
-local function noResponseGetHMIParams(pVersion)
-  local hmiValues = common.noResponseGetHMIParams()
+local function getHMIParamsWithOutResponse(pVersion)
+  local hmiValues = common.getHMIParamsWithOutResponse()
   hmiValues.BasicCommunication.GetSystemInfo = {
     params = {
       ccpu_version = pVersion,
@@ -42,14 +42,14 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update HMICapabilitiesCacheFile in SDL.ini file ", common.setSDLIniParameter,
   { "HMICapabilitiesCacheFile", "" })
-common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
-common.Step("Start SDL, HMI", common.start, { noResponseGetHMIParams(ccpuVersion) })
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile)
+common.Step("Start SDL, HMI", common.start, { getHMIParamsWithOutResponse(ccpuVersion) })
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Start SDL, HMI", common.startWoHMIonReady)
 common.Step("Check suspending App registration", common.registerAppSuspend,
-  { appSessionId, common.expCapRaiResponse(), common.updateHMISystemInfo(ccpuVersion) })
+  { appSessionId, common.buildCapRaiResponse(), common.updateHMISystemInfo(ccpuVersion) })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

@@ -26,12 +26,12 @@ local appSessionId = 1
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile)
 common.Step("Start SDL, HMI", common.startWoHMIonReady)
 
 common.Title("Test")
 common.Step("Check suspending App registration", common.registerAppSuspend,
-  { appSessionId, common.expCapRaiResponse(), common.updateHMISystemInfo("cppu_version_1") })
+  { appSessionId, common.buildCapRaiResponse(), common.updateHMISystemInfo("cppu_version_1") })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

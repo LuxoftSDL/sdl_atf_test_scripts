@@ -30,7 +30,7 @@ common.Step("Start SDL and HMI, SDL sends HMI capabilities requests to HMI", com
 common.Step("Validate stored capabilities file", common.checkContentOfCapabilityCacheFile)
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, SDL doesn't send HMI capabilities requests to HMI",
-  common.start, { common.noRequestsGetHMIParams() })
+  common.start, { common.getHMIParamsWithOutRequests() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

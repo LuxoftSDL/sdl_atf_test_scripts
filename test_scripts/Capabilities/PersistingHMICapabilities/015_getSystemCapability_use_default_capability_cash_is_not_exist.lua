@@ -33,7 +33,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
-common.Step("Ignition on, Start SDL, HMI", common.start, { common.noResponseGetHMIParams() })
+common.Step("Ignition on, Start SDL, HMI", common.start, { common.getHMIParamsWithOutResponse() })
 common.Step("Check that capabilities file doesn't exist", common.checkIfCapabilityCacheFileExists, { false })
 common.Step("App registration", common.registerApp)
 common.Step("App activation", common.activateApp)

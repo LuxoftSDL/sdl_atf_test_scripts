@@ -46,7 +46,7 @@ local capRaiResponse = {
   pcmStreamCapabilities = changeInternalNameRate(hmiCapabilities.UI.pcmStreamCapabilities),
   hmiZoneCapabilities = hmiCapabilities.UI.hmiZoneCapabilities,
   softButtonCapabilities = hmiCapabilities.UI.softButtonCapabilities,
-  displayCapabilities = common.removedRaduantDisplayCapParameters(hmiCapabilities.UI.displayCapabilities),
+  displayCapabilities = common.buildDisplayCapForMobileExp(hmiCapabilities.UI.displayCapabilities),
   vrCapabilities = hmiCapabilities.VR.vrCapabilities,
   speechCapabilities = hmiCapabilities.TTS.speechCapabilities,
   prerecordedSpeech = hmiCapabilities.TTS.prerecordedSpeechCapabilities
@@ -57,7 +57,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
-common.Step("Ignition on, Start SDL, HMI", common.start, { common.noResponseGetHMIParams() })
+common.Step("Ignition on, Start SDL, HMI", common.start, { common.getHMIParamsWithOutResponse() })
 common.Step("Check that capability file doesn't exist", common.checkIfCapabilityCacheFileExists, { false })
 common.Step("App registration", common.registerApp, { appSessionId, capRaiResponse })
 

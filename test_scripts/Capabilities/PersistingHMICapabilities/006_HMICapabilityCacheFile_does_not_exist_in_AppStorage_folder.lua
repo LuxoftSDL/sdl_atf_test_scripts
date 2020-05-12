@@ -29,13 +29,13 @@ local cap = {
 }
 
 --[[ Local Functions ]]
-local function updateHMICaps_noResponseGetHMIParams(pMod, pReq)
+local function getHMIParamsWithOutResponse(pMod, pReq)
   local noResponseGetHMIParams = common.cloneTable(hmiDefaultCap)
   noResponseGetHMIParams[pMod][pReq] = nil
   return noResponseGetHMIParams
 end
 
-local function updateHMICaps_requestGetHMIParams(pMod, pReq)
+local function getHMIParamsWithOutRequest(pMod, pReq)
   local requestGetHMIParams = common.cloneTable(hmiDefaultCap)
   requestGetHMIParams.UI.GetLanguage.occurrence = 0
   requestGetHMIParams.UI.GetSupportedLanguages.occurrence = 0
@@ -59,12 +59,12 @@ for mod, req  in pairs(cap) do
     common.Title("Preconditions")
     common.Step("Clean environment", common.preconditions)
     common.Step("Start SDL, HMI does not provide capability on request " .. mod .. "." .. pReq,
-      common.start, { updateHMICaps_noResponseGetHMIParams(mod, pReq) })
+      common.start, { getHMIParamsWithOutResponse(mod, pReq) })
     common.Step("Ignition off", common.ignitionOff)
 
     common.Title("Test")
     common.Step("Ignition on, SDL doesn't send " .. mod .. "." .. pReq .." request",
-      common.start, { updateHMICaps_requestGetHMIParams(mod, pReq) })
+      common.start, { getHMIParamsWithOutRequest(mod, pReq) })
 
     common.Title("Postconditions")
     common.Step("Stop SDL", common.postconditions)

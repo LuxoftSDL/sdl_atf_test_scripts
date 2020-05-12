@@ -24,15 +24,15 @@ local appSessionId = 1
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile)
 
 common.Title("Test")
 common.Step("Ignition on, Start SDL, HMI", common.start)
 common.Step("Check that capabilities file exists", common.checkIfCapabilityCacheFileExists)
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, HMI, SDL doesn't send HMI capabilities requests to HMI",
-  common.start, { common.noRequestsGetHMIParams() })
-common.Step("App registration", common.registerApp, { appSessionId, common.expCapRaiResponse() })
+  common.start, { common.getHMIParamsWithOutRequests() })
+common.Step("App registration", common.registerApp, { appSessionId, common.buildCapRaiResponse() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

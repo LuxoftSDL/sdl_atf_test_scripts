@@ -47,15 +47,15 @@ local capRaiResponse = {
   pcmStreamCapabilities = changeInternalNameRate(hmiCapabilities.UI.pcmStreamCapabilities),
   hmiZoneCapabilities = hmiCapabilities.UI.hmiZoneCapabilities,
   softButtonCapabilities = hmiCapabilities.UI.softButtonCapabilities,
-  displayCapabilities = common.removedRaduantDisplayCapParameters(hmiCapabilities.UI.displayCapabilities),
+  displayCapabilities = common.buildDisplayCapForMobileExp(hmiCapabilities.UI.displayCapabilities),
   vrCapabilities = hmiCapabilities.VR.vrCapabilities,
   speechCapabilities = hmiCapabilities.TTS.speechCapabilities,
   prerecordedSpeech = hmiCapabilities.TTS.prerecordedSpeechCapabilities
 }
 
 --[[ Local Functions ]]
-local function noResponseGetHMIParams(pVersion)
-  local hmiValues = common.noResponseGetHMIParams()
+local function getHMIParamsWithOutResponse(pVersion)
+  local hmiValues = common.getHMIParamsWithOutResponse()
   hmiValues.BasicCommunication.GetSystemInfo = {
     params = {
       ccpu_version = pVersion,
@@ -73,7 +73,7 @@ common.Step("Start SDL, HMI", common.startWoHMIonReady)
 
 common.Title("Test")
 common.Step("Check suspending App registration", common.registerAppSuspend,
-  { appSessionId, capRaiResponse, noResponseGetHMIParams("cppu_version_1") })
+  { appSessionId, capRaiResponse, getHMIParamsWithOutResponse("cppu_version_1") })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

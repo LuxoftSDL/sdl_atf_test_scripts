@@ -22,7 +22,7 @@
 local common = require('test_scripts/Capabilities/PersistingHMICapabilities/common')
 
 --[[ Local Functions ]]
-local function noRequestsGetHMIParams(pVersion)
+local function getHMIParamsWithOutRequests(pVersion)
   local hmiCapabilities = common.updateHMISystemInfo(pVersion)
   hmiCapabilities.RC.GetCapabilities.occurrence = 0
   hmiCapabilities.UI.GetSupportedLanguages.occurrence = 0
@@ -50,7 +50,7 @@ common.Step("Ignition on, Start SDL, HMI sends different cppu_version",
   common.start, { common.updateHMISystemInfo("cppu_version_2") })
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, Start SDL, HMI sends the same cppu_version",
-  common.start, { noRequestsGetHMIParams("cppu_version_2") })
+  common.start, { getHMIParamsWithOutRequests("cppu_version_2") })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

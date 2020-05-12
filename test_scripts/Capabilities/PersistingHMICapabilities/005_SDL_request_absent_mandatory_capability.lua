@@ -23,11 +23,11 @@ common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
 common.Step("Ignition on, Start SDL, HMI does not provide HMI capabilities",
-  common.start, { common.noResponseGetHMIParams() })
+  common.start, { common.getHMIParamsWithOutResponse() })
 common.Step("Check that capabilities file doesn't exist", common.checkIfCapabilityCacheFileExists, { false })
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, SDL sends all HMI capabilities requests",
-  common.start, { common.noResponseGetHMIParams() })
+  common.start, { common.getHMIParamsWithOutResponse() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

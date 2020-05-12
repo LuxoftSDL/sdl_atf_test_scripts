@@ -37,7 +37,7 @@ local mobConnId2 = 2
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile)
 common.Step("Start SDL, HMI, connect default device 1", common.startWoHMIonReady)
 common.Step("Connect another mobile device (Mobile 2)", common.connectMobDevice, { mobConnId2, anotherDeviceParams})
 common.Step("Start service App1 on mobile device 1", common.startService, { appSessionId1, mobConnId1 })
@@ -46,7 +46,7 @@ common.Step("Start service App3 on mobile device 2", common.startService, { appS
 
 common.Title("Test")
 common.Step("Check suspending multiple Apps registration", common.registerAppsSuspend,
-  { common.expCapRaiResponse(), common.updateHMISystemInfo("cppu_version_1") })
+  { common.buildCapRaiResponse(), common.updateHMISystemInfo("cppu_version_1") })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

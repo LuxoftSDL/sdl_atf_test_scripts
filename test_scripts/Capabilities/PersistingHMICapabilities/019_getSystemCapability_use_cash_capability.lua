@@ -22,7 +22,7 @@ config.application1.registerAppInterfaceParams.appHMIType = { "REMOTE_CONTROL" }
 --[[ Local Variables ]]
 local hmiCap = common.getDefaultHMITable()
 
-local function addAllowMultipleAccess()
+local function getRcCapabilitiesWithUpdatedAllowMultipleAccess()
   local buttonsCap = hmiCap.RC.GetCapabilities.params.remoteControlCapability.buttonCapabilities
   for _, buttonCap in ipairs(buttonsCap) do
     if buttonCap.moduleInfo.allowMultipleAccess == nil then
@@ -40,7 +40,7 @@ local systemCapabilities = {
   VIDEO_STREAMING = {
     videoStreamingCapability = hmiCap.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability },
   REMOTE_CONTROL = {
-    remoteControlCapability = addAllowMultipleAccess() },
+    remoteControlCapability = getRcCapabilitiesWithUpdatedAllowMultipleAccess() },
   SEAT_LOCATION = {
     seatLocationCapability = hmiCap.RC.GetCapabilities.params.seatLocationCapability }
 }
@@ -48,13 +48,13 @@ local systemCapabilities = {
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile)
 
 common.Title("Test")
 common.Step("Ignition on, Start SDL, HMI", common.start)
 common.Step("Check that capabilities file exists", common.checkIfCapabilityCacheFileExists)
 common.Step("Ignition off", common.ignitionOff)
-common.Step("Ignition on, Start SDL, HMI", common.start, { common.noRequestsGetHMIParams() })
+common.Step("Ignition on, Start SDL, HMI", common.start, { common.getHMIParamsWithOutRequests() })
 common.Step("App registration", common.registerApp)
 common.Step("App activation", common.activateApp)
 

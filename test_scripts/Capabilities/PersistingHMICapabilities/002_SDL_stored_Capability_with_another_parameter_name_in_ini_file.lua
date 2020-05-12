@@ -31,7 +31,7 @@ for _, cacheFile in pairs(cacheFileNames) do
     common.checkIfCapabilityCacheFileExists, { true, cacheFile })
   common.Step("Ignition off", common.ignitionOff)
   common.Step("Ignition on, SDL doesn't send HMI capabilities requests",
-  common.start, { common.noRequestsGetHMIParams() })
+  common.start, { common.getHMIParamsWithOutRequests() })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

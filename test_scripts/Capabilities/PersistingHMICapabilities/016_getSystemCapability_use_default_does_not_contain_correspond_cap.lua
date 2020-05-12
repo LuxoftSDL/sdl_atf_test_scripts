@@ -20,7 +20,7 @@ config.application1.registerAppInterfaceParams.appHMIType = { "REMOTE_CONTROL" }
 
 --[[ Local Variables ]]
 local hmiDefaultCap = common.getDefaultHMITable()
-local hmiCapabilities = common.updatedHMICapabilitiesTable()
+local hmiCapabilities = common.updateHMICapabilitiesTable()
 
 local requests = {
   UI = { "GetCapabilities" },
@@ -56,10 +56,10 @@ for mod, req  in pairs(requests) do
 common.Title("TC processing " .. tostring(mod) .. "]")
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", common.updatedHMICapabilitiesFile)
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile)
 
 common.Title("Test")
-common.Step("Updated default HMI Capabilities", updateHMICaps, { mod, pReq })
+common.Step("Update default HMI Capabilities", updateHMICaps, { mod, pReq })
 common.Step("Ignition on, Start SDL, HMI", common.start, { hmiDefaultCap })
 common.Step("App registration", common.registerApp)
 common.Step("App activation", common.activateApp)
