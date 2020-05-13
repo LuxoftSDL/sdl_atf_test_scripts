@@ -1,5 +1,7 @@
 -- Proposal:https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0266-New-vehicle-data-GearStatus.md
+--
 -- Description: SDL successfully processes GetVehicleData response if gearStatus structure contains one parameter.
+--
 -- In case:
 -- 1) App sends GetVehicleData(gearStatus:true) request.
 -- SDL does:
@@ -26,7 +28,7 @@ end
 
 --[[ Scenario ]]
 common.Title("Preconditions")
-common.Step("Clean environment", common.precondition)
+common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
@@ -37,4 +39,4 @@ for k,v in pairs(common.gearStatusData) do
 end
 
 common.Title("Postconditions")
-common.Step("Stop SDL", common.postcondition)
+common.Step("Stop SDL", common.postconditions)
