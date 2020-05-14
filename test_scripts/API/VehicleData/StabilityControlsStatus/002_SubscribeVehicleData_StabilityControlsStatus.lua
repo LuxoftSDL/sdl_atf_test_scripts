@@ -10,20 +10,16 @@
 -- 4) App is activated
 --
 -- Steps:
--- 1) App send SubscribeVehicleData (with stabilityControlsStatus = true) request to SDL
--- SDL does:
---  - send VehicleInfo.SubscribeVehicleData (with stabilityControlsStatus = true) request to HMI
--- HMI sends VehicleInfo.SubscribeVehicleData response "SUCCESS"
---   with next data (stabilityControlsStatus = { dataType = "VEHICLEDATA_STABILITYCONTROLSSTATUS"} )
--- SDL does:
---  - send SubscribeVehicleData response with (success: true resultCode: "SUCCESS") and received from HMI data to App
+-- 1) App sends SubscribeVehicleData (with stabilityControlsStatus = true) request to SDL
+--    SDL sends VehicleInfo.SubscribeVehicleData (with stabilityControlsStatus = true) request to HMI
+--    HMI sends VehicleInfo.SubscribeVehicleData response "SUCCESS"
+--      with next data (stabilityControlsStatus = { dataType = "VEHICLEDATA_STABILITYCONTROLSSTATUS" })
+--    SDL sends SubscribeVehicleData response with (success: true resultCode: "SUCCESS") and received from HMI data to App
 -- 2) HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus data
---   (escSystem = "ON", trailerSwayControl = "OFF")
--- SDL does:
---  - send OnVehicleData notification with received from HMI data to App
+--     (escSystem = "ON", trailerSwayControl = "OFF")
+--    SDL sends OnVehicleData notification with received from HMI data to App
 -- 3) HMI sends VehicleInfo.OnVehicleData notification with GPS data
--- SDL does:
---  - not send OnVehicleData notification with received from HMI data to App
+--    SDL not sends OnVehicleData notification with received from HMI data to App
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/VehicleData/commonVehicleData')
