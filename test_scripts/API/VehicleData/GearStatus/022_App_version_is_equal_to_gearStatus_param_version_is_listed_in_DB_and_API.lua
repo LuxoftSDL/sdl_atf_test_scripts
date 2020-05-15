@@ -2,11 +2,11 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0266-New-vehicle-data-GearStatus.md
 --
 -- Description: SDL successfully processes Get/Sub/Unsub/VehicleData requests with new 'gearStatus' parameter in case
--- App is registered with syncMsgVersion is equal to 6.0.
+-- App is registered with syncMsgVersion is equal to 6.2.
 --
 -- Preconditions:
--- 1) App is registered with syncMsgVersion=6.0
--- 2) New param `gearStatus` has since=6.0 in DB and API.
+-- 1) App is registered with syncMsgVersion=6.2
+-- 2) New param `gearStatus` has since=6.2 in DB and API.
 -- In case:
 -- 1) App requests Get/Sub/UnsubVehicleData with gearStatus=true.
 -- 2) HMI sends valid OnVehicleData notification with all parameters of `gearStatus` structure.
@@ -19,7 +19,7 @@ local common = require('test_scripts/API/VehicleData/GearStatus/common')
 
 -- [[ Test Configuration ]]
 common.getParams().syncMsgVersion.majorVersion = 6
-common.getParams().syncMsgVersion.minorVersion = 0
+common.getParams().syncMsgVersion.minorVersion = 2
 
 --[[ Scenario ]]
 common.Title("Preconditions")

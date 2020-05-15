@@ -2,9 +2,9 @@
 -- Common module
 ---------------------------------------------------------------------------------------------------
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
-config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
+config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
 config.application2.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
-config.application2.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
+config.application2.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
 
 --[[ Required Shared libraries ]]
 local actions = require("user_modules/sequences/actions")

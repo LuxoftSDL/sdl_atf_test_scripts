@@ -6,7 +6,7 @@
 --
 -- Preconditions:
 -- 1) App is registered with syncMsgVersion=7.0
--- 2) `prndl` is deprecated since=6.0 in API and DB
+-- 2) `prndl` is deprecated since=6.2 in API and DB
 -- In case:
 -- 1) App requests Get/Sub/UnsubVehicleData with prndl=true.
 -- 2) HMI sends valid OnVehicleData notification with all parameters of `prndl` structure.
