@@ -12,10 +12,10 @@
 --
 -- Steps:
 -- 1) HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus data
---    SDL send OnVehicleData notification with received from HMI data to App1 and App2
+--    SDL sends OnVehicleData notification with received from HMI data to App1 and App2
 -- 2) App1 unsubscribes from StabilityControlsStatus vehicle data.
 --    HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus data
---    SDL send OnVehicleData notification with received from HMI data to App2 only
+--    SDL sends OnVehicleData notification with received from HMI data to App2 only
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/VehicleData/commonVehicleData')
