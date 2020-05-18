@@ -46,9 +46,9 @@ common.Step("Unsubscribe from gps, speed, rpm, stabilityControlsStatus",
   common.processRPCSubscriptionSuccess, { "UnsubscribeVehicleData", vehicle_data_items })
 
 for _, item in pairs(vehicle_data_items) do
-  common.Step("Ignore OnVehicleData with " .. item .. " data", common.checkNotificationIgnored, { item })
+  common.Step("Ignore OnVehicleData with " .. item .. " data", common.checkNotificationIgnored, {{ item }})
 end
-common.Step("Ignore OnVehicleData with fuelLevel data", common.checkNotificationIgnored, { "fuelLevel" })
+common.Step("Ignore OnVehicleData with fuelLevel data", common.checkNotificationIgnored, {{ "fuelLevel" }})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)

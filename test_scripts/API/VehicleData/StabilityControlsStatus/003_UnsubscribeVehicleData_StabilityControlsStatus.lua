@@ -39,8 +39,8 @@ common.Title("Test")
 common.Step("Unsubscribe from StabilityControlsStatus VehicleData", common.processRPCSubscriptionSuccess,
   { "UnsubscribeVehicleData", { "stabilityControlsStatus" }})
 common.Step("Ignore OnVehicleData with StabilityControlsStatus data", common.checkNotificationIgnored,
-  { "stabilityControlsStatus" })
-common.Step("Ignore OnVehicleData with GPS data", common.checkNotificationIgnored, { "gps" })
+  {{ "stabilityControlsStatus" }})
+common.Step("Ignore OnVehicleData with GPS data", common.checkNotificationIgnored, {{ "gps" }})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)
