@@ -65,7 +65,7 @@ for k, v in pairs(hmiResParams) do
 common.Step("Unsubscribe from StabilityControlsStatus," .. k .. " in HMI response", 
   common.processRPCSubscriptionGenericError, { "UnsubscribeVehicleData", { "stabilityControlsStatus"}, v })
 common.Step("Process OnVehicleData with StabilityControlsStatus data", common.checkNotificationSuccess,
-  { "stabilityControlsStatus" })
+  {{ "stabilityControlsStatus" }})
 end
 
 common.Title("Postconditions")
