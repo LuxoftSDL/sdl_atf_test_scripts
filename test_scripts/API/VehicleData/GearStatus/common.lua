@@ -56,6 +56,11 @@ m.subUnsubResponse = {
 
 m.prndlData = "PARK"
 
+local prndlSubUnsubResponse = {
+  dataType = "VEHICLEDATA_PRNDL",
+  resultCode = "SUCCESS"
+}
+
 --[[ Common Functions ]]
 
 --[[ @updatePreloadedPT: Update preloaded file with additional permissions for GearStatus
@@ -95,18 +100,18 @@ end
 
 --[[ @preconditions: Clean environment and optional backup and update of sdl_preloaded_pt.json file
 --! @parameters:
---! isPreloadedUpdate: if true then sdl_preloaded_pt.json file will be updated, otherwise - false
+--! isPreloadedUpdate: if true then sdl_preloaded_pt.json file will be updated, otherwise - will be not updated
 --! @return: none
 --]]
 function m.preconditions(isPreloadedUpdate)
   if isPreloadedUpdate == nil then isPreloadedUpdate = true end
   actions.preconditions()
-  if isPreloadedUpdate == true then
+  if isPreloadedUpdate == true or isPreloadedUpdate == nil then
     m.updatePreloadedPT()
   end
 end
 
---! @pTUpdateFunc: Policy Table Update with allowed "Base-4" group for application
+--! @pTUpdateFunc: Policy Table Update with allowed "Base-4" and custom groups for application
 --! @parameters:
 --! tbl: policy table
 --! @return: none
@@ -135,7 +140,7 @@ function m.pTUpdateFunc(tbl)
   tbl.policy_table.app_policies[m.getParams().fullAppID].groups = { "Base-4", "NewVehicleDataGroup" }
 end
 
---[[ @setHashId: Set hashId which is required during resumption
+--[[ @setHashId: Set hashId value which is required during resumption
 --! @parameters:
 --! pHashValue: application's hashId
 --! pAppId: application number (1, 2, etc.)
@@ -145,7 +150,7 @@ function m.setHashId(pHashValue, pAppId)
   hashId[pAppId] = pHashValue
 end
 
---[[ @getHashId: Get hashId of an app which is required during resumption
+--[[ @getHashId: Get hashId value of an app which is required during resumption
 --! @parameters:
 --! pAppId: application number (1, 2, etc.)
 --! @return: app's hashId
@@ -172,7 +177,7 @@ function m.checkParam(pData, pRPC)
   end
 end
 
---[[ @gearStatus: Clone table with data for use to GetVD and OnVD RPCs
+--[[ @getGearStatusParams: Clone table with gearStatus data for use to GetVD and OnVD RPCs
 --! @parameters: none
 --! @return: table for GetVD and OnVD
 --]]
@@ -221,19 +226,19 @@ end
 --! pRPC: RPC for mobile request
 --! pParam: parameters for Subscribe/UnsubscribeVehicleData RPC
 --! pVDType: VehicleDataType value
---! isRequestOnHMIExpected: true or omitted - in case VehicleInfo.Subscribe/UnsubscribeVehicleData_request on HMI is expected, otherwise - false
+--! isRequestOnHMIExpected: true or omitted - in case VehicleInfo.Subscribe/UnsubscribeVehicleData_request on HMI is expected, otherwise - not expected
 --! pAppId: application number (1, 2, etc.)
 --! @return: none
 --]]
-function m.subUnScribeVD(pRPC, pParam, pVDType, isRequestOnHMIExpected, pAppId)
+function m.subUnScribeVD(pRPC, pParam, isRequestOnHMIExpected, pAppId)
+  local responseData
   if not pParam then pParam = "gearStatus" end
-  if not pVDType then pVDType = "VEHICLEDATA_GEARSTATUS" end
+  if pParam == "gearStatus" then responseData = m.subUnsubResponse
+  else
+     responseData = prndlSubUnsubResponse
+  end
   if isRequestOnHMIExpected == nil then isRequestOnHMIExpected = true end
   if not pAppId then pAppId = 1 end
-  local responseData = {
-    dataType = pVDType,
-    resultCode = "SUCCESS"
-  }
   local cid = m.getMobileSession(pAppId):SendRPC(pRPC, { [pParam] = true })
   if isRequestOnHMIExpected then
     m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, { [pParam] = true })
@@ -341,7 +346,6 @@ end
 --[[ @registerAppWithResumption: Successful app registration with resumption
 --! @parameters:
 --! pAppId: application number (1, 2, etc.)
---! pLevelCheckFunc: function for expectation of HMI level related messages
 --! isHMIsubscription: if true VD.SubscribeVehicleData request is expected on HMI, otherwise - not expected
 --! @return: none
 --]]

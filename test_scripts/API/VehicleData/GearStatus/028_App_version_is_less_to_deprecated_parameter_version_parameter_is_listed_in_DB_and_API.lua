@@ -30,9 +30,9 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("GetVehicleData for prndl", common.getVehicleData, { common.prndlData, "prndl" })
-common.Step("App subscribes to prndl data", common.subUnScribeVD, { "SubscribeVehicleData", "prndl", "VEHICLEDATA_PRNDL" })
+common.Step("App subscribes to prndl data", common.subUnScribeVD, { "SubscribeVehicleData", "prndl" })
 common.Step("OnVehicleData with prndl data", common.sendOnVehicleData, { common.prndlData, _, "prndl" })
-common.Step("App unsubscribes from prndl data", common.subUnScribeVD, { "UnsubscribeVehicleData", "prndl", "VEHICLEDATA_PRNDL" })
+common.Step("App unsubscribes from prndl data", common.subUnScribeVD, { "UnsubscribeVehicleData", "prndl" })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
