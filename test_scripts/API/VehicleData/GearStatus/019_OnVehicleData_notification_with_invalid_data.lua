@@ -37,7 +37,7 @@ common.Step("Activate App", common.activateApp)
 common.Step("App subscribes to gearStatus data", common.subUnScribeVD, { "SubscribeVehicleData" })
 
 common.Title("Test")
-for p in pairs(common.gearStatusData) do
+for p in pairs(common.getGearStatusParams()) do
   common.Title("Check for " .. p .. " parameter")
   for k, v in pairs(invalidValue) do
     common.Step("OnVehicleData notification with " ..k .. " for ".. p, common.sendOnVehicleData, { common.setValue(p,v), notExpected})

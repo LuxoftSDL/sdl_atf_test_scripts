@@ -34,7 +34,7 @@ common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
-for k,v in pairs(common.gearStatusData) do
+for k,v in pairs(common.getGearStatusParams()) do
   common.Step("HMI sends response with one " .. k.. " parameter", getVDWithOneParam, { { [k] = v } })
 end
 

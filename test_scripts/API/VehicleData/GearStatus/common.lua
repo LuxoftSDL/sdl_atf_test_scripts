@@ -10,7 +10,7 @@ config.application2.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
 local actions = require("user_modules/sequences/actions")
 local json = require("modules/json")
 local utils = require("user_modules/utils")
-local events = require('events')
+local SDL = require("SDL")
 local runner = require('user_modules/script_runner')
 
 --[[ Test Configuration ]]
@@ -31,7 +31,6 @@ m.registerAppWOPTU = actions.registerAppWOPTU
 m.activateApp = actions.activateApp
 m.getMobileSession = actions.getMobileSession
 m.getHMIConnection = actions.getHMIConnection
-m.backupPreloadedPT = actions.sdl.backupPreloadedPT
 m.restorePreloadedPT = actions.sdl.restorePreloadedPT
 m.cloneTable = utils.cloneTable
 m.getConfigAppParams = actions.getConfigAppParams
@@ -41,8 +40,10 @@ m.getAppsCount = actions.getAppsCount
 m.getParams = actions.app.getParams
 m.deleteSession = actions.mobile.deleteSession
 m.connectMobile = actions.mobile.connect
+m.wait = utils.wait
+m.postconditions = actions.postconditions
 
-m.gearStatusData = {
+local gearStatusData = {
   userSelectedGear = "NINTH",
   actualGear = "TENTH",
   transmissionType = "MANUAL"
@@ -68,19 +69,19 @@ function m.updatePreloadedPT(pGroups)
     pGroups = {
       rpcs = {
         GetVehicleData = {
-          hmi_levels = { "BACKGROUND", "LIMITED", "FULL" },
+          hmi_levels = { "BACKGROUND", "LIMITED", "FULL", "NONE" },
           parameters = { "gearStatus", "prndl" }
         },
         OnVehicleData = {
-          hmi_levels = { "BACKGROUND", "LIMITED", "FULL" },
+          hmi_levels = { "BACKGROUND", "LIMITED", "FULL", "NONE" },
           parameters = { "gearStatus", "prndl" }
         },
         SubscribeVehicleData = {
-          hmi_levels = { "BACKGROUND", "LIMITED", "FULL" },
+          hmi_levels = { "BACKGROUND", "LIMITED", "FULL", "NONE" },
           parameters = { "gearStatus", "prndl" }
         },
         UnsubscribeVehicleData = {
-          hmi_levels = { "BACKGROUND", "LIMITED", "FULL" },
+          hmi_levels = { "BACKGROUND", "LIMITED", "FULL", "NONE" },
           parameters = { "gearStatus", "prndl" }
         }
       }
@@ -101,7 +102,6 @@ function m.preconditions(isPreloadedUpdate)
   if isPreloadedUpdate == nil then isPreloadedUpdate = true end
   actions.preconditions()
   if isPreloadedUpdate == true then
-    m.backupPreloadedPT()
     m.updatePreloadedPT()
   end
 end
@@ -132,7 +132,7 @@ function m.pTUpdateFunc(tbl)
     }
   }
   tbl.policy_table.functional_groupings.NewVehicleDataGroup = VDgroup
-  tbl.policy_table.app_policies[m.getParams(1).fullAppID].groups = { "Base-4", "NewVehicleDataGroup" }
+  tbl.policy_table.app_policies[m.getParams().fullAppID].groups = { "Base-4", "NewVehicleDataGroup" }
 end
 
 --[[ @setHashId: Set hashId which is required during resumption
@@ -176,11 +176,11 @@ end
 --! @parameters: none
 --! @return: table for GetVD and OnVD
 --]]
-function m.gearStatus()
-  return utils.cloneTable(m.gearStatusData)
+function m.getGearStatusParams()
+  return utils.cloneTable(gearStatusData)
 end
 
---[[ @responseTosubUnsubReq: Clone table with data for use to SubscribeVD and UnsubscribeVD RPCs
+--[[ @responseTosubUnsubReq: Clone table with data for use in SubscribeVD and UnsubscribeVD RPCs
 --! @parameters: none
 --! @return: table for SubscribeVD and UnsubscribeV
 --]]
@@ -216,50 +216,34 @@ function m.getVehicleData(pData, pParam)
   m.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS", [pParam] = pData })
 end
 
---[[ @subUnScribeVD: Processing Subscribe/Unsubscribe RPC
+--[[ @subUnScribeVD: Processing Subscribe/UnsubscribeVehicleData RPC
 --! @parameters:
 --! pRPC: RPC for mobile request
---! pParam: parameters for Subscribe/Unsubscribe RPC
+--! pParam: parameters for Subscribe/UnsubscribeVehicleData RPC
 --! pVDType: VehicleDataType value
+--! isRequestOnHMIExpected: true or omitted - in case VehicleInfo.Subscribe/UnsubscribeVehicleData_request on HMI is expected, otherwise - false
 --! pAppId: application number (1, 2, etc.)
 --! @return: none
 --]]
-function m.subUnScribeVD(pRPC, pParam, pVDType, pAppId)
+function m.subUnScribeVD(pRPC, pParam, pVDType, isRequestOnHMIExpected, pAppId)
   if not pParam then pParam = "gearStatus" end
   if not pVDType then pVDType = "VEHICLEDATA_GEARSTATUS" end
+  if isRequestOnHMIExpected == nil then isRequestOnHMIExpected = true end
   if not pAppId then pAppId = 1 end
   local responseData = {
     dataType = pVDType,
     resultCode = "SUCCESS"
   }
   local cid = m.getMobileSession(pAppId):SendRPC(pRPC, { [pParam] = true })
-  m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, { [pParam] = true })
-  :Do(function(_, data)
-    m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { [pParam] = responseData })
-  end)
-  m.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS", [pParam] = responseData })
-  m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
-  :Do(function(_, data)
-    m.setHashId(data.payload.hashID, pAppId)
-  end)
-end
-
---[[ @subscribeVD2Apps: Processing SubscribeVehicleData for two apps
---! @parameters:
---! isSubscriptionExpected: true - in case VehicleInfo.SubscribeVehicleData_requset on HMI is expected, otherwise - false
---! pAppId: application number (1, 2, etc.)
---! @return: none
---]]
-function m.subscribeVD2Apps(isSubscriptionExpected, pAppId)
-  if not pAppId then pAppId = 1 end
-  local cid = m.getMobileSession(pAppId):SendRPC("SubscribeVehicleData", { gearStatus = true })
-  if isSubscriptionExpected then
-    m.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData", { gearStatus = true })
-    :Do(function(_,data)
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { gearStatus = m.subUnsubResponse })
+  if isRequestOnHMIExpected then
+    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, { [pParam] = true })
+    :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { [pParam] = responseData })
     end)
+  else
+    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC):Times(0)
   end
-  m.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS", gearStatus = m.subUnsubResponse })
+  m.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS", [pParam] = responseData })
   m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Do(function(_, data)
     m.setHashId(data.payload.hashID, pAppId)
@@ -270,7 +254,7 @@ end
 --! @parameters:
 --! pRPC: RPC for mobile request
 --! pResult: Result code for mobile response
---! pValue: value for parameters
+--! pValue: value for a request parameter
 --! @return: none
 --]]
 function m.processRPCFailure(pRPC, pResult, pValue)
@@ -283,9 +267,9 @@ end
 --[[ @invalidDataFromHMI: function for check case when HMI does respond with invalid data to VD RPCs
 --! @parameters:
 --! pRPC: RPC for mobile request
---! pData: data from HMI
---! pParam: parameters from GearStatus structure
---! pValue: value for parameters
+--! pData: data for HMI response
+--! pParam: parameter name from GearStatus structure
+--! pValue: value for a parameter from GearStatus structure
 --! @return: none
 --]]
 function m.invalidDataFromHMI(pRPC, pData, pParam, pValue)
@@ -301,18 +285,18 @@ end
 
 --[[ @sendOnVehicleData: Processing OnVehicleData RPC
 --! @parameters:
---! pData: parameters for the notification
+--! pData: parameter data for the notification
 --! pExpTime: expected number of notifications
---! pParam: parameters for OnVehicleData RPC
+--! pParam: parameter for OnVehicleData RPC
 --! pAppID: application number (1, 2, etc.)
 --! @return: none
 --]]
-function m.sendOnVehicleData(pData, pExpTime, pParam, pAppID)
+function m.sendOnVehicleData(pData, pExpTime, pParam, pAppId)
   if not pExpTime then pExpTime = 1 end
+  if not pAppId then pAppId = 1 end
   if not pParam then pParam = "gearStatus" end
-  if not pAppID then pAppID = 1 end
   m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", { [pParam] = pData })
-  m.getMobileSession(pAppID):ExpectNotification("OnVehicleData", { [pParam] = pData })
+  m.getMobileSession(pAppId):ExpectNotification("OnVehicleData", { [pParam] = pData })
   :Times(pExpTime)
 end
 
@@ -321,46 +305,26 @@ end
 --! @return: none
 --]]
 function m.ignitionOff()
-  config.ExitOnCrash = false
-  local timeout = 5000
-  local function removeSessions()
-    for i = 1, m.getAppsCount() do
-      m.deleteSession(i)
-    end
-  end
-  local event = events.Event()
-  event.matches = function(event1, event2) return event1 == event2 end
-  EXPECT_EVENT(event, "SDL shutdown")
-  :Do(function()
-    removeSessions()
-    StopSDL()
-    config.ExitOnCrash = true
-  end)
+  local isOnSDLCloseSent = false
   m.getHMIConnection():SendNotification("BasicCommunication.OnExitAllApplications", { reason = "SUSPEND" })
   m.getHMIConnection():ExpectNotification("BasicCommunication.OnSDLPersistenceComplete")
   :Do(function()
-    m.getHMIConnection():SendNotification("BasicCommunication.OnExitAllApplications",{ reason = "IGNITION_OFF" })
-    for i = 1, m.getAppsCount() do
-      m.getMobileSession(i):ExpectNotification("OnAppInterfaceUnregistered", { reason = "IGNITION_OFF" })
-    end
+    m.getHMIConnection():SendNotification("BasicCommunication.OnExitAllApplications", { reason = "IGNITION_OFF" })
+    m.getHMIConnection():ExpectNotification("BasicCommunication.OnSDLClose")
+    :Do(function()
+      isOnSDLCloseSent = true
+      SDL.DeleteFile()
+    end)
+    :Times(AtMost(1))
   end)
-  m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppUnregistered", { unexpectedDisconnect = false })
-  :Times(m.getAppsCount())
-  local isSDLShutDownSuccessfully = false
-  m.getHMIConnection():ExpectNotification("BasicCommunication.OnSDLClose")
+  m.wait(3000)
   :Do(function()
-    utils.cprint(35, "SDL was shutdown successfully")
-    isSDLShutDownSuccessfully = true
-    RAISE_EVENT(event, event)
-  end)
-  :Timeout(timeout)
-  local function forceStopSDL()
-    if isSDLShutDownSuccessfully == false then
-      utils.cprint(35, "SDL was shutdown forcibly")
-      RAISE_EVENT(event, event)
+    if isOnSDLCloseSent == false then m.cprint(35, "BC.OnSDLClose was not sent") end
+    if SDL:CheckStatusSDL() == SDL.RUNNING then SDL:StopSDL() end
+    for i = 1, m.getAppsCount() do
+      m.deleteSession(i)
     end
-  end
-  RUN_AFTER(forceStopSDL, timeout + 500)
+  end)
 end
 
 --[[ @unexpectedDisconnect: closing connection
@@ -374,29 +338,6 @@ function m.unexpectedDisconnect()
   utils.wait(1000)
 end
 
---[[ @checkResumption_FULL: function that checks HMI level resumption to FULL level
---! @parameters: none
---! @return: none
---]]
-function m.checkResumption_FULL()
-  m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", {})
-  :Do(function(_, data)
-    m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
-  end)
-  m.getMobileSession():ExpectNotification("OnHMIStatus",
-    { hmiLevel = "NONE" },
-    { hmiLevel = "FULL" })
-  :Times(2)
-end
-
---[[ @checkResumption_NONE: function that checks HMI level resumption to NONE level
---! @parameters: none
---! @return: none
---]]
-function m.checkResumption_NONE()
-  m.getMobileSession():ExpectNotification("OnHMIStatus",{ hmiLevel = "NONE" })
-end
-
 --[[ @registerAppWithResumption: Successful app registration with resumption
 --! @parameters:
 --! pAppId: application number (1, 2, etc.)
@@ -404,7 +345,7 @@ end
 --! isHMIsubscription: if true VD.SubscribeVehicleData request is expected on HMI, otherwise - not expected
 --! @return: none
 --]]
-function m.registerAppWithResumption(pAppId, pLevelCheckFunc, isHMIsubscription)
+function m.registerAppWithResumption(pAppId, isHMIsubscription)
   if not pAppId then pAppId = 1 end
   m.getMobileSession(pAppId):StartService(7)
   :Do(function()
@@ -413,10 +354,12 @@ function m.registerAppWithResumption(pAppId, pLevelCheckFunc, isHMIsubscription)
     m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered", {
       application = { appName = m.getConfigAppParams(pAppId).appName }
     })
-    :Do(function(_, data)
+    :Do(function()
       if true == isHMIsubscription then
         m.getHMIConnection():ExpectRequest( "VehicleInfo.SubscribeVehicleData", { gearStatus = true })
-        m.getHMIConnection():SendResponse( data.id, data.method, "SUCCESS", { gearStatus = m.subUnsubResponse } )
+        :Do(function(_, data)
+          m.getHMIConnection():SendResponse( data.id, data.method, "SUCCESS", { gearStatus = m.subUnsubResponse } )
+        end)
       else
         m.getHMIConnection():ExpectRequest( "VehicleInfo.SubscribeVehicleData"):Times(0)
       end
@@ -426,16 +369,6 @@ function m.registerAppWithResumption(pAppId, pLevelCheckFunc, isHMIsubscription)
       m.getMobileSession(pAppId):ExpectNotification("OnPermissionsChange")
     end)
   end)
-  pLevelCheckFunc(pAppId)
-end
-
---[[ @postcondition: Stop SDL and restore sdl_preloaded_pt.json file
---! @parameters: none
---! @return: none
---]]
-function m.postconditions()
-  actions.postconditions()
-  m.restorePreloadedPT()
 end
 
 return m

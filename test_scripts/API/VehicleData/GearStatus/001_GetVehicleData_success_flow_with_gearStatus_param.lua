@@ -22,7 +22,7 @@ common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
-common.Step("GetVehicleData for gearStatus param", common.getVehicleData, { common.gearStatusData })
+common.Step("GetVehicleData for gearStatus param", common.getVehicleData, { common.getGearStatusParams() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

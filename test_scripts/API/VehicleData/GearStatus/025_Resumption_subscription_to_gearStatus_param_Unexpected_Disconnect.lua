@@ -34,8 +34,8 @@ common.Step("App subscribes to gearStatus data", common.subUnScribeVD, { "Subscr
 common.Title("Test")
 common.Step("Unexpected disconnect", common.unexpectedDisconnect)
 common.Step("Connect mobile", common.connectMobile)
-common.Step("Re-register App with data resumption", common.registerAppWithResumption, { appId, common.checkResumption_FULL, isSubscribed })
-common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.gearStatusData })
+common.Step("Re-register App with data resumption", common.registerAppWithResumption, { appId, isSubscribed })
+common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.getGearStatusParams() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

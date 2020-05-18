@@ -42,20 +42,15 @@ common.Step("Register App1", common.registerAppWOPTU)
 common.Step("Register App2", common.registerAppWOPTU, { appId2 })
 common.Step("Activate App1", common.activateApp)
 common.Step("Activate App2", common.activateApp, { appId2 })
-common.Step("App1 subscribes to gearStatus data", common.subscribeVD2Apps, { isExpectedSubscribeVDonHMI })
-common.Step("App2 subscribes to gearStatus data", common.subscribeVD2Apps, { notExpectedSubscribeVDonHMI, appId2 })
+common.Step("App1 subscribes to gearStatus data", common.subUnScribeVD, { "SubscribeVehicleData", _, _, isExpectedSubscribeVDonHMI })
+common.Step("App2 subscribes to gearStatus data", common.subUnScribeVD, { "SubscribeVehicleData", _, _, notExpectedSubscribeVDonHMI, appId2 })
 common.Step("Unexpected disconnect", common.unexpectedDisconnect)
 common.Step("Connect mobile", common.connectMobile)
 
 common.Title("Test")
-common.Step("Re-register App1 with data resumption", common.registerAppWithResumption,
-  { appId1, common.checkResumption_NONE, isSubscribed })
-
-common.Step("Re-register App2 with data resumption", common.registerAppWithResumption,
-  { appId2, common.checkResumption_FULL, notSubscribed })
-
-common.Step("Activate App1", common.activateApp)
-common.Step("OnVehicleData with gearStatus data", OnVehicleData2Apps, { common.gearStatusData })
+common.Step("Re-register App1 with data resumption", common.registerAppWithResumption, { appId1, isSubscribed })
+common.Step("Re-register App2 with data resumption", common.registerAppWithResumption, { appId2, notSubscribed })
+common.Step("OnVehicleData with gearStatus data", OnVehicleData2Apps, { common.getGearStatusParams() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

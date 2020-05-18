@@ -29,9 +29,9 @@ common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
-common.Step("GetVehicleData for gearStatus", common.getVehicleData, { common.gearStatusData })
+common.Step("GetVehicleData for gearStatus", common.getVehicleData, { common.getGearStatusParams() })
 common.Step("App subscribes to gearStatus data", common.subUnScribeVD, { "SubscribeVehicleData" })
-common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.gearStatusData })
+common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.getGearStatusParams() })
 common.Step("App unsubscribes from gearStatus data", common.subUnScribeVD, { "UnsubscribeVehicleData" })
 
 common.Title("Postconditions")

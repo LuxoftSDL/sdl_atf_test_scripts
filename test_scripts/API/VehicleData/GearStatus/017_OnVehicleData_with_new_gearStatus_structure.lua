@@ -23,7 +23,7 @@ common.Step("Activate App", common.activateApp)
 common.Step("App subscribes to gearStatus data", common.subUnScribeVD, { "SubscribeVehicleData" })
 
 common.Title("Test")
-common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.gearStatusData })
+common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.getGearStatusParams() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

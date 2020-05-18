@@ -23,7 +23,7 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
-common.Step("App sends GetVehicleData for gearStatus", common.getVehicleData, { common.gearStatusData })
+common.Step("App sends GetVehicleData for gearStatus", common.getVehicleData, { common.getGearStatusParams() })
 
 common.Title("Test")
 common.Step("PTU is performed, gearStatus is unassigned for the app", common.policyTableUpdate, { common.pTUpdateFunc })

@@ -29,11 +29,11 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
 common.Step("App subscribes to gearStatus data", common.subUnScribeVD, { "SubscribeVehicleData" })
-common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.gearStatusData })
+common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.getGearStatusParams() })
 
 common.Title("Test")
 common.Step("App unsubscribes from gearStatus data", common.subUnScribeVD, { "UnsubscribeVehicleData" })
-common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.gearStatusData, notExpected })
+common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.getGearStatusParams(), notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

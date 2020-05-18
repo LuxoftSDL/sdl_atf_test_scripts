@@ -35,11 +35,11 @@ common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
-for p in pairs(common.gearStatusData) do
+for p in pairs(common.getGearStatusParams()) do
   common.Title("Check for " .. p .. " parameter")
   for k, v in pairs(invalidValue) do
     common.Step("HMI sends response with " ..k .. " for ".. p, common.invalidDataFromHMI,
-      { "GetVehicleData", common.gearStatus(), p, v } )
+      { "GetVehicleData", common.getGearStatusParams(), p, v } )
   end
 end
 common.Step("HMI sends response with empty gearStatus structure", common.invalidDataFromHMI, { "GetVehicleData", emptyStructure })

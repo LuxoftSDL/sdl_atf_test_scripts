@@ -35,7 +35,7 @@ common.Step("App subscribes to gearStatus data", common.subUnScribeVD, { "Subscr
 common.Title("Test")
 common.Step("PTU is performed, gearStatus is unassigned for the app", common.policyTableUpdate, { common.pTUpdateFunc })
 common.Step("SubscribeVehicleData for gearStatus DISALLOWED", common.processRPCFailure, { "SubscribeVehicleData", "DISALLOWED" })
-common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.gearStatusData, notExpected })
+common.Step("OnVehicleData with gearStatus data", common.sendOnVehicleData, { common.getGearStatusParams(), notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
