@@ -35,6 +35,14 @@ local function reregisterApp()
       common.getMobileSession():ExpectNotification("OnPermissionsChange")
       :Times(AnyNumber())
       end)
+    common.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp")
+    :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS")
+      end)
+    common.getMobileSession():ExpectNotification("OnHMIStatus",
+    { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" },
+    { hmiLevel = "FULL", audioStreamingState = "AUDIBLE", systemContext = "MAIN" })
+    :Times(2)
     end)
   common.wait(common.timeout)
 end
