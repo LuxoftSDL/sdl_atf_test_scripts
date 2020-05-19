@@ -53,7 +53,7 @@ common.Step("Subscribe on " .. vdNameDisallowed .. " VehicleData, " ..
   vdNameDisallowed .. " is not allowed by policies",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponse, mobileResponse })
 common.Step("Ignore OnVehicleData with " .. vdNameDisallowed .. " data",
-  common.checkNotificationIgnored, { vdNameDisallowed })
+  common.checkNotificationIgnored, {{ vdNameDisallowed }})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)
