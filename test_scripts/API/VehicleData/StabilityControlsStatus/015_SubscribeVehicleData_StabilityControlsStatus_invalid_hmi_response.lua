@@ -77,27 +77,27 @@ common.Title("Test")
 common.Step("Subscribe on VehicleData, invalid HMI response: empty structure",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponseEmpty, mobileResponse })
 common.Step("Ignore OnVehicleData with " .. vdNameInvalidRes .. " data",
-  common.checkNotificationIgnored, { vdNameInvalidRes })
+  common.checkNotificationIgnored, {{ vdNameInvalidRes }})
 
 common.Step("Subscribe on VehicleData, invalid HMI response: invalid values",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponseInvalidValues, mobileResponse })
 common.Step("Ignore OnVehicleData with " .. vdNameInvalidRes .. " data",
-  common.checkNotificationIgnored, { vdNameInvalidRes })
+  common.checkNotificationIgnored, {{ vdNameInvalidRes }})
 
 common.Step("Subscribe on VehicleData, invalid HMI response: incorrect type",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponseIncorrectType, mobileResponse })
 common.Step("Ignore OnVehicleData with " .. vdNameInvalidRes .. " data",
-  common.checkNotificationIgnored, { vdNameInvalidRes })
+  common.checkNotificationIgnored, {{ vdNameInvalidRes }})
 
 common.Step("Subscribe on VehicleData, invalid HMI response: not a structure",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponseNotAStructure, mobileResponse })
 common.Step("Ignore OnVehicleData with " .. vdNameInvalidRes .. " data",
-  common.checkNotificationIgnored, { vdNameInvalidRes })
+  common.checkNotificationIgnored, {{ vdNameInvalidRes }})
 
 common.Step("Subscribe on VehicleData, invalid HMI response: structure is absent",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponseAbsent, mobileResponseAbsent })
 common.Step("Ignore OnVehicleData with " .. vdNameInvalidRes .. " data",
-  common.checkNotificationIgnored, { vdNameInvalidRes })
+  common.checkNotificationIgnored, {{ vdNameInvalidRes }})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)

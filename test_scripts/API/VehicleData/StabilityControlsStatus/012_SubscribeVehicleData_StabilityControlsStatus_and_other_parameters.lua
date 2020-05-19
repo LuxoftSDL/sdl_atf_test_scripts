@@ -57,9 +57,9 @@ common.Title("Test")
 common.Step("Subscribe on " .. vdName1 .. " and " .. vdName2 .. " VehicleData",
   common.processSubscribeVD, { mobileRequest, hmiRequest, hmiResponse, mobileResponse })
 common.Step("Expect OnVehicleData with " .. vdName2 .. " data",
-  common.checkNotificationSuccess, { vdName2 })
+  common.checkNotificationSuccess, {{ vdName2 }})
 common.Step("Expect OnVehicleData with " .. vdName1 .. " data",
-  common.checkNotificationSuccess, { vdName1 })
+  common.checkNotificationSuccess, {{ vdName1 }})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)
