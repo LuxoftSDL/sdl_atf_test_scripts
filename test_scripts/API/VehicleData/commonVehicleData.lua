@@ -312,6 +312,22 @@ function m.ptUpdateMin(pTbl)
   pTbl.policy_table.vehicle_data = nil
 end
 
+function m.getSubscribeVehicleDataHmiResponse(pResult, pName)
+  return { resultCode = pResult, dataType = m.allVehicleData[pName].type }
+end
+
+function m.processSubscribeVD(pMobileRequest, pHmiRequest, pHmiResponse, pMobileResponse)
+  local mobileSession = m.getMobileSession()
+  local hmiConnection = m.getHMIConnection()
+  local cid = mobileSession:SendRPC("SubscribeVehicleData", pMobileRequest)
+  hmiConnection:ExpectRequest("VehicleInfo.SubscribeVehicleData", pHmiRequest)
+  :Times(next(pHmiRequest) and 1 or 0)
+  :Do(function(_, data)
+      hmiConnection:SendResponse(data.id, data.method, "SUCCESS", pHmiResponse)
+    end)
+  mobileSession:ExpectResponse(cid, pMobileResponse)
+end
+
 function m.processRPCSubscriptionSuccess(pRpcName, pData)
   local reqParams = {}
   local respData = {}
