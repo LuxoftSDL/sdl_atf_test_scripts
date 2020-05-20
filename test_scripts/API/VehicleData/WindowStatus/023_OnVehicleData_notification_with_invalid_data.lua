@@ -13,6 +13,7 @@
 --    - invalid parameter type
 --    - missing mandatory parameter
 --    - value out of bounds
+--    - empty structures
 -- SDL does:
 --  a) ignore this notification.
 --  b) not send OnVehicleData notification to mobile.
@@ -102,7 +103,8 @@ local invalidParam = {
       state = { approximatePosition = 50, deviation = 50 }
     }
   },
-  ["array_greater_max_size"] = maxArraySize
+  ["array_greater_max_size"] = maxArraySize,
+  ["empty_array"] = {}
 }
 
 local notExpected = 0

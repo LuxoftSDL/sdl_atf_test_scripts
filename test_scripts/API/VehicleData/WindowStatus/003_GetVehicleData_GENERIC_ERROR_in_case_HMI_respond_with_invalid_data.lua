@@ -13,6 +13,7 @@
 --    - invalid parameter type
 --    - missing mandatory parameter
 --    - value out of bounds
+--    - empty structures
 -- SDL does:
 --  a) respond GENERIC_ERROR to mobile after receiving invalid HMI response
 ---------------------------------------------------------------------------------------------------
@@ -100,7 +101,8 @@ local invalidParam = {
       state = common.getWindowStatusParams()[1].state
     }
   },
-  ["array_greater_max_size"] = maxArraySize
+  ["array_greater_max_size"] = maxArraySize,
+  ["empty_array"] = {}
 }
 
 --[[ Scenario ]]
