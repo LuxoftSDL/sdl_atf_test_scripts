@@ -133,6 +133,7 @@ end
 --[[ @preconditions: Clean environment, optional backup and update of sdl_preloaded_pt.json file
 --! @parameters:
 --! isPreloadedUpdate: if omitted or true then sdl_preloaded_pt.json file will be updated, otherwise - false
+--! pGroup: table with additional updates for preloaded file
 --! @return: none
 --]]
 function m.preconditions(isPreloadedUpdate, pGroup)
@@ -283,7 +284,7 @@ function m.invalidDataFromHMI(pRPC, pData)
   m.getMobileSession():ExpectResponse(cid, { success = false, resultCode = "GENERIC_ERROR" })
 end
 
---[[ @subUnScribeVD: Processing Subscribe/UnsubscribeVehicleData RPC
+--[[ @processSubscriptionRPC: Processing Subscribe/UnsubscribeVehicleData RPC
 --! @parameters:
 --! pRPC: RPC for mobile request
 --! pAppId: application number (1, 2, etc.)
@@ -405,7 +406,7 @@ function m.registerAppWithResumption(pAppId, isHMIsubscription)
         m.getHMIConnection():ExpectRequest( "VehicleInfo.SubscribeVehicleData", { gearStatus = true })
         :Do(function(_, data)
           m.getHMIConnection():SendResponse( data.id, data.method, "SUCCESS",
-            { gearStatus = m.getGearStatusSubscriptionResData } )
+            { gearStatus = m.getGearStatusSubscriptionResData() } )
         end)
       else
         m.getHMIConnection():ExpectRequest( "VehicleInfo.SubscribeVehicleData"):Times(0)

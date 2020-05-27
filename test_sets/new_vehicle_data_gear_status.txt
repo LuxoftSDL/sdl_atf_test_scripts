@@ -20,8 +20,8 @@
 ./test_scripts/API/VehicleData/GearStatus/020_UnsubscribeVD_for_two_Apps.lua
 ./test_scripts/API/VehicleData/GearStatus/021_OnVehicleData_with_gearStatus_data.lua
 ./test_scripts/API/VehicleData/GearStatus/022_OnVehicleData_with_only_one_param_in_gearStatus_structure.lua
-;./test_scripts/API/VehicleData/GearStatus/023_OnVehicleData_Disallowed_by_policies_Ignored_flow.lua https://github.com/smartdevicelink/sdl_core/issues/3309
-;./test_scripts/API/VehicleData/GearStatus/024_OnVehicleData_Disallowed_after_PTU.lua https://github.com/smartdevicelink/sdl_core/issues/3309
+;./test_scripts/API/VehicleData/GearStatus/023_OnVehicleData_Disallowed_by_policies_Ignored_flow.lua https://github.com/smartdevicelink/sdl_core/issues/3365
+;./test_scripts/API/VehicleData/GearStatus/024_OnVehicleData_Disallowed_after_PTU.lua https://github.com/smartdevicelink/sdl_core/issues/3365
 ;./test_scripts/API/VehicleData/GearStatus/025_OnVehicleData_notification_with_invalid_data.lua https://github.com/smartdevicelink/sdl_core/issues/3368
 ./test_scripts/API/VehicleData/GearStatus/026_App_version_is_less_than_gearStatus_param_version.lua
 ./test_scripts/API/VehicleData/GearStatus/027_App_version_is_equal_to_gearStatus_param_version.lua
