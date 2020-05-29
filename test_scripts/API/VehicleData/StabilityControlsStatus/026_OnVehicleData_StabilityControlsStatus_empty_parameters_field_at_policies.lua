@@ -1,19 +1,19 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0253-New-vehicle-data-StabilityControlsStatus.md
 --
--- Description: OnVehicleData notification with StabilityControlsStatus parameter is NOT allowed by Policies
+-- Description: OnVehicleData notification with StabilityControlsStatus and
+--   "parameters" field is empty at PolicyTable for this notification
 --
 -- Precondition:
 -- 1) SDL and HMI are started
 -- 2) App is registered
--- 3) PTU is successfully performed, StabilityControlsStatus is NOT allowed by Policies for OnVehicleData notification
+-- 3) PTU is successfully performed, "parameters" field is empty at PolicyTable for OnVehicleData notification
 -- 4) App is activated
--- 5) App is subscribed on StabilityControlsStatus and gps parameters
+-- 5) App is subscribed on StabilityControlsStatus parameter
 --
 -- Steps:
--- 1) HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus and gps
---    SDL doesn't send OnVehicleData notification with received from HMI StabilityControlsStatus data to App
---    SDL sends OnVehicleData notification with received from HMI gps data to App
+-- 1) HMI sends VehicleInfo.OnVehicleData notification with StabilityControlsStatus
+--    SDL doesn't send OnVehicleData notification with received from HMI data to App
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/VehicleData/commonVehicleData')
@@ -26,9 +26,7 @@ function ptUpdate(pTbl)
     "stabilityControlsStatus",
     "gps"
   }
-  grp.rpcs.OnVehicleData.parameters = {
-    "gps"
-  }
+  grp.rpcs.OnVehicleData.parameters = common.EMPTY_ARRAY
   pTbl.policy_table.vehicle_data = nil
 end
 
@@ -40,11 +38,11 @@ common.Step("Register App1", common.registerApp)
 common.Step("PTU", common.policyTableUpdate, { ptUpdate })
 common.Step("Activate App1", common.activateApp)
 common.Step("Subscribe on StabilityControlsStatus VehicleData", common.processRPCSubscriptionSuccess,
-  { "SubscribeVehicleData", { "stabilityControlsStatus", "gps" }})
+  { "SubscribeVehicleData", { "stabilityControlsStatus" }})
 
 common.Title("Test")
-common.Step("Ignore OnVehicleData with StabilityControlsStatus", common.checkNotificationPartiallyIgnored, 
-  {{ "gps" }, { "stabilityControlsStatus" }})
+common.Step("Ignore OnVehicleData with StabilityControlsStatus", common.checkNotificationIgnored, 
+  {{ "stabilityControlsStatus" }})
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore environment", common.postconditions)
