@@ -44,6 +44,8 @@ common.Step("Send Alert" , common.rpcs.Alert,
   { 14000, 8000, common.withoutResponseWithOnResetTimeout, paramsForRespFunction, rpcResponse })
 common.Step("Send Slider" , common.rpcs.Slider,
   { 12000, 6000, common.withoutResponseWithOnResetTimeout, paramsForRespFunction, rpcResponse })
+
+common.Step("Module allocation for App_1" , common.rpcAllowed, { "CLIMATE", 1, "SetInteriorVehicleData" })
 common.Step("App_2 activation", common.activateApp, { 2 })
 common.Step("Send SetInteriorVehicleData with consent" , common.rpcs.rpcAllowedWithConsent,
   { 11000, 5000, common.withoutResponseWithOnResetTimeout, paramsForRespFunction, rpcResponse})
