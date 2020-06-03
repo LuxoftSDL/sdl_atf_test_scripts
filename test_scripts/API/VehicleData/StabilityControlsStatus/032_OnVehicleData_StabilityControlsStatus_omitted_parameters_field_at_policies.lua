@@ -26,6 +26,7 @@ function ptUpdate(pTbl)
   pTbl.policy_table.app_policies[common.getConfigAppParams().fullAppID].groups = { "Base-4", "Emergency-1" }
   local grp = pTbl.policy_table.functional_groupings["Emergency-1"]
   grp.rpcs.SubscribeVehicleData.parameters = vehicle_data_items
+  grp.rpcs.OnVehicleData.parameters = nil
   pTbl.policy_table.vehicle_data = nil
 end
 
