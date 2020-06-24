@@ -30,7 +30,7 @@ common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = {
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT,
-  { appSessionId, appHMIType })
+  { appSessionId, { appHMIType }})
 common.Step("Start SDL, HMI, connect Mobile", common.start)
 
 common.Title("Test")
