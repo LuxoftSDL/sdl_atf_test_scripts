@@ -49,7 +49,7 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Add certificates for WS Server in smartDeviceLink.ini file", common.addAllCertInIniFile)
-common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT, { appSessionId, appHMIType })
+common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT, { appSessionId, { appHMIType }})
 common.Step("Start SDL, HMI", common.startWOdeviceConnect)
 common.Step("Connect WebEngine device", common.connectWebEngine, { appSessionId, config.defaultMobileAdapterType })
 

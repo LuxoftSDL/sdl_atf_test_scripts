@@ -106,7 +106,7 @@ function common.updatePreloadedPT(pAppId, pAppHMIType)
   local preloadedTable = common.getPreloadedPT()
   local appId = config["application" .. pAppId].registerAppInterfaceParams.fullAppID
   local appPermissions = common.cloneTable(preloadedTable.policy_table.app_policies.default)
-  appPermissions.AppHMIType = { pAppHMIType }
+  appPermissions.AppHMIType = pAppHMIType
   appPermissions.enabled = true
   appPermissions.transportType = "WS"
   appPermissions.hybridAppPreference = "CLOUD"
