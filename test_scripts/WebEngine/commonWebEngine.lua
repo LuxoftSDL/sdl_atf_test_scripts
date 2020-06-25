@@ -106,12 +106,24 @@ function common.updatePreloadedPT(pAppId, pAppHMIType)
   local preloadedTable = common.getPreloadedPT()
   local appId = config["application" .. pAppId].registerAppInterfaceParams.fullAppID
   local appPermissions = common.cloneTable(preloadedTable.policy_table.app_policies.default)
+  local WidgetSupport = {
+    rpcs = {
+      CreateWindow = {
+        hmi_levels = { "NONE", "BACKGROUND", "LIMITED", "FULL" }
+      },
+      DeleteWindow = {
+        hmi_levels = { "NONE", "BACKGROUND", "LIMITED", "FULL" }
+      }
+    }
+  }
   appPermissions.AppHMIType = pAppHMIType
   appPermissions.enabled = true
   appPermissions.transportType = "WS"
   appPermissions.hybridAppPreference = "CLOUD"
   preloadedTable.policy_table.app_policies[appId] = appPermissions
+  preloadedTable.policy_table.app_policies[appId].groups = { "Base-4", "WidgetSupport" }
   preloadedTable.policy_table.functional_groupings["DataConsent-2"].rpcs = common.null
+  preloadedTable.policy_table.functional_groupings["WidgetSupport"] = WidgetSupport
   common.setPreloadedPT(preloadedTable)
 end
 
@@ -180,6 +192,48 @@ function common.processRPCSuccess(pAppId, pRPC, pData)
   local mobileSession = common.getMobileSession(pAppId)
   local cid = mobileSession:SendRPC(pRPC, pData)
   mobileSession:ExpectResponse(cid, responseParams)
+end
+
+function common.createWindow(pParams, pAppId)
+  local params = common.cloneTable(pParams)
+  if not pAppId then pAppId = 1 end
+  local cid = common.getMobileSession(pAppId):SendRPC("CreateWindow", params)
+  params.appID = common.getHMIAppId(pAppId)
+  common.getHMIConnection():ExpectRequest("UI.CreateWindow", params)
+  :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  common.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
+  :Do(function()
+      local paramsToSDL = common.getOnSystemCapabilityParams()
+      paramsToSDL.appID = common.getHMIAppId(pAppId)
+      common.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", paramsToSDL)
+      common.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated", common.getOnSystemCapabilityParams())
+    end)
+  common.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",
+    { hmiLevel = "NONE", windowID = params.windowID })
+end
+
+local function checkAbsenceOfOnHMIStatusForOtherApps(pAppId)
+  for i = 1, common.getAppsCount() do
+    if i ~= pAppId then
+      common.getMobileSession(i):ExpectNotification("OnHMIStatus")
+      :Times(0)
+    end
+  end
+end
+
+function common.activateWidgetFromNoneToFULL(pId, pAppId)
+  if not pAppId then pAppId = 1 end
+  common.getHMIConnection():SendNotification("BasicCommunication.OnAppActivated",
+    { appID = common.getHMIAppId(pAppId), windowID = pId })
+  common.getHMIConnection():SendNotification("BasicCommunication.OnAppActivated",
+    { appID = common.getHMIAppId(pAppId), windowID = pId })
+  common.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",
+    { hmiLevel = "BACKGROUND", windowID = pId},
+    { hmiLevel = "FULL", windowID = pId })
+  :Times(2)
+  checkAbsenceOfOnHMIStatusForOtherApps(pAppId)
 end
 
 function common.ignitionOff()
