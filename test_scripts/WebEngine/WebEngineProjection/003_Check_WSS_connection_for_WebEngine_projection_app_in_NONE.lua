@@ -29,10 +29,9 @@ local appHMIType = "WEB_VIEW"
 
 --[[ General configuration parameters ]]
 config.application1.registerAppInterfaceParams.appHMIType = { appHMIType }
-config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
-config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
+config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
+config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 config.defaultMobileAdapterType = "WSS"
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 
 --[[ Local Functions ]]
 local function deactivateAppToNoneAndCheckConnection()
@@ -51,7 +50,7 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Add certificates for WS Server in smartDeviceLink.ini file", common.addAllCertInIniFile)
 common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT, { appSessionId, { appHMIType }})
 common.Step("Start SDL, HMI", common.startWOdeviceConnect)
-common.Step("Connect WebEngine device", common.connectWebEngine, { appSessionId, config.defaultMobileAdapterType })
+common.Step("Connect WebEngine device", common.connectWebEngine, { appSessionId, "WSS" })
 
 common.Title("Test")
 common.Step("Register App without PTU", common.registerAppWOPTU, { appSessionId })
