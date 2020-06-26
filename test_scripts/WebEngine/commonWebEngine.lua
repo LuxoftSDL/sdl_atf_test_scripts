@@ -52,6 +52,7 @@ common.getHMIAppId = actions.getHMIAppId
 common.createSession = actions.mobile.createSession
 common.getParams = actions.app.getParams
 common.getAppDataForPTU = actions.getAppDataForPTU
+common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 
 --[[ Local Variables ]]
 common.defaultAppProperties = {
