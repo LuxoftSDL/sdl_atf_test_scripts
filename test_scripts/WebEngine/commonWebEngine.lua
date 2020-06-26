@@ -121,7 +121,7 @@ function common.rejectedRegisterApp(pAppSessionId)
   :Do(function()
       local corId = session:SendRPC("RegisterAppInterface", common.getParams(pAppSessionId))
       common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered"):Times(0)
-      session:ExpectResponse(corId, { success = false, resultCode = "REJECTED" })
+      session:ExpectResponse(corId, { success = false, resultCode = "DISALLOWED" })
   end)
 end
 
