@@ -5,3 +5,4 @@
 ./test_scripts/WebEngine/WebEngineProjection/005_OnExitApplication_RESOURCE_CONSTRAINT_unregister.lua
 ./test_scripts/WebEngine/WebEngineProjection/006_Registration_reject_WEB_VIEW_when_PT_is_empty.lua
 ./test_scripts/WebEngine/WebEngineProjection/007_Registration_reject_WEB_VIEW_is_absent_in_PT.lua
+./test_scripts/WebEngine/WebEngineProjection/008_Registration_appHMIType_is_array.lua
