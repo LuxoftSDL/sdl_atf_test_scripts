@@ -22,10 +22,9 @@ local appSessionId = 1
 local appHMIType = "WEB_VIEW"
 
 --[[ General test configuration ]]
-config.defaultMobileAdapterType = "WS"
 config.application1.registerAppInterfaceParams.appHMIType = { appHMIType }
-config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
-config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
+config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
+config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 
 --[[ Local Functions ]]
 local function onExitApp()
@@ -50,7 +49,7 @@ common.Step("Start SDL, HMI", common.startWOdeviceConnect)
 
 common.Title("Test")
 common.Step("Connect WebEngine device", common.connectWebEngine,
-  { appSessionId, config.defaultMobileAdapterType })
+  { appSessionId, "WS" })
 common.Step("Register App without PTU", common.registerAppWOPTU, { appSessionId })
 common.Step("OnExitApplication", onExitApp)
 

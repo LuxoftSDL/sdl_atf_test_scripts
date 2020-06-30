@@ -24,8 +24,6 @@ local appHMIType = { "WEB_VIEW", "MEDIA" }
 config.application1.registerAppInterfaceParams.appHMIType = appHMIType
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
-config.defaultMobileAdapterType = "WS"
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 
 --[[ Scenario ]]
 common.Title("Preconditions")

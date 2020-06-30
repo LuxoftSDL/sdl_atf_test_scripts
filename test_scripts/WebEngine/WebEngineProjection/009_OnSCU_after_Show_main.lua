@@ -1,22 +1,22 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
--- Description:
--- Check that SDL forwards OnSystemCapabilityUpdated notification 
--- to the WebEngine projection app 
+-- Description: Check that SDL transfers `OnSystemCapabilitiesUpdated` notification from HMI to the WEB_VIEW App
+-- if App sent `Show` RPC with `templateConfiguration` parameter for main window
 --
--- Precondition:
--- 1. SDL and HMI are started
--- 2. WebEngine device is connected to SDL
---
--- Sequence:
--- 1. WebEngine projection application tries to register
---  a. SDL proceed with `RAI` request successfully
---  b. SDL not send `OnSystemCapabilityUpdated` to the WebEngine projection app
--- 2. HMI sends `OnSystemCapabilityUpdated` to SDL
---  a. SDL transfers `OnSystemCapabilityUpdated` notification to the WebEngine projection app
+-- Preconditions:
+-- 1) SDL and HMI are started
+-- 2) WebEngine App with WEB_VIEW HMI type is registered
+-- Steps:
+-- 1) App sends `Show` request with `templateConfiguration` for main window (windowID is not defined)
+-- SDL does:
+--  - proceed with `Show` request successfully
+--  - not send `OnSystemCapabilityUpdated` to App
+-- 2) HMI sends `OnSystemCapabilityUpdated` to SDL
+-- SDL does:
+--  - transfer `OnSystemCapabilityUpdated` notification to App
 ---------------------------------------------------------------------------------------------------
--- [[ Required Shared Libraries ]]
+--[[ Required Shared libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Local Variables ]]
@@ -29,9 +29,21 @@ config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 
 --[[ Local Functions ]]
-local function sendRegisterApp()
-  common.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated"):Times(0)
-  common.registerAppWOPTU(appSessionId)
+local function sendShow()
+  local showParams = {
+    mainField1 = "MainField1",
+    templateConfiguration = {
+      template = "MEDIA"
+    }
+  }
+  local cid = common.getMobileSession():SendRPC("Show", showParams)
+  common.getHMIConnection():ExpectRequest("UI.Show")
+  :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
+  common.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated")
+  :Times(0)
 end
 
 local function sendOnSCU()
@@ -48,11 +60,12 @@ common.Step("Update WS Server Certificate parameters in smartDeviceLink.ini file
 common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT, { appSessionId, { appHMIType }})
 common.Step("Start SDL, HMI", common.startWOdeviceConnect)
 common.Step("Connect WebEngine device", common.connectWebEngine, { appSessionId, "WS" })
+common.Step("Register App without PTU", common.registerAppWOPTU, { appSessionId })
+common.Step("Activate web app", common.activateApp, { appSessionId })
 
 common.Title("Test")
-common.Step("App sends RAI RPC no OnSCU notification", sendRegisterApp)
-common.Step("HMI sends OnSCU notification", sendOnSCU)
+common.Step("App sends Show RPC no OnSystemCapabilitiesUpdated notification", sendShow)
+common.Step("HMI sends OnSystemCapabilitiesUpdated notification", sendOnSCU)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-
