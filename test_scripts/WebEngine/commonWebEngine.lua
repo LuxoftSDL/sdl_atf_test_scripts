@@ -115,7 +115,7 @@ function common.updatePreloadedPT(pAppId, pAppHMIType)
   common.setPreloadedPT(preloadedTable)
 end
 
-function common.rejectedRegisterApp(pAppSessionId)
+function common.disallowedRegisterApp(pAppSessionId)
   local session = common.createSession(pAppSessionId)
   session:StartService(7)
   :Do(function()
@@ -263,6 +263,7 @@ function common.preconditions()
   else
     common.commentAllCertInIniFile()
   end
+  common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 end
 
 function common.postconditions()
@@ -506,6 +507,12 @@ function common.verifyPTSnapshot(appProperties, appPropExpected)
 
   if string.len(msg) > 0 then
     common.failTestStep("PTS is incorrect\n".. msg)
+  end
+end
+
+function common.setupRAIParams(pAppId, params)
+  for key, value in pairs(params) do
+    config["application" .. pAppId].registerAppInterfaceParams[key] = value
   end
 end
 
