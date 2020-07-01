@@ -16,6 +16,7 @@
 ---------------------------------------------------------------------------------------------------
 --[[ General configuration parameters ]]
 config.defaultMobileAdapterType = "WS"
+
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
@@ -30,14 +31,9 @@ local appsRAIParams = {
   }
 }
 
-local function updatePreloadedPT(pAppId, pAppHMIType)
+local function updatePreloadedPT(pAppId)
   local preloadedTable = common.getPreloadedPT()
   local appId = config["application" .. pAppId].registerAppInterfaceParams.fullAppID
-  local appPermissions = common.cloneTable(preloadedTable.policy_table.app_policies.default)
-  appPermissions.AppHMIType = pAppHMIType 
-  appPermissions.enabled = true
-  appPermissions.transportType = "WS"
-  appPermissions.hybridAppPreference = "CLOUD"
   preloadedTable.policy_table.app_policies[appId] = common.null
   preloadedTable.policy_table.functional_groupings["DataConsent-2"].rpcs = common.null
   common.setPreloadedPT(preloadedTable)

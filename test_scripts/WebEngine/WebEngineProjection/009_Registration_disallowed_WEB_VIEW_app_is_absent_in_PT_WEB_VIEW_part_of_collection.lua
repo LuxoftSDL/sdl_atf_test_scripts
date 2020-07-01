@@ -9,7 +9,7 @@
 -- 1. SDL and HMI are started
 -- 2. WebEngine device is connected to SDL
 -- 3. PT contains record for App1 and no record for App2
-
+--
 -- Sequence:
 -- 1. App1 tries to register with WEB_VIEW appHMIType 
 --  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
@@ -17,13 +17,13 @@
 
 --[[ General configuration parameters ]]
 config.defaultMobileAdapterType = "WS"
+
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Local Variables ]]
 local appSessionId = 1
 local appNotInPTSessionId = 2
-local numberOfApplications = 2
 local appHMIType = { "MEDIA", "WEB_VIEW" }
 local appsRAIParams = {
   appHMIType = appHMIType,
@@ -43,7 +43,7 @@ common.Step("Prepare preloaded policy table", common.updatePreloadedPT,
 common.Step("Start SDL, HMI, connect Mobile", common.start)
 
 common.Title("Test")
-common.Step("Registration of App1, no record in policy", common.disallowedRegisterApp, { appNotInPTSessionId })
+common.Step("Registration of App2, no record in policy", common.disallowedRegisterApp, { appNotInPTSessionId })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
