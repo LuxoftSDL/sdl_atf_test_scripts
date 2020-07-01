@@ -10,6 +10,7 @@ local test = require("user_modules/dummy_connecttest")
 local commonPreconditions = require('user_modules/shared_testcases/commonPreconditions')
 
 --[[ Test Configuration ]]
+runner.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 runner.testSettings.isSelfIncluded = false
 config.defaultProtocolVersion = 2
 
@@ -52,7 +53,8 @@ common.getHMIAppId = actions.getHMIAppId
 common.createSession = actions.mobile.createSession
 common.getParams = actions.app.getParams
 common.getAppDataForPTU = actions.getAppDataForPTU
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
+common.cleanSessions = actions.mobile.closeSession
+common.spairs = utils.spairs
 
 --[[ Local Variables ]]
 common.defaultAppProperties = {
@@ -668,6 +670,128 @@ end
 function common.setupRAIParams(pAppId, params)
   for key, value in pairs(params) do
     config["application" .. pAppId].registerAppInterfaceParams[key] = value
+  end
+end
+
+common.userActions = {
+  activateApp = {
+    name = "Activation",
+    func = function(pAppId)
+      local requestId = common.getHMIConnection():SendRequest("SDL.ActivateApp", {
+        appID = common.getHMIAppId(pAppId) })
+      common.getHMIConnection():ExpectResponse(requestId)
+    end
+  },
+ deactivateApp = {
+    name = "De-activation",
+    func = function(pAppId)
+      common.getHMIConnection():SendNotification("BasicCommunication.OnAppDeactivated", {
+        appID = common.getHMIAppId(pAppId) })
+    end
+  },
+  deactivateHMI = {
+    name = "HMI De-activation",
+    func = function()
+      common.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged", {
+        eventName = "DEACTIVATE_HMI",
+        isActive = true })
+    end
+  },
+  activateHMI = {
+    name = "HMI Activation",
+    func = function()
+      common.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged", {
+        eventName = "DEACTIVATE_HMI",
+        isActive = false })
+    end
+  },
+  exitApp = {
+    name = "User Exit",
+    func = function(pAppId)
+      common.getHMIConnection():SendNotification("BasicCommunication.OnExitApplication", {
+        appID = common.getHMIAppId(pAppId),
+        reason = "USER_EXIT" })
+    end
+  },
+  phoneCallStart = {
+    name = "Phone call start",
+    func = function()
+      common.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged", {
+        eventName = "PHONE_CALL",
+        isActive = true })
+    end
+  },
+  phoneCallEnd = {
+    name = "Phone call end",
+    func = function()
+      common.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged", {
+        eventName = "PHONE_CALL",
+        isActive = false })
+    end
+  },
+  embeddedNaviActivate = {
+    name = "Embedded navigation activation",
+    func = function()
+      common.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged", {
+        eventName = "EMBEDDED_NAVI",
+        isActive = true })
+    end
+  },
+  embeddedNaviDeactivate = {
+    name = "Embedded navigation deactivation",
+    func = function()
+      common.getHMIConnection():SendNotification("BasicCommunication.OnEventChanged", {
+        eventName = "EMBEDDED_NAVI",
+        isActive = false })
+    end
+  }
+}
+
+function common.setAppConfig(pAppId, pAppHMIType, pIsMedia)
+  actions.app.getParams(pAppId).appHMIType = { pAppHMIType }
+  actions.app.getParams(pAppId).isMediaApplication = pIsMedia
+end
+
+function common.checkAudioSS(pEvent, pExpAudioSS, pActAudioSS)
+  if pActAudioSS ~= pExpAudioSS then
+    local msg = pEvent .. ": audioStreamingState: expected " .. pExpAudioSS
+      .. ", actual value: " .. tostring(pActAudioSS)
+    return false, msg
+  end
+  return true
+end
+
+function common.checkVideoSS(pEvent, pExpVideoSS, pActVideoSS)
+  if pActVideoSS ~= pExpVideoSS then
+    local msg = pEvent .. ": videoStreamingState: expected " .. pExpVideoSS
+      .. ", actual value: " .. tostring(pActVideoSS)
+    return false, msg
+  end
+  return true
+end
+
+function common.checkHMILevel(pEvent, pExpHMILvl, pActHMILvl)
+  if pActHMILvl ~= pExpHMILvl then
+    local msg = pEvent .. ": hmiLevel: expected " .. pExpHMILvl .. ", actual value: " .. tostring(pActHMILvl)
+    return false, msg
+  end
+  return true
+end
+
+function common.checkHMIStatus(pEventName, pAppId, pExpectVal)
+  local exp = common.getMobileSession(pAppId):ExpectNotification("OnHMIStatus")
+  if pExpectVal.hmiLvl then
+    exp:ValidIf(function(_, data)
+        return common.checkAudioSS(pEventName, pExpectVal.audio, data.payload.audioStreamingState)
+      end)
+    exp:ValidIf(function(_, data)
+        return common.checkVideoSS(pEventName, pExpectVal.video, data.payload.videoStreamingState)
+      end)
+    exp:ValidIf(function(_, data)
+        return common.checkHMILevel(pEventName, pExpectVal.hmiLvl, data.payload.hmiLevel)
+      end)
+  else
+    exp:Times(0)
   end
 end
 
