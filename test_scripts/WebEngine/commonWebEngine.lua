@@ -138,6 +138,47 @@ function common.disallowedRegisterApp(pAppSessionId)
   end)
 end
 
+function common.processResourceConstraintExit(pAppId, pMobConnId, pOtherMobConnIds)
+  pAppId = pAppId or 1
+  pMobConnId = pMobConnId or 1
+  local hmiConnection = common.getHMIConnection()
+  local mobileSession = common.getMobileSession(pAppId)
+  local sessionsOnConnection  = actions.mobile.getApps(pMobConnId)
+
+  hmiConnection:ExpectNotification("BasicCommunication.OnAppUnregistered",
+    { unexpectedDisconnect = false, appID = actions.app.getHMIId(pAppId) })
+  mobileSession:ExpectNotification("OnAppInterfaceUnregistered", { reason = "RESOURCE_CONSTRAINT" })
+  :Do(function()
+      actions.mobile.deleteSession(pAppId)
+    end)
+
+  if #sessionsOnConnection == 1 then
+    mobileSession:ExpectEvent(events.disconnectedEvent, "Disconnected")
+    :Do(function()
+        utils.cprint(35, "Mobile #" .. pMobConnId .. " disconnected")
+        actions.mobile.deleteConnection(pMobConnId)
+      end)
+  else
+    for appId, session in pairs(sessionsOnConnection) do
+      if appId ~= pAppId then
+        session:ExpectNotification("OnAppInterfaceUnregistered", { reason = "RESOURCE_CONSTRAINT" }):Times(0)
+      end
+    end
+  end
+
+  if type(pOtherMobConnIds) == "table" then
+    for _, mobConnId in pairs(pOtherMobConnIds) do
+      local sessions = actions.mobile.getApps(mobConnId)
+      for _, session in pairs(sessions) do
+        session:ExpectNotification("OnAppInterfaceUnregistered", { reason = "RESOURCE_CONSTRAINT" }):Times(0)
+      end
+    end
+  end
+
+  hmiConnection:SendNotification("BasicCommunication.OnExitApplication",
+      { reason = "RESOURCE_CONSTRAINT", appID = actions.app.getHMIId(pAppId) })
+end
+
 function common.setAppProperties(pData)
   local corId = common.getHMIConnection():SendRequest("BasicCommunication.SetAppProperties",
     { properties = pData })
