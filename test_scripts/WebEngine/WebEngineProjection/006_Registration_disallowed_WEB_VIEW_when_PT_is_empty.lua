@@ -11,9 +11,9 @@
 
 -- Sequence:
 -- 1. Application1 try to register with WEB_VIEW appHMIType
---  a. SDL reject registration of application (resultCode REJECT, success:"false")
+--  a. SDL reject registration of application (resultCode: "DISALLOWED", success: false)
 -- 2. Application2 register with NAVIGATION appHMIType
---  a. SDL succesfuly registers application (resultCode SUCCESS, success:"true")
+--  a. SDL successfully registers application (resultCode: "SUCCESS", success: true)
 --  b. SDL creates policy table snapshot and start policy table update
 -- 3. Check absence of permissions for rejected application in LPT
 --  a. Permission for rejected Application1 is absent in LPT
@@ -56,7 +56,7 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI", common.start)
 
 common.Title("Test")
-common.Step("Register App with WEB_VIEW appHmiType", common.rejectedRegisterApp, { appSessionId1 })
+common.Step("Register App with WEB_VIEW appHmiType", common.disallowedRegisterApp, { appSessionId1 })
 common.Step("Register App with NAVIGATION appHmiType", common.registerApp,{ appSessionId2 })
 
 common.Step("Check absence of permissions for rejected application in LPT", checkAbsenceOfPermissions)
