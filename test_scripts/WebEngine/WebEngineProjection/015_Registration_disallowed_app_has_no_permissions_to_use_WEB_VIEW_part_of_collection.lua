@@ -22,7 +22,7 @@ local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Local Variables ]]
 local appSessionId = 1
-local appHMITypeOnHMI = { "MEDIA", "NAVIGATION" }
+local appHMITypeInPolicy = { "MEDIA", "NAVIGATION" }
 local appHMIType = { "MEDIA", "NAVIGATION", "WEB_VIEW" }
 
 local appsRAIParams = {
@@ -38,7 +38,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Setup RegisterAppInterface params", common.setupRAIParams, { appSessionId, appsRAIParams })
 common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT,
-  { appSessionId, appHMITypeOnHMI })
+  { appSessionId, appHMITypeInPolicy })
 common.Step("Start SDL, HMI, connect Mobile", common.start)
 
 common.Title("Test")
