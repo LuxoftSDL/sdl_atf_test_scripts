@@ -44,11 +44,6 @@ local app2RAIParams = {
   }
 }
 
---[[ Local Functions ]]
-local function ptUpdate(pTbl)
-  pTbl.policy_table.app_policies[common.getConfigAppParams(appSessionId1).fullAppID] = common.getAppDataForPTU(appSessionId1)
-end
-
 local function checkAbsenceOfPermissions()
   local ptsTable = common.ptsTable()
   if not ptsTable then
