@@ -15,15 +15,16 @@
 ---------------------------------------------------------------------------------------------------
 --[[ General configuration parameters ]]
 config.defaultMobileAdapterType = "WS"
+
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Local Variables ]]
 local appSessionId = 1
-local appHMITypeWebView = "WEB_VIEW"
-local appHMITypeMedia = "MEDIA"
+local appHMITypeWebView = { "WEB_VIEW" }
+local appHMITypeMedia = { "MEDIA" }
 local appsRAIParams = {
-  appHMIType = { appHMITypeWebView },
+  appHMIType = appHMITypeWebView,
   syncMsgVersion = {
     majorVersion = 7,
     minorVersion = 0
@@ -35,7 +36,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Setup RegisterAppInterface params", common.setupRAIParams, { appSessionId, appsRAIParams })
 common.Step("Add AppHMIType to preloaded policy table", common.updatePreloadedPT,
-  { appSessionId, { appHMITypeMedia }})
+  { appSessionId, appHMITypeMedia })
 common.Step("Start SDL, HMI, connect Mobile", common.start)
 
 common.Title("Test")
