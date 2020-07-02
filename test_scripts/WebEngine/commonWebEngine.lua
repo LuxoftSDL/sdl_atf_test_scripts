@@ -237,6 +237,65 @@ function common.activateWidgetFromNoneToFULL(pId, pAppId)
   checkAbsenceOfOnHMIStatusForOtherApps(pAppId)
 end
 
+function common.getShowParams(pAppId)
+  return {
+    requestShowParams = {
+      mainField1 = "Text_1",
+      graphic = {
+        imageType = "DYNAMIC",
+        value = "icon.png"
+      }
+    },
+    requestShowUiParams = {
+      showStrings = {
+        {
+          fieldName = "mainField1",
+          fieldText = "Text_1"
+        }
+      },
+      graphic = {
+        imageType = "DYNAMIC",
+        value = actions.getPathToFileInStorage("icon.png", pAppId)
+      }
+    }
+  }
+end
+
+function common.sendShowToWindow(pWindowId, pAppId)
+  if not pAppId then pAppId = 1 end
+  local params = common.getShowParams(pAppId)
+  if pWindowId then
+    params.requestShowParams.windowID = pWindowId
+    params.requestShowUiParams.windowID = pWindowId
+  end
+  params.requestShowUiParams.appID = common.getHMIAppId(pAppId)
+  local cid = common.getMobileSession(pAppId):SendRPC("Show", params.requestShowParams)
+  common.getHMIConnection():ExpectRequest("UI.Show", params.requestShowUiParams)
+  :ValidIf(function(_,data)
+      if pWindowId == nil and data.windowID ~= nil then
+        return false, "SDL sends not exist window ID to HMI"
+      else
+        return true
+      end
+    end)
+  :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  common.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
+  :Do(function()
+      if params.requestShowParams.templateConfiguration ~= nil then
+        local paramsToSDL = common.getOnSystemCapabilityParams()
+        paramsToSDL.appID = common.getHMIAppId(pAppId)
+        common.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", paramsToSDL)
+        common.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated",
+          common.getOnSystemCapabilityParams())
+      else
+        common.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated")
+        :Times(0)
+      end
+    end)
+end
+
 function common.ignitionOff()
   local timeout = 5000
   local function removeSessions()
@@ -523,7 +582,7 @@ function common.verifyPTSnapshot(appProperties, appPropExpected)
     msg = msg .. "Incorrect usage_and_error_counts value\n" ..
       " Expected: exists \n" ..
       " Actual: nil \n"
-  end  
+  end
 
   local nicknames = snp_tbl.policy_table.app_policies[app_id].nicknames
   if not common.isTableEqual(nicknames, appPropExpected.nicknames) then
