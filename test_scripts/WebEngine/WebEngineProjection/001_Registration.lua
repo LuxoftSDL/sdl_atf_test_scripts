@@ -21,10 +21,8 @@ local appHMIType = "WEB_VIEW"
 
 --[[ General configuration parameters ]]
 config.application1.registerAppInterfaceParams.appHMIType = { appHMIType }
-config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
-config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 2
-config.defaultMobileAdapterType = "WS"
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
+config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
+config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 
 --[[ Scenario ]]
 common.Title("Preconditions")
