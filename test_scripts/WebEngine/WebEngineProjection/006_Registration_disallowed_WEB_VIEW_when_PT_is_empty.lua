@@ -2,7 +2,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
 -- Description:
--- Check that App will be rejected with HMI type WEB_VIEW 
+-- Check that App will be rejected with HMI type WEB_VIEW
 -- when mobile application has no policy record in local policy table
 --
 -- Precondition:
@@ -27,17 +27,18 @@ local common = require('test_scripts/WebEngine/commonWebEngine')
 --[[ Local Variables ]]
 local appSessionId1 = 1
 local appSessionId2 = 2
+local webEngineDevice = 1
 local appHMITypeWebView = { "WEB_VIEW" }
 local appHMITypeNavigation = { "NAVIGATION" }
 local app1RAIParams = {
-  appHMIType = appHMITypeNavigation,
+  appHMIType = appHMITypeWebView,
   syncMsgVersion = {
     majorVersion = 7,
     minorVersion = 0
   }
 }
 local app2RAIParams = {
-  appHMIType = appHMITypeWebView,
+  appHMIType = appHMITypeNavigation,
   syncMsgVersion = {
     majorVersion = 7,
     minorVersion = 0
@@ -48,7 +49,7 @@ local function checkAbsenceOfPermissions()
   local ptsTable = common.ptsTable()
   if not ptsTable then
     common.failTestStep("Policy table snapshot was not created")
-  elseif ptsTable.policy_table.app_policies["0000001"] ~= nil then
+  elseif ptsTable.policy_table.app_policies[common.getParams(appSessionId1).fullAppID] ~= nil then
     common.failTestStep("Permission for rejected application is present in LPT")
   end
 end
@@ -61,11 +62,11 @@ common.Step("Setup RegisterAppInterface params for App2", common.setupRAIParams,
 common.Step("Start SDL, HMI", common.start)
 
 common.Title("Test")
-common.Step("Register App with WEB_VIEW appHmiType", common.disallowedRegisterApp, { appSessionId2 })
-common.Step("Register App with NAVIGATION appHmiType", common.registerApp,{ appSessionId1 })
+common.Step("Register App with WEB_VIEW appHmiType", common.disallowedRegisterApp, { appSessionId1 })
+common.Step("Connect WebEngine device", common.connectWebEngine, { webEngineDevice, "WS" })
+common.Step("Register App with NAVIGATION appHmiType", common.registerApp, { appSessionId2 })
 
 common.Step("Check absence of permissions for rejected application in LPT", checkAbsenceOfPermissions)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-
