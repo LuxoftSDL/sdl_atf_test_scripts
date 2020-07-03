@@ -16,3 +16,7 @@
 ./test_scripts/WebEngine/WebEngineProjection/016_Processing_show_rpc.lua
 ./test_scripts/WebEngine/WebEngineProjection/017_Verify_PTS_with_appHMIType_WEB_VIEW.lua
 ./test_scripts/WebEngine/WebEngineProjection/018_Processing_PTU_with_appHMIType_WEB_VIEW.lua
+./test_scripts/WebEngine/WebEngineProjection/019_Create_widget.lua
+./test_scripts/WebEngine/WebEngineProjection/020_Create_widget_with_DuplicateId.lua
+./test_scripts/WebEngine/WebEngineProjection/021_Show_RPC_to_Main_Window_widget_without_DuplicateID.lua
+./test_scripts/WebEngine/WebEngineProjection/022_Show_RPC_to_Main_Window_widget_with_DuplicateID.lua
