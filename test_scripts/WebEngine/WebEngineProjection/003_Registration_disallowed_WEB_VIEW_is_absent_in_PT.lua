@@ -2,7 +2,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
 -- Description:
--- Check that App will be rejected with HMI type WEB_VIEW 
+-- Check that App will be rejected with HMI type WEB_VIEW
 -- when WEB_VIEW AppHmiType is absent in application policies
 --
 -- Precondition:
@@ -44,4 +44,3 @@ common.Step("Register App, PT does not contain WEB_VIEW AppHMIType", common.disa
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

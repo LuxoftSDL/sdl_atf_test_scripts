@@ -2,7 +2,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
 -- Description:
--- Check that application will be disallowed to register with WEB_VIEW HMI type 
+-- Check that application will be disallowed to register with WEB_VIEW HMI type
 -- if the application has no record in policies. WEB_VIEW is one of HMI types in AppHmiType parameter of RAI
 --
 -- Precondition:
@@ -11,7 +11,7 @@
 -- 3. PT contains record for App1 and no record for App2
 --
 -- Sequence:
--- 1. App1 tries to register with WEB_VIEW appHMIType 
+-- 1. App1 tries to register with WEB_VIEW appHMIType
 --  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
 ---------------------------------------------------------------------------------------------------
 
@@ -47,5 +47,3 @@ common.Step("Registration of App2, no record in policy", common.disallowedRegist
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-
-

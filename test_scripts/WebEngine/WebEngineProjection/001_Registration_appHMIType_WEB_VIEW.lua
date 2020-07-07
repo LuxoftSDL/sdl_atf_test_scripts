@@ -36,4 +36,3 @@ common.Step("Register App without PTU", common.registerAppWOPTU, { appSessionId 
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

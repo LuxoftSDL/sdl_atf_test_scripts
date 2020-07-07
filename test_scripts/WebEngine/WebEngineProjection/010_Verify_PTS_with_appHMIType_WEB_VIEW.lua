@@ -58,4 +58,3 @@ common.Step("Check that PTS contains AppHMIType WEB_VIEW for App1", verifyAppHMI
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

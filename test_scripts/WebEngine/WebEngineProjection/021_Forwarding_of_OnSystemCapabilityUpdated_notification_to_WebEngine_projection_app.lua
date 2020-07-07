@@ -2,8 +2,8 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
 -- Description:
--- Check that SDL forwards OnSystemCapabilityUpdated notification 
--- to the WebEngine projection app 
+-- Check that SDL forwards OnSystemCapabilityUpdated notification
+-- to the WebEngine projection app
 --
 -- Precondition:
 -- 1. SDL and HMI are started
@@ -55,4 +55,3 @@ common.Step("HMI sends OnSCU notification", sendOnSCU)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

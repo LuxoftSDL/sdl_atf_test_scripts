@@ -60,4 +60,3 @@ common.Step("Check connection via successful activation", common.activateApp, { 
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

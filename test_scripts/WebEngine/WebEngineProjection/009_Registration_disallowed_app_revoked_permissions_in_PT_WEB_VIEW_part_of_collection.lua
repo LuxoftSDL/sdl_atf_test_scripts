@@ -2,7 +2,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
 -- Description:
--- Check that App will be disallowed to register with HMI type collection {"MEDIA", "WEB_VIEW"}  
+-- Check that App will be disallowed to register with HMI type collection {"MEDIA", "WEB_VIEW"}
 -- when application has revoked permissions in policy table
 --
 -- Precondition:
@@ -52,5 +52,3 @@ common.Step("Register App, PT does not contain WEB_VIEW AppHMIType", common.disa
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-
-

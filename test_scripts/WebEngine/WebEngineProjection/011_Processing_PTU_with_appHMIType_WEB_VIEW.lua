@@ -46,4 +46,3 @@ common.Step("Register App1 with AppHMIType WEB_VIEW", common.registerAppWOPTU,{ 
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

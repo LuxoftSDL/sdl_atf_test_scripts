@@ -7,7 +7,7 @@
 --
 -- Precondition:
 -- 1. SDL and HMI are started
--- 2. WebEngine projection app is connected to SDL, successfully 
+-- 2. WebEngine projection app is connected to SDL, successfully
 --    registered and activated (HMI level is FULL)
 --
 -- Sequence:
@@ -58,4 +58,3 @@ common.Step("Check connection via successful activation", common.activateApp, { 
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

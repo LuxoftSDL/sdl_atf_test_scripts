@@ -2,13 +2,13 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0273-webengine-projection-mode.md
 --
 -- Description:
--- Check that App will be disallowed to register with HMI type collection {"MEDIA", "NAVIGATION"} 
+-- Check that App will be disallowed to register with HMI type collection {"MEDIA", "NAVIGATION"}
 -- when application does not have permission to use WEB_VIEW hmi type in policy table
 --
 -- Precondition:
 -- 1. SDL and HMI are started
 -- 2. WebEngine device is connected to SDL
--- 3. PT contains record with for App1 with all properties for webengine app 
+-- 3. PT contains record with for App1 with all properties for webengine app
 --    and appHMIType = MEDIA.
 
 -- Sequence:
@@ -47,5 +47,3 @@ common.Step("Register App, PT does not contain WEB_VIEW AppHMIType", common.disa
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-
-
