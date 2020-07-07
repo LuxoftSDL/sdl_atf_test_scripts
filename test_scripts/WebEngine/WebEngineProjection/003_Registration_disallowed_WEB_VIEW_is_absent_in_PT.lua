@@ -10,8 +10,8 @@
 -- 2. WebEngine device is connected to SDL
 
 -- Sequence:
--- 1. Application1 try to register with WEB_VIEW appHMIType
---  a. SDL reject registration of application (resultCode: "DISALLOWED", success: false)
+-- 1. Application tries to register with WEB_VIEW appHMIType
+--  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
 ---------------------------------------------------------------------------------------------------
 --[[ General configuration parameters ]]
 config.defaultMobileAdapterType = "WS"

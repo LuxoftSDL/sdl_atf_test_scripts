@@ -11,11 +11,12 @@
 -- 3. PT contains record for App1 with null permissions
 
 -- Sequence:
--- 1. Application1 try to register with WEB_VIEW appHMIType
---  a. SDL reject registration of application (resultCode: "DISALLOWED", success: false)
+-- 1. Application1 tries to register with WEB_VIEW appHMIType
+--  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
 ---------------------------------------------------------------------------------------------------
 --[[ General configuration parameters ]]
 config.defaultMobileAdapterType = "WS"
+
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 

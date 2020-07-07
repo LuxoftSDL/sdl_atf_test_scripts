@@ -8,17 +8,15 @@
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
 -- 3) WebEngine App is audio source ('audioStreamingState' = AUDIBLE)
 --
--- Steps:
+-- Sequence:
 -- 1) One of the events below is received from HMI within 'BC.OnEventChanged' notification:
---   PHONE_CALL, EMERGENCY_EVENT, AUDIO_SOURCE, EMBEDDED_NAVI
--- SDL does:
---  - send OnHMIStatus notification with 'audioStreamingState' = NOT_AUDIBLE
+--    PHONE_CALL, EMERGENCY_EVENT, AUDIO_SOURCE, EMBEDDED_NAVI
+--   a.SDL sends OnHMIStatus notification with 'audioStreamingState' = NOT_AUDIBLE
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Test Configuration ]]
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 config.checkAllValidations = true
 
 --[[ General configuration parameters ]]

@@ -10,12 +10,11 @@
 -- 2. App is registered on default mobile connection
 -- 4. App is activated
 --
--- Steps:
+-- Sequence:
 -- 1. HMI sends BC.OnExitApplication with reason: "RESOURCE_CONSTRAINT" related to App to SDL
--- SDL does:
---  - unregister App and send OnAppInterfaceUnregistered notification with reason: "RESOURCE_CONSTRAINT" to it
---  - send BasicCommunication.OnAppUnregistered notification related to App with unexpectedDisconnect: false
---  - close mobile connection
+--  a.SDL unregisters App and send OnAppInterfaceUnregistered notification with reason: "RESOURCE_CONSTRAINT" to it
+--  b.SDL sends BasicCommunication.OnAppUnregistered notification related to App with unexpectedDisconnect: false
+--  c.SDL closes mobile connection
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')

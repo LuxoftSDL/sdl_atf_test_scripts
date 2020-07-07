@@ -508,11 +508,6 @@ function common.checkUpdateAppList(pPolicyAppID, pTimes, pExpNumOfApps)
   common.wait()
 end
 
---[[ @getOnSystemCapabilityParams: Provide default parameters for 'OnSystemCapabilityParams' RPC
---! @parameters:
---! pMaxNumOfWidgetWindows: maximum number of widget windows
---! @return: parameters for 'OnSystemCapabilityParams' RPC
---]]
 function common.getOnSystemCapabilityParams(pMaxNumOfWidgetWindows)
   if not pMaxNumOfWidgetWindows then pMaxNumOfWidgetWindows = 5 end
   return {

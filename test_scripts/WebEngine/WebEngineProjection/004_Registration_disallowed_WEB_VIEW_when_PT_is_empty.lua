@@ -10,9 +10,9 @@
 -- 2. WebEngine device is connected to SDL
 
 -- Sequence:
--- 1. Application1 try to register with WEB_VIEW appHMIType
---  a. SDL reject registration of application (resultCode: "DISALLOWED", success: false)
--- 2. Application2 register with NAVIGATION appHMIType
+-- 1. Application1 tries to register with WEB_VIEW appHMIType
+--  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
+-- 2. Application2 tries to register with NAVIGATION appHMIType
 --  a. SDL successfully registers application (resultCode: "SUCCESS", success: true)
 --  b. SDL creates policy table snapshot and start policy table update
 -- 3. Check absence of permissions for rejected application in LPT

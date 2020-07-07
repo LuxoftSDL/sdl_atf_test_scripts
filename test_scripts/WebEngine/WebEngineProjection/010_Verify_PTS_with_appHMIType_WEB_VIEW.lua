@@ -10,8 +10,7 @@
 -- 3. WebEngine App1 with WEB_VIEW HMI type is registered
 
 -- Sequence:
--- 1. App2 register with NAVIGATION HMI type
--- SDL does:
+-- 1. App2 registers with NAVIGATION HMI type
 --   a. PTU is triggered, SDL sends UPDATE_NEEDED to HMI
 --   b. PTS is created with AppHMIType WEB_VIEW for App1 and other mandatory pts
 ---------------------------------------------------------------------------------------------------

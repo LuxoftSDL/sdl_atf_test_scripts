@@ -7,17 +7,15 @@
 -- Preconditions:
 -- 1) SDL and HMI are started
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
--- Steps:
+--
+-- Sequence:
 -- 1) App creates a new widget
--- SDL does:
---  - send UI.CreateWindow(params) request to HMI
+--  a.SDL sends UI.CreateWindow(params) request to HMI
 -- 2) HMI sends valid UI.CreateWindow response to SDL
--- SDL does:
---  - send CreateWindow response with success: true resultCode: "SUCCESS" to App
+--  a.SDL sends CreateWindow response with success: true resultCode: "SUCCESS" to App
 -- 3) HMI sends OnSystemCapabilityUpdated(params) notification to SDL
--- SDL does:
---  - send OnSystemCapabilityUpdated(params) notification to App
---  - send OnHMIStatus (hmiLevel, windowID) notification for widget window to App
+--  a.SDL sends OnSystemCapabilityUpdated(params) notification to App
+--  b.SDL sends OnHMIStatus (hmiLevel, windowID) notification for widget window to App
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')

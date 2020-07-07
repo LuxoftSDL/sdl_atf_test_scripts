@@ -8,11 +8,10 @@
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
 -- 3) WebEngine App is in some state
 --
--- Steps:
+-- Sequence:
 -- 1) WebEngine App is moving to another state by one of the events:
 --   App activation, App deactivation, Deactivation of HMI, User exit
--- SDL does:
---  - send OnHMIStatus notification with appropriate value of 'hmiLevel' parameter
+--    a.SDL sends OnHMIStatus notification with appropriate value of 'hmiLevel' parameter
 --
 -- Particular behavior and value depends on initial state and event, and described in 'testCases' table below
 ---------------------------------------------------------------------------------------------------
@@ -20,7 +19,6 @@
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Test Configuration ]]
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 config.checkAllValidations = true
 
 --[[ General configuration parameters ]]

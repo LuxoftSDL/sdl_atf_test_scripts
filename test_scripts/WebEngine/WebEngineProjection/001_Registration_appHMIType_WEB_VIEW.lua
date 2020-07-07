@@ -10,7 +10,7 @@
 
 -- Sequence:
 -- 1. Application register with WEB_VIEW appHMIType
---  a. SDL succesfuly registers application (resultCode SUCCESS, success:"true")
+--  a. SDL successfully registers application (resultCode SUCCESS, success:"true")
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared Libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')

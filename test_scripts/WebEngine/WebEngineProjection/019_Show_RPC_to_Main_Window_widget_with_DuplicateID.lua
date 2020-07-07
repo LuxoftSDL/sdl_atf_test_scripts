@@ -11,15 +11,14 @@
 -- 4) App successfully created a second widget with "duplicateUpdatesFromWindowID" parameter for Main window
 -- 5) First primary widget is activated on the HMI and has FULL level
 -- 5) Second widget is activated on the HMI and has FULL level
--- Steps:
+--
+-- Sequence:
 -- 1) App sends Show(without WindowID) request to SDL
--- SDL does:
---  - send request UI.Show(Main window) to HMI
---  - not send request UI.Show(Widget window) to HMI
+--  a.SDL sends request UI.Show(Main window) to HMI
+--  b.SDL does not send request UI.Show(Widget window) to HMI
 -- 2) HMI sends UI.Show response "SUCCESS"
--- SDL does:
---  - send Show response with (success: true resultCode: "SUCCESS") to App
---  - not send OnSystemCapabilityUpdated notification to App
+--  a.SDL sends Show response with (success: true resultCode: "SUCCESS") to App
+--  b.SDL does not send OnSystemCapabilityUpdated notification to App
 ---------------------------------------------------------------------------------------------------
 --[[ General test configuration ]]
 config.defaultMobileAdapterType = "WS"

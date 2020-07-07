@@ -9,14 +9,13 @@
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
 -- 3) App successfully created a widget which does not duplicate main window
 -- 4) Widget is activated on the HMI and has FULL level
--- Steps:
+--
+-- Sequence:
 -- 1) App sends Show(with WindowID for Main window) request to SDL
--- SDL does:
---  - send request UI.Show(without WindowID) to HMI
+--  a.SDL sends request UI.Show(without WindowID) to HMI
 -- 2) HMI sends UI.Show response "SUCCESS"
--- SDL does:
---  - send Show response with (success: true resultCode: "SUCCESS") to App
---  - not send OnSystemCapabilityUpdated notification to App
+--  a.SDL sends Show response with (success: true resultCode: "SUCCESS") to App
+--  b.SDL does not send OnSystemCapabilityUpdated notification to App
 ---------------------------------------------------------------------------------------------------
 --[[ General test configuration ]]
 config.defaultMobileAdapterType = "WS"

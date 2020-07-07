@@ -9,7 +9,7 @@
 
 -- Sequence:
 -- 1. PTU is performed, the update contains App1 properties with WEB_VIEW HMI type
--- 2. Application register with WEB_VIEW HMI type
+-- 2. Application registers with WEB_VIEW HMI type
 --  a. SDL successfully registers application with WEB_VIEW HMI type (resultCode SUCCESS, success:"true")
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared Libraries ]]

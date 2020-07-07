@@ -8,17 +8,15 @@
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
 -- 3) WebEngine App is not video source ('videoStreamingState' = NOT_STREAMABLE)
 --
--- Steps:
+-- Sequence:
 -- 1) One of the event below is received from HMI within 'BC.OnEventChanged' notification:
---   AUDIO_SOURCE, EMBEDDED_NAVI
--- SDL does:
---  - send OnHMIStatus notification with 'videoStreamingState' = NOT_STREAMABLE
+--     AUDIO_SOURCE, EMBEDDED_NAVI
+--   a.SDL sends OnHMIStatus notification with 'videoStreamingState' = NOT_STREAMABLE
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Test Configuration ]]
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 config.checkAllValidations = true
 
 --[[ General configuration parameters ]]

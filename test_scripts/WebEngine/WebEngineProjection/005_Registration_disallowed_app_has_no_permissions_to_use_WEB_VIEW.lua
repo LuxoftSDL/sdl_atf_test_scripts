@@ -8,12 +8,12 @@
 -- Precondition:
 -- 1. SDL and HMI are started
 -- 2. WebEngine device is connected to SDL
--- 3. PT contains record with for App1 with all properties for webengine app
+-- 3. PT contains record for App1 with all properties for webengine app
 --    and appHMIType = MEDIA.
 
 -- Sequence:
--- 1. Application1 try to register with WEB_VIEW appHMIType
---  a. SDL reject registration of application (resultCode: "DISALLOWED", success: false)
+-- 1. Application1 tries to register with WEB_VIEW appHMIType
+--  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
 ---------------------------------------------------------------------------------------------------
 --[[ General configuration parameters ]]
 config.defaultMobileAdapterType = "WS"

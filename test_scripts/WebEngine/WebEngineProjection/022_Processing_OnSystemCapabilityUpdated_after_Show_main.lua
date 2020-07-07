@@ -7,14 +7,13 @@
 -- Preconditions:
 -- 1) SDL and HMI are started
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
--- Steps:
+--
+-- Sequence:
 -- 1) App sends `Show` request with `templateConfiguration` for main window (windowID is not defined)
--- SDL does:
---  - proceed with `Show` request successfully
---  - not send `OnSystemCapabilityUpdated` to App
+--  a.SDL proceeds with `Show` request successfully
+--  b.SDL does not send `OnSystemCapabilityUpdated` to App
 -- 2) HMI sends `OnSystemCapabilityUpdated` to SDL
--- SDL does:
---  - transfer `OnSystemCapabilityUpdated` notification to App
+--  a.SDL transfers `OnSystemCapabilityUpdated` notification to App
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WebEngine/commonWebEngine')

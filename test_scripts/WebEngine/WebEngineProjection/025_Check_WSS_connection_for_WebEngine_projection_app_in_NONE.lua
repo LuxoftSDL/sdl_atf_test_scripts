@@ -10,8 +10,8 @@
 -- 2. WebEngine device is connected to SDL
 
 -- Sequence:
--- 1. Application register with WEB_VIEW appHMIType
---  a. SDL succesfuly registers application (resultCode SUCCESS, success:"true")
+-- 1. Application registers with WEB_VIEW appHMIType
+--  a. SDL successfully registers application (resultCode SUCCESS, success:"true")
 --  b. SDL assigns HMILevel (NONE) to the WebEngine projection app and doesn't close the WebSocket connection
 -- 2. Activate web application
 --  a. WebEngine projection application successfully activated using remained connection to SDL

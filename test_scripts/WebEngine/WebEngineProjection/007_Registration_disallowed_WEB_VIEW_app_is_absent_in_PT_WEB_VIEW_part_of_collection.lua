@@ -11,7 +11,7 @@
 -- 3. PT contains record for App1 and no record for App2
 --
 -- Sequence:
--- 1. App1 tries to register with WEB_VIEW appHMIType
+-- 1. Application1 tries to register with WEB_VIEW appHMIType
 --  a. SDL rejects registration of application (resultCode: "DISALLOWED", success: false)
 ---------------------------------------------------------------------------------------------------
 

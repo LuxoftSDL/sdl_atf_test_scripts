@@ -5,20 +5,19 @@
 --
 -- Preconditions:
 -- 1) SDL and HMI are started
--- 1) There are 4 different apps are registered (WEB_VIEW and 3 other):
+-- 2) There are 4 different apps are registered (WEB_VIEW and 3 other):
 --   Applications types: WEB_VIEW, PROJECTION, DEFAULT, NAVIGATION, MEDIA
 --
--- Steps:
--- 2) And there is the following sequence of actions:
---   Activation of app1
---   Activation of app2
---   Activation of app3
---   Activation of app4
---   HMI sends PHONE_CALL event (active/inactive)
---   Activation of app2
---   HMI sends EMBEDDED_NAVI event (active/inactive)
--- SDL does:
---  - Send (or not send) 'OnHMIStatus' notification to all apps with appropriate value for
+-- Sequence:
+-- 1) And there is the following sequence of actions:
+--    Activation of app1
+--    Activation of app2
+--    Activation of app3
+--    Activation of app4
+--    HMI sends PHONE_CALL event (active/inactive)
+--    Activation of app2
+--    HMI sends EMBEDDED_NAVI event (active/inactive)
+--   a.SDL sends end (or not send) 'OnHMIStatus' notification to all apps with appropriate value for
 -- 'hmiLevel', 'audioStreamingState' and 'videoStreamingState' parameters
 --
 -- Particular values depends on app's 'appHMIType', 'isMediaApplication' flag, current app's state
@@ -28,7 +27,6 @@
 local common = require('test_scripts/WebEngine/commonWebEngine')
 
 --[[ Test Configuration ]]
-common.testSettings.restrictions.sdlBuildOptions = {{ webSocketServerSupport = { "ON" }}}
 config.checkAllValidations = true
 config.defaultProtocolVersion = 3
 

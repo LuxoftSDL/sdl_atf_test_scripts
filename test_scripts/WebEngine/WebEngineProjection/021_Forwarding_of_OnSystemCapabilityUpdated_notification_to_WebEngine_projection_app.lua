@@ -11,8 +11,8 @@
 --
 -- Sequence:
 -- 1. WebEngine projection application tries to register
---  a. SDL proceed with `RAI` request successfully
---  b. SDL not send `OnSystemCapabilityUpdated` to the WebEngine projection app
+--  a. SDL proceeds with `RAI` request successfully
+--  b. SDL does not send `OnSystemCapabilityUpdated` to the WebEngine projection app
 -- 2. HMI sends `OnSystemCapabilityUpdated` to SDL
 --  a. SDL transfers `OnSystemCapabilityUpdated` notification to the WebEngine projection app
 ---------------------------------------------------------------------------------------------------

@@ -6,11 +6,11 @@
 -- Preconditions:
 -- 1) SDL and HMI are started
 -- 2) WebEngine App with WEB_VIEW HMI type is registered
--- Steps:
+--
+-- Sequence:
 -- 1) App sends `Show` request without `templateConfiguration` for main window (windowID is not defined)
--- SDL does:
---  - proceed with `Show` request successfully
---  - not send `OnSystemCapabilityUpdated` to App
+--  a.SDL proceeds with `Show` request successfully
+--  b.SDL does not send `OnSystemCapabilityUpdated` to App
 ---------------------------------------------------------------------------------------------------
 --[[ General test configuration ]]
 config.defaultMobileAdapterType = "WS"
