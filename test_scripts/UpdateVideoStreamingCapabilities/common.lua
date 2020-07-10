@@ -103,28 +103,26 @@ end
 function m.sendOnSystemCapabilityUpdated(pTimes, pParams)
   if not pTimes then pTimes = 1 end
   if not pParams then pParams = m.getVideoStreamingCapability() end
-  local hmiAppID = actions.getHMIAppId()
   local systemCapabilityParam = {
     systemCapability = {
       systemCapabilityType = "VIDEO_STREAMING",
       videoStreamingCapability = pParams
     }
   }
-  actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", systemCapabilityParam, hmiAppID)
+  actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", systemCapabilityParam)
   actions.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated", systemCapabilityParam)
   :Times(pTimes)
 end
 
 function m.sendOnSystemCapabilityUpdatedMultipleApps(pTimesAppId1, pTimesAppId2, pParams)
   if not pParams then pParams = m.getVideoStreamingCapability() end
-  utils.printTable(pParams)
   local systemCapabilityParam = {
     systemCapability = {
       systemCapabilityType = "VIDEO_STREAMING",
       videoStreamingCapability = pParams
     }
   }
-
+  --systemCapabilityParam.appID = actions.getHMIAppId()
   actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", systemCapabilityParam)
   actions.getMobileSession(1):ExpectNotification("OnSystemCapabilityUpdated", systemCapabilityParam)
   :Times(pTimesAppId1)
