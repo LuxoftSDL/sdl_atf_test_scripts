@@ -1,22 +1,5 @@
 -- https://adc.luxoft.com/jira/browse/FORDTCN-7004
--- [GetCapabilities] Transfering of additionalVideoStreamingCapabilities parameter from HMI to SDL – count of items of array in range
--- https://adc.luxoft.com/jira/browse/FORDTCN-6963
--- [GetCapabilities] Transfering of additionalVideoStreamingCapabilities parameter from HMI to SDL – max count of items in array
----------------------------------------------------------------------------------------------------
--- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
---
--- Description: Processing of GetCapabilities with the minsize and maxsize for an array
---  of additionalVideoStreamingCapabilities parameter
---
--- Preconditions:
--- 1. SDL and HMI are started
--- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) with (the minsize/maxsize for an array)
---  of additionalVideoStreamingCapabilities
---
--- Sequence:
--- 1. App sends GetSystemCapability request for "VIDEO_STREAMING" to SDL
---  a. SDL sends GetSystemCapability(videoStreamingCapability) response with additionalVideoStreamingCapabilities
---   received from HMI to App
+
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')

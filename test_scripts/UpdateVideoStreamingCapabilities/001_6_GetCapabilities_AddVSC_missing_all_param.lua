@@ -1,19 +1,5 @@
 -- https://adc.luxoft.com/jira/browse/FORDTCN-6960
--- [GetCapabilities] Transfering of additionalVideoStreamingCapabilities parameter from HMI to SDL – no parameters in single item in array
----------------------------------------------------------------------------------------------------
--- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
---
--- Description: Processing of GetCapabilities in case no parameters in single item in array
--- of additionalVideoStreamingCapabilities parameter
---
--- Preconditions:
--- 1. SDL and HMI are started
--- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) with empty single item in array
---  of additionalVideoStreamingCapabilities parameters
---
--- Sequence:
--- 1. App sends GetSystemCapability request for "VIDEO_STREAMING" to SDL
---  a. SDL sends GetSystemCapability response with default videoStreamingCapability value from hmi_capabilities.json
+
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
