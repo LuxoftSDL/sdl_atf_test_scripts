@@ -28,6 +28,8 @@ m.activateApp = actions.activateApp
 m.cloneTable = utils.cloneTable
 m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 m.EMPTY_ARRAY = json.EMPTY_ARRAY
+m.getPreloadedPT = actions.sdl.getPreloadedPT
+m.setPreloadedPT = actions.sdl.setPreloadedPT
 
 --[[ Common Variables ]]
 local defaultSDLcapabilities = SDL.HMICap.get()
@@ -75,6 +77,20 @@ function m.getVideoStreamingCapability(pArraySizeAddVSC)
   else
     for i = 1, pArraySizeAddVSC do
       vSC.additionalVideoStreamingCapabilities[i] = utils.cloneTable(m.videoStreamingCapabilityWithOutAddVSC)
+    end
+  end
+  return vSC
+end
+
+function m.getAnotherVideoStreamingCapability(pArraySizeAddVSC)
+  if not pArraySizeAddVSC then pArraySizeAddVSC = 1 end
+  local vSC = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
+  vSC.additionalVideoStreamingCapabilities = {}
+  if pArraySizeAddVSC == 0 then
+    vSC.additionalVideoStreamingCapabilities = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
+  else
+    for i = 1, pArraySizeAddVSC do
+      vSC.additionalVideoStreamingCapabilities[i] = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
     end
   end
   return vSC
@@ -129,6 +145,33 @@ function m.sendOnSystemCapabilityUpdatedMultipleApps(pTimesAppId1, pTimesAppId2,
   :Times(pTimesAppId1)
   actions.getMobileSession(2):ExpectNotification("OnSystemCapabilityUpdated", systemCapabilityParam)
   :Times(pTimesAppId2)
+end
+
+local function getAppConfig(pPt)
+  local out = utils.cloneTable(pPt.policy_table.app_policies.default)
+    out.groups = { "Base-4" }
+    out.AppHMIType = { "NAVIGATION" }
+    return out
+end
+
+function m.preparePreloadedPT()
+  local preloadedTable = m.getPreloadedPT()
+  local appId = config["application1"].registerAppInterfaceParams.fullAppID
+  preloadedTable.policy_table.app_policies[appId] = getAppConfig(preloadedTable)
+  preloadedTable.policy_table.functional_groupings["DataConsent-2"].rpcs = utils.json.null
+  m.setPreloadedPT(preloadedTable)
+end
+
+function m.sendOnAppCapabilityUpdated(appCapability, pTimesOnHMI)
+  if not appCapability then appCapability = {
+    appCapability = {
+      appCapabilityType = "VIDEO_STREAMING",
+      videoStreamingCapability = m.getVideoStreamingCapability()
+    }
+  } end
+  actions.getMobileSession(1):SendNotification("OnAppCapabilityUpdated", appCapability)
+  actions.getHMIConnection():ExpectNotification("BasicCommunication.OnAppCapabilityUpdated", appCapability)
+  :Times(pTimesOnHMI)
 end
 
 return m
