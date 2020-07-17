@@ -184,24 +184,26 @@ m.removeData = {
 --]]
 local function getGlobalPropertiesResetData(pAppId, pInterface)
   local resetData = {}
+  resetData.appID = m.getHMIAppId(pAppId)
   if pInterface == "TTS" then
-    resetData.appID = m.getHMIAppId(pAppId)
     resetData.helpPrompt = { }
-    resetData.timeoutPrompt = {}
+    resetData.timeoutPrompt = { }
     local ttsDelimiter = SDL.INI.get("TTSDelimiter")
     local helpPromptString = SDL.INI.get("HelpPromt")
     local helpPromptList = m.splitString(helpPromptString, ttsDelimiter);
 
     for key,value in pairs(helpPromptList) do
-      resetData.timeoutPrompt[key] = {
+      local data = {
         type = "TEXT",
         text = value .. ttsDelimiter
       }
+      resetData.timeoutPrompt[key] = data
+      resetData.helpPrompt[key] = data
     end
   else
-    resetData.appID = m.getHMIAppId(pAppId)
     resetData.menuTitle = ""
-    resetData.vrHelpTitle = m.getConfigAppParams(pAppId).appName
+    resetData.vrHelp = { [1] = { position = 1, text = m.getConfigAppParams(pAppId).appName }}
+    resetData.vrHelpTitle = SDL.INI.get("HelpTitle")
   end
   return resetData
 end
@@ -1096,7 +1098,7 @@ function m.deactivateAppToLimited()
       appID = m.getHMIAppId()
     })
   m.getMobileSession():ExpectNotification("OnHMIStatus",
-    {hmiLevel = "LIMITED", audioStreamingState = "AUDIBLE", systemContext = "MAIN"})
+    { hmiLevel = "LIMITED", audioStreamingState = "AUDIBLE", systemContext = "MAIN" })
 end
 
 --[[ @deactivateAppToBackground: deactivate app to BACKGROUND HMI level
@@ -1108,7 +1110,7 @@ function m.deactivateAppToBackground()
       appID = m.getHMIAppId()
     })
   m.getMobileSession():ExpectNotification("OnHMIStatus",
-    {hmiLevel = "BACKGROUND", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN"})
+    { hmiLevel = "BACKGROUND", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
 end
 
 --[[ @splitString: split string with separator
