@@ -7,7 +7,6 @@ config.application1.registerAppInterfaceParams.appHMIType = { "NAVIGATION" }
 config.application2.registerAppInterfaceParams.appHMIType = { "MEDIA" }
 config.application1.registerAppInterfaceParams.isMediaApplication = false
 config.application2.registerAppInterfaceParams.isMediaApplication = true
-config.ExitOnCrash = false
 
 --[[ Required Shared libraries ]]
 local actions = require("user_modules/sequences/actions")
