@@ -12,6 +12,7 @@ local json = require("modules/json")
 local utils = require("user_modules/utils")
 local constants = require('protocol_handler/ford_protocol_constants')
 local bson = require("bson4lua")
+local security = require("user_modules/sequences/security")
 
 --[[ General configuration parameters ]]
 runner.testSettings.isSelfIncluded = false
@@ -27,6 +28,7 @@ m.Title = runner.Title
 m.Step = runner.Step
 m.start = actions.start
 m.postconditions = actions.postconditions
+m.preconditions = actions.preconditions
 m.registerAppWOPTU = actions.registerAppWOPTU
 m.activateApp = actions.activateApp
 m.getHMIAppId = actions.app.getHMIId
@@ -36,14 +38,11 @@ m.setSDLIniParameter = actions.sdl.setSDLIniParameter
 m.cloneTable = utils.cloneTable
 m.toString = utils.toString
 m.isTableEqual = utils.isTableEqual
-m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
-m.EMPTY_ARRAY = json.EMPTY_ARRAY
 m.getPreloadedPT = actions.sdl.getPreloadedPT
 m.setPreloadedPT = actions.sdl.setPreloadedPT
 m.spairs = utils.spairs
 m.policyTableUpdate = actions.policyTableUpdate
 m.registerApp = actions.registerApp
-m.preconditions = actions.preconditions
 
 --[[ Common Variables ]]
 m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
@@ -92,6 +91,53 @@ m.anotherVideoStreamingCapabilityWithOutAddVSC = {
   pixelPerInch = 200,
   scale = 3
 }
+
+local function getSystemTimeValue()
+  local dd = os.date("*t")
+  return {
+    millisecond = 0,
+    second = dd.sec,
+    minute = dd.min,
+    hour = dd.hour,
+    day = dd.day,
+    month = dd.month,
+    year = dd.year,
+    tz_hour = 2,
+    tz_minute = 0
+  }
+end
+
+local function registerGetSystemTimeResponse()
+  actions.getHMIConnection():ExpectRequest("BasicCommunication.GetSystemTime")
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { systemTime = getSystemTimeValue() })
+    end)
+  :Pin()
+  :Times(AnyNumber())
+end
+
+function m.startWithGetSystemTime(pHMIParams)
+  local event = actions.run.createEvent()
+  actions.init.SDL()
+  :Do(function()
+      actions.init.HMI()
+      :Do(function()
+        actions.init.HMI_onReady(pHMIParams)
+          :Do(function()
+              actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemTimeReady")
+              registerGetSystemTimeResponse()
+              actions.init.connectMobile()
+              :Do(function()
+                  actions.init.allowSDL()
+                  :Do(function()
+                      actions.hmi.getConnection():RaiseEvent(event, "Start event")
+                    end)
+                end)
+            end)
+        end)
+    end)
+  return actions.hmi.getConnection():ExpectEvent(event, "Start event")
+end
 
 function m.getVideoStreamingCapability(pArraySizeAddVSC)
   if not pArraySizeAddVSC then pArraySizeAddVSC = 1 end
@@ -244,12 +290,9 @@ local function getVideoDataForStartServicePayload(pData)
   return out
 end
 
-function m.startVideoService(pData, pAppId, isEncryption)
+function m.startVideoService(pData, pAppId)
   if not pAppId then pAppId = 1 end
-  if isEncryption == nil then isEncryption = false end
-
   local videoData = getVideoDataForStartServicePayload(pData)
-
   local videoPayload = {
     height          = { type = bsonType.INT32,  value = videoData.height },
     width           = { type = bsonType.INT32,  value = videoData.width },
@@ -260,11 +303,16 @@ function m.startVideoService(pData, pAppId, isEncryption)
   local msg = {
       serviceType = constants.SERVICE_TYPE.VIDEO,
       frameInfo = constants.FRAME_INFO.START_SERVICE,
-      encryption = isEncryption,
+      encryption = false,
       frameType = constants.FRAME_TYPE.CONTROL_FRAME,
       binaryData = bson.to_bytes(videoPayload)
     }
   actions.getMobileSession(pAppId):Send(msg)
+
+  actions.getMobileSession():ExpectControlMessage(constants.SERVICE_TYPE.VIDEO, {
+    frameInfo = constants.FRAME_INFO.START_SERVICE_ACK,
+    encryption = false
+  })
 
   actions.getHMIConnection():ExpectRequest("Navigation.SetVideoConfig",{
     config = {
@@ -279,7 +327,44 @@ function m.startVideoService(pData, pAppId, isEncryption)
     end)
   actions.getHMIConnection(pAppId):ExpectRequest("Navigation.StartStream")
   :Do(function(_, data)
-      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+end
+
+function m.startSecureVideoService(pData, pTimes)
+  local videoData = getVideoDataForStartServicePayload(pData)
+
+  local videoPayload = {
+    height          = { type = bsonType.INT32,  value = videoData.height },
+    width           = { type = bsonType.INT32,  value = videoData.width },
+    videoProtocol   = { type = bsonType.STRING, value = videoData.videoProtocol },
+    videoCodec      = { type = bsonType.STRING, value = videoData.videoCodec }
+  }
+
+  actions.getMobileSession():StartSecureService(constants.SERVICE_TYPE.VIDEO, bson.to_bytes(videoPayload))
+
+  actions.getMobileSession():ExpectControlMessage(constants.SERVICE_TYPE.VIDEO, {
+    frameInfo = constants.FRAME_INFO.START_SERVICE_ACK,
+    encryption = true
+  })
+
+  actions.getMobileSession():ExpectHandshakeMessage()
+  :Times(pTimes)
+
+  actions.getHMIConnection():ExpectRequest("Navigation.SetVideoConfig", {
+    config = {
+      height = videoData.height,
+      width = videoData.width,
+      protocol = videoData.videoProtocol,
+      codec = videoData.videoCodec
+    }
+  })
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  actions.getHMIConnection():ExpectRequest("Navigation.StartStream")
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
     end)
 end
 
@@ -300,8 +385,28 @@ function m.stopVideoService(pAppId)
   actions.getMobileSession(pAppId):StopService(11)
   actions.getHMIConnection(pAppId):ExpectRequest("Navigation.StopStream")
   :Do(function(_, data)
-      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
     end)
+end
+
+local function initSDLCertificates(pCrtsFileName)
+  SDL.CRT.set(pCrtsFileName)
+end
+
+local function cleanUpCertificates()
+  SDL.CRT.clean()
+end
+
+function m.securePreconditions()
+  actions.preconditions()
+  cleanUpCertificates()
+  actions.setSDLIniParameter("Protocol", "DTLSv1.0")
+  initSDLCertificates("./files/Security/client_credential.pem")
+end
+
+function m.securePostconditions()
+  actions.postconditions()
+  cleanUpCertificates()
 end
 
 return m
