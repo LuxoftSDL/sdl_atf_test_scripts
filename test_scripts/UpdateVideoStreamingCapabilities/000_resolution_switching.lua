@@ -10,6 +10,8 @@
 -- 3. HMI sends UI.GetCapabilities(videoStreamingCapability) with additionalVideoStreamingCapabilities
 -- 4. App is subscribed to video streaming capabilities update
 -- 5. App sent supported video capabilities using OnAppCapabilityUpdated notification to HMI
+-- 6. Video service is started
+-- 7. App starts video streaming
 --
 -- Sequence:
 -- 1. HMI sends OnSystemCapabilityUpdated with new video capabilities
