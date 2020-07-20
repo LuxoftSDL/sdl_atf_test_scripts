@@ -63,7 +63,7 @@ common.Step("Setup RegisterAppInterface params for App2", common.setupRAIParams,
 common.Step("Start SDL, HMI", common.start)
 
 common.Title("Test")
-common.Step("Register App1 with WEB_VIEW appHmiType", common.disallowedRegisterApp, { appSessionId1 })
+common.Step("Register App1 with WEB_VIEW appHmiType", common.expectRegistrationDisallowed, { appSessionId1 })
 common.Step("Connect WebEngine device", common.connectWebEngine, { webEngineDevice, "WS" })
 common.Step("Register App2 with NAVIGATION appHmiType", common.registerApp, { appSessionId2 })
 common.Step("Check absence of permissions for rejected application in LPT", checkAbsenceOfPermissions)
