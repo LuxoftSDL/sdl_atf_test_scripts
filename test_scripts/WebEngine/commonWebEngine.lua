@@ -804,13 +804,14 @@ local function getPTUFromPTS()
 end
 
 function common.ptuViaHMI(pPTUpdateFunc, pExpNotificationFunc)
+  local hmiConnection = common.getHMIConnection()
   if pExpNotificationFunc then
     pExpNotificationFunc()
   end
   local ptuFileName = os.tmpname()
-  local requestId = common.getHMIConnection():SendRequest("SDL.GetPolicyConfigurationData",
+  local requestId = hmiConnection:SendRequest("SDL.GetPolicyConfigurationData",
     { policyType = "module_config", property = "endpoints" })
-  common.getHMIConnection():ExpectResponse(requestId)
+  hmiConnection:ExpectResponse(requestId)
   :Do(function()
       local ptuTable = getPTUFromPTS()
       for i, _ in pairs(actions.mobile.getApps()) do
@@ -821,10 +822,10 @@ function common.ptuViaHMI(pPTUpdateFunc, pExpNotificationFunc)
       end
       utils.tableToJsonFile(ptuTable, ptuFileName)
       if not pExpNotificationFunc then
-        common.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", { odometer = true })
-        common.getHMIConnection():ExpectNotification("SDL.OnStatusUpdate", { status = "UP_TO_DATE" })
+        hmiConnection:ExpectRequest("VehicleInfo.GetVehicleData", { odometer = true })
+        hmiConnection:ExpectNotification("SDL.OnStatusUpdate", { status = "UP_TO_DATE" })
       end
-      common.getHMIConnection():SendNotification("SDL.OnReceivedPolicyUpdate",
+      hmiConnection:SendNotification("SDL.OnReceivedPolicyUpdate",
         { policyfile = ptuFileName })
       common.runAfter(function() os.remove(ptuFileName) end, 250)
       for id, _ in pairs(actions.mobile.getApps()) do
