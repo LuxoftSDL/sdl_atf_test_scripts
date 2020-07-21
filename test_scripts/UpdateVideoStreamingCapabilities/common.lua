@@ -101,6 +101,11 @@ function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
   })
 end
 
+function m.setHMICapabilities(pVSC)
+  if not pVSC then pVSC = m.getVideoStreamingCapability() end
+  m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
+end
+
 function m.sendOnSystemCapabilityUpdated(pTimes, pParams)
   if not pTimes then pTimes = 1 end
   if not pParams then pParams = m.getVideoStreamingCapability() end
