@@ -36,7 +36,6 @@ for parameter, value in pairs(arraySize) do
   common.Step("Set HMI Capabilities", common.setHMICapabilities, { common.getVideoStreamingCapability(value) })
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
   common.Step("RAI", common.registerAppWOPTU)
-  common.Step("Activate App", common.activateApp)
 
   common.Title("Test")
   common.Step("GetSystemCapability in range " .. parameter .. " " .. value, common.getSystemCapability,
