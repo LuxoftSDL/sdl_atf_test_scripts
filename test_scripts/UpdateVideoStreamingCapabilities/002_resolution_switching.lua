@@ -38,18 +38,26 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Variables ]]
 local isSubscribed = true
-local videoCapSupportedByApp = common.getVideoStreamingCapability(3)
 local expected = 1
+local appId = 1
+local videoCapSupportedByApp = {
+  appCapability = {
+    appCapabilityType = "VIDEO_STREAMING",
+    videoStreamingCapability = common.getVideoStreamingCapability(3)
+  }
+}
+local videoCapSupportedByHMI = common.getVideoStreamingCapability(5)
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setHMICapabilities, { common.getVideoStreamingCapability(5) })
+common.Step("Set HMI Capabilities", common.setHMICapabilities, { videoCapSupportedByHMI })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
 common.Step("RAI", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
-common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability, { isSubscribed })
-common.Step("OnAppCapabilityUpdated with supported video capabilities", common.onAppCapabilityUpdated,
+common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
+  { isSubscribed, appId, videoCapSupportedByHMI })
+common.Step("OnAppCapabilityUpdated with supported video capabilities", common.sendOnAppCapabilityUpdated,
   { videoCapSupportedByApp })
 common.Step("Start video service", common.startVideoService, { common.videoStreamingCapabilityWithOutAddVSC })
 common.Step("Start video streaming", common.startVideoStreaming, { common.videoStreamingCapabilityWithOutAddVSC })

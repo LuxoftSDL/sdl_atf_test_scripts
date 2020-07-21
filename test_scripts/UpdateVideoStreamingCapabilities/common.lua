@@ -98,6 +98,11 @@ function m.getVideoStreamingCapability(pArraySizeAddVSC)
   return vSC
 end
 
+function m.setHMICapabilities(pVSC)
+  if not pVSC then pVSC = m.getVideoStreamingCapability() end
+  m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
+end
+
 function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
   if not pAppId then pAppId = 1 end
   if not pResponseParams then pResponseParams = m.getVideoStreamingCapability() end
@@ -154,11 +159,12 @@ function m.sendOnAppCapabilityUpdated(appCapability, pTimesOnHMI, pAppId)
   if not pTimesOnHMI then pTimesOnHMI = 1 end
   local uiGetCapabilities = m.hmiDefaultCapabilities.UI.GetCapabilities.params
   if not appCapability then appCapability = {
-    appCapability = {
-      appCapabilityType = "VIDEO_STREAMING",
-      videoStreamingCapability = uiGetCapabilities.systemCapabilities.videoStreamingCapability
+      appCapability = {
+        appCapabilityType = "VIDEO_STREAMING",
+        videoStreamingCapability = uiGetCapabilities.systemCapabilities.videoStreamingCapability
+      }
     }
-  } end
+  end
   actions.getMobileSession(pAppId):SendNotification("OnAppCapabilityUpdated", appCapability)
   actions.getHMIConnection():ExpectNotification("BasicCommunication.OnAppCapabilityUpdated", appCapability)
   :Times(pTimesOnHMI)
