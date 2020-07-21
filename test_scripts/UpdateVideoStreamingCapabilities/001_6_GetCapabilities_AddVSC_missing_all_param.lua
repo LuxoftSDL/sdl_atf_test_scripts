@@ -1,6 +1,6 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
--- Description: SDL applies default videoStreamingCapability in case HMI responds with videoStreamingCapability
+-- Description: SDL applies the videoStreamingCapability in case HMI responds with videoStreamingCapability
 -- that contains additionalVideoStreamingCapabilities array with empty single element
 
 -- Preconditions:
@@ -11,13 +11,12 @@
 -- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
 --  and additionalVideoStreamingCapabilities array contains empty single element
 -- SDL does:
--- - a. ignore the videoStreamingCapability with additionalVideoStreamingCapabilities
---  received from HMI in UI.GetCapabilities response
--- - b. apply the default videoStreamingCapability from hmi_capabilities.json
+-- - a. apply the videoStreamingCapability with additionalVideoStreamingCapabilities internally
 -- 3. App registers with 5 transport protocol
 -- 4. App requests GetSystemCapability(VIDEO_STREAMING)
 -- SDL does:
--- - a. send GetSystemCapability response with the default videoStreamingCapability from hmi_capabilities.json
+-- - a. send GetSystemCapability response with videoStreamingCapability that contains
+--    the additionalVideoStreamingCapabilities received from HMI in UI.GetCapabilities response
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
@@ -38,7 +37,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
-  { false, appSessionId, common.defaultVideoStreamingCapability })
+  { false, appSessionId, emptyAddVSC })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

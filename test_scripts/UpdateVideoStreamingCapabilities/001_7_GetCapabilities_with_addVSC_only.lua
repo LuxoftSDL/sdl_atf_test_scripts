@@ -24,7 +24,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 local vsc = {
     additionalVideoStreamingCapabilities = {}
 }
-vsc.additionalVideoStreamingCapabilities = common.anotherVideoStreamingCapabilityWithOutAddVSC
+vsc.additionalVideoStreamingCapabilities[1] = common.anotherVideoStreamingCapabilityWithOutAddVSC
 
 --[[ Scenario ]]
 common.Title("Preconditions")
