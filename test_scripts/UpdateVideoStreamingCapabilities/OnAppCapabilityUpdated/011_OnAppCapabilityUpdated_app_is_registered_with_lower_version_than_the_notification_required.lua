@@ -18,9 +18,11 @@
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
---[[ Local Variables ]]
+--[[ General configuration parameters ]]
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
+
+--[[ Local Variables ]]
 local notExpected = 0
 
 --[[ Scenario ]]
@@ -32,7 +34,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated for VIDEO_STREAMING", common.sendOnAppCapabilityUpdated,
-	{ nil, notExpected } )
+	{ nil, notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

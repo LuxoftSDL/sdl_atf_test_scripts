@@ -36,7 +36,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated 100 items in additionalVideoStreamingCapabilities",
-	common.sendOnAppCapabilityUpdated, { appCapability } )
+	common.sendOnAppCapabilityUpdated, { appCapability })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

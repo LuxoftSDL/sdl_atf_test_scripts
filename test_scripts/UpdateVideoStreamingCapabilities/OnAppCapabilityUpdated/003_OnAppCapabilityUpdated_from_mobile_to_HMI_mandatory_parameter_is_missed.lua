@@ -35,7 +35,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated without mandatory parameter appCapabilityType",
-	common.sendOnAppCapabilityUpdated, { appCapability, notExpected } )
+	common.sendOnAppCapabilityUpdated, { appCapability, notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

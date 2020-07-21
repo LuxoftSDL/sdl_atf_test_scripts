@@ -21,7 +21,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 --[[ Local Variables ]]
 local appCapability = {
   appCapability = {
-    appCapabilityType = "VIDEO_STREAMING",
+    appCapabilityType = "VIDEO_STREAMING"
     -- videoStreamingCapability is missed
   }
 }
@@ -35,7 +35,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated with appCapabilityType without videoStreamingCapability parameter",
-	common.sendOnAppCapabilityUpdated, { appCapability } )
+	common.sendOnAppCapabilityUpdated, { appCapability })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
