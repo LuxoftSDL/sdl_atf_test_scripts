@@ -178,7 +178,7 @@ function m.setHMICapabilities(pVSC)
   m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
 end
 
-function m.sendOnSystemCapabilityUpdated(pAppId, pTimes, pParams )
+function m.sendOnSystemCapabilityUpdated(pAppId, pTimes, pParams)
   if not pTimes then pTimes = 1 end
   if not pParams then pParams = m.getVideoStreamingCapability() end
   local mobileParams = {
