@@ -46,7 +46,7 @@ common.Step("Activate App", common.activateApp)
 common.Title("Test")
 for caseName, value in common.spairs(cases) do
   common.Step("OnAppCapabilityUpdated with additionalVideoStreamingCapabilities " ..caseName,
-    common.sendOnAppCapabilityUpdated, { value, notExpected } )
+    common.sendOnAppCapabilityUpdated, { value, notExpected })
 end
 
 common.Title("Postconditions")
