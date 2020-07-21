@@ -1,5 +1,18 @@
 -- https://adc.luxoft.com/jira/browse/FORDTCN-6974
-
+---------------------------------------------------------------------------------------------------
+-- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
+--
+-- Description: Processing of OnSystemCapabilityUpdated notification 
+-- with no appID 
+--
+-- Preconditions:
+-- 1. Default HMI capabilities contain data about videoStreamingCapability 
+-- 2. SDL and HMI are started
+-- 3. App is registered without PTU, activated and subscribed on SystemCapabilities
+--
+-- Sequence:
+-- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL with no appID
+--  a. SDL sends OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile 
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
