@@ -23,7 +23,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 local vsc = common.getVideoStreamingCapability(1)
 local tmpVsc = vsc
-for _ = 1, 256, 1 do
+for _ = 1, 128, 1 do
   tmpVsc.additionalVideoStreamingCapabilities[1] = common.getVideoStreamingCapability(1)
   tmpVsc = tmpVsc.additionalVideoStreamingCapabilities[1]
 end
