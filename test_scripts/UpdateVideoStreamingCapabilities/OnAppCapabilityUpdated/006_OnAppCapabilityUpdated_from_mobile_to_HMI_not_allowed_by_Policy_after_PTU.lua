@@ -32,12 +32,12 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("RAI", common.registerApp)
 common.Step("Activate App", common.activateApp)
-common.Step("App sends OnAppCapabilityUpdated not allowed by Policy", common.sendOnAppCapabilityUpdated )
+common.Step("App sends OnAppCapabilityUpdated allowed by Policy", common.sendOnAppCapabilityUpdated )
 
 common.Title("Test")
 common.Step("Policy Table Update Certificate", common.policyTableUpdate, { ptUpdate })
 common.Step("App sends OnAppCapabilityUpdated not allowed by Policy", common.sendOnAppCapabilityUpdated,
-	{ nil, notExpect } )
+	{ nil, notExpect })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

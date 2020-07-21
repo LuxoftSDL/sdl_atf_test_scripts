@@ -37,7 +37,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated with incorrect parameter", common.sendOnAppCapabilityUpdated,
-  { appCapability, notExpected } )
+  { appCapability, notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

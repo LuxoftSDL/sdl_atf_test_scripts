@@ -40,7 +40,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated additionalVideoStreamingCapabilities has a nesting level ",
-  common.sendOnAppCapabilityUpdated, { appCapability } )
+  common.sendOnAppCapabilityUpdated, { appCapability })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
