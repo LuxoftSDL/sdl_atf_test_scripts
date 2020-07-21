@@ -24,6 +24,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
 local appSessionId = 1
+local isSubscribe = false
 
 local checks = { }
 
@@ -53,7 +54,7 @@ for type, value in pairs(checks) do
 
   common.Title("Test")
   common.Step("App sends GetSystemCapability for VIDEO_STREAMING " .. type, common.getSystemCapability,
-    { false, appSessionId, common.defaultVideoStreamingCapability })
+    { isSubscribe, appSessionId, common.defaultVideoStreamingCapability })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)
