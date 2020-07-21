@@ -3,40 +3,36 @@
 --
 -- Description:
 -- Processing OnAppCapabilityUpdated notification from mobile to HMI
+--  in case app version is less then notification version
 --
 -- Precondition:
 -- 1. SDL and HMI are started
--- 2. App1 with NAVIGATION appHMIType is registered
--- 3. OnAppCapabilityUpdated notification is alowed by policy for App1
+-- 2. App with `NAVIGATION` appHMIType, 5 transport protocol, version 6.0 is registered
+-- 3. OnAppCapabilityUpdated notification is allowed by policy for App
 --
 -- Sequence:
--- 1. App1 sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type without 
---    videoStreamingCapability parameter
--- 2. SDL sends OnAppCapabilityUpdated notification to the HMI
-
+-- 1. App sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type
+-- SDL does:
+-- - a. not send OnAppCapabilityUpdated notification to the HMI
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
-local appCapability = {
-  appCapability = {
-    appCapabilityType = "VIDEO_STREAMING",
-    -- videoStreamingCapability is missed
-  }
-}
+--[[ Local Variables ]]
+config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 6
+config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
+local notExpected = 0
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Prepare preloaded policy table", common.preparePreloadedPT)
-common.Step("Set HMI Capabilities", common.setHMICapabilities)
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("RAI", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
-common.Step("App sends OnAppCapabilityUpdated AppCapabilityType without videoStreamingCapability parameter", 
-	common.sendOnAppCapabilityUpdated, { appCapability, 1 } )
+common.Step("App sends OnAppCapabilityUpdated for VIDEO_STREAMING", common.sendOnAppCapabilityUpdated,
+	{ nil, notExpected } )
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

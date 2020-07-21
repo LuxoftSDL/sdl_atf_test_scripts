@@ -20,18 +20,21 @@ config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 local m = {}
 m.Title = runner.Title
 m.Step = runner.Step
-m.preconditions = actions.preconditions
 m.start = actions.start
 m.postconditions = actions.postconditions
 m.registerAppWOPTU = actions.registerAppWOPTU
 m.activateApp = actions.activateApp
 m.cloneTable = utils.cloneTable
-m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 m.EMPTY_ARRAY = json.EMPTY_ARRAY
 m.getPreloadedPT = actions.sdl.getPreloadedPT
 m.setPreloadedPT = actions.sdl.setPreloadedPT
+m.spairs = utils.spairs
+m.policyTableUpdate = actions.policyTableUpdate
+m.registerApp = actions.registerApp
+m.preconditions = actions.preconditions
 
 --[[ Common Variables ]]
+m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 local defaultSDLcapabilities = SDL.HMICap.get()
 m.defaultVideoStreamingCapability = defaultSDLcapabilities.UI.systemCapabilities.videoStreamingCapability
 
@@ -82,25 +85,6 @@ function m.getVideoStreamingCapability(pArraySizeAddVSC)
   return vSC
 end
 
-function m.getAnotherVideoStreamingCapability(pArraySizeAddVSC)
-  if not pArraySizeAddVSC then pArraySizeAddVSC = 1 end
-  local vSC = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
-  vSC.additionalVideoStreamingCapabilities = {}
-  if pArraySizeAddVSC == 0 then
-    vSC.additionalVideoStreamingCapabilities = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
-  else
-    for i = 1, pArraySizeAddVSC do
-      vSC.additionalVideoStreamingCapabilities[i] = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
-    end
-  end
-  return vSC
-end
-
-function m.setHMICapabilities(pVSC)
-  if not pVSC then pVSC = m.getVideoStreamingCapability() end
-  m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
-end
-
 function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
   if not pAppId then pAppId = 1 end
   if not pResponseParams then pResponseParams = m.getVideoStreamingCapability() end
@@ -147,26 +131,13 @@ function m.sendOnSystemCapabilityUpdatedMultipleApps(pTimesAppId1, pTimesAppId2,
   :Times(pTimesAppId2)
 end
 
-local function getAppConfig(pPt)
-  local out = utils.cloneTable(pPt.policy_table.app_policies.default)
-    out.groups = { "Base-4" }
-    out.AppHMIType = { "NAVIGATION" }
-    return out
-end
-
-function m.preparePreloadedPT()
-  local preloadedTable = m.getPreloadedPT()
-  local appId = config["application1"].registerAppInterfaceParams.fullAppID
-  preloadedTable.policy_table.app_policies[appId] = getAppConfig(preloadedTable)
-  preloadedTable.policy_table.functional_groupings["DataConsent-2"].rpcs = utils.json.null
-  m.setPreloadedPT(preloadedTable)
-end
-
 function m.sendOnAppCapabilityUpdated(appCapability, pTimesOnHMI)
+  if not pTimesOnHMI then pTimesOnHMI = 1 end
+  local uiGetCapabilities = m.hmiDefaultCapabilities.UI.GetCapabilities.params
   if not appCapability then appCapability = {
     appCapability = {
       appCapabilityType = "VIDEO_STREAMING",
-      videoStreamingCapability = m.getVideoStreamingCapability()
+      videoStreamingCapability = uiGetCapabilities.systemCapabilities.videoStreamingCapability
     }
   } end
   actions.getMobileSession(1):SendNotification("OnAppCapabilityUpdated", appCapability)
