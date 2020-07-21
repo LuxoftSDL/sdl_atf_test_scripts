@@ -28,6 +28,7 @@ local function checkResumptionData(pAppId)
   common.setGlobalPropertiesResumption(pAppId)
   common.subscribeVehicleDataResumption(pAppId)
   common.subscribeWayPointsResumption(pAppId)
+  common.createWindowResumption(pAppId)
   common.getHMIConnection():ExpectRequest("UI.AddCommand",
     common.resumptionData[pAppId].addCommand.UI)
   :Do(function(_, data)

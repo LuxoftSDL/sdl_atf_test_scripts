@@ -44,7 +44,8 @@ m.rpcs = {
   createIntrerationChoiceSet = { "VR" },
   setGlobalProperties = { "UI", "TTS" },
   subscribeVehicleData = { "VehicleInfo" },
-  subscribeWayPoints = { "Navigation" }
+  subscribeWayPoints = { "Navigation" },
+  createWindow = { "UI" }
 }
 
 --[[ Common Functions ]]
@@ -94,15 +95,19 @@ end
 --! pAppId - application number (1, 2, etc.)
 --! @return: none
 --]]
-function m.resumptionFullHMILevel(pAppId)
+function m.resumptionFullHMILevel(pAppId, pErrorResponceRpc)
+  local exp = {
+    { hmiLevel = "NONE", windowID = 0 },
+    { hmiLevel = "NONE", windowID = 2 },
+    { hmiLevel = "FULL", windowID = 0 }
+  }
+  if pErrorResponceRpc ~= nil then table.remove(exp, 2) end
   m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(pAppId) })
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
     end)
-  m.getMobileSession():ExpectNotification("OnHMIStatus",
-    { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" },
-    { hmiLevel = "FULL", systemContext = "MAIN", audioStreamingState = "AUDIBLE" })
-  :Times(2)
+  m.getMobileSession():ExpectNotification("OnHMIStatus",table.unpack(exp))
+  :Times(#exp)
 end
 
 --[[ @getRpcName: construct RPC name for HMI messages
@@ -172,6 +177,16 @@ m.removeData = {
         m.sendResponse(deleteData)
       end)
     :Times(pTimes)
+  end,
+  DeleteWindow = function(pAppId)
+    local params = {
+      appID = m.getHMIAppId(pAppId),
+      windowID = m.resumptionData[pAppId].createWindow.UI.windowID
+    }
+    m.getHMIConnection():ExpectRequest("UI.DeleteWindow", params)
+    :Do(function(_,deleteData)
+        m.sendResponse(deleteData)
+      end)
   end
 }
 
@@ -338,6 +353,17 @@ m.rpcsRevert = {
         end)
       :Times(pTimes)
     end
+  },
+  createWindow = {
+    UI = function(pAppId, pTimes)
+      if not pTimes then pTimes = 1 end
+      m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
+      :Do(function(_, data)
+          m.sendResponse(data)
+          m.removeData.DeleteWindow(pAppId)
+        end)
+      :Times(pTimes)
+    end
   }
 }
 
@@ -422,12 +448,12 @@ function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel,
         })
       mobSession:ExpectResponse(corId, { success = true, resultCode = "RESUME_FAILED" })
       :Do(function()
-          pCheckResumptionHMILevel(pAppId)
           mobSession:ExpectNotification("OnPermissionsChange")
         end)
       :Timeout(pRAIResponseExp)
     end)
   pCheckResumptionData(pAppId, pErrorResponceRpc, pErrorResponseInterface)
+  pCheckResumptionHMILevel(pAppId, pErrorResponceRpc)
 end
 
 --[[ @reRegisterAppSuccess: re-register application with SUCCESS resultCode
@@ -834,7 +860,7 @@ function m.updatePreloadedPT()
   pt.policy_table.functional_groupings["DataConsent-2"].rpcs = json.null
   local additionalRPCs = {
     "SubscribeVehicleData", "UnsubscribeVehicleData", "SubscribeWayPoints",
-    "UnsubscribeWayPoints", "OnVehicleData", "OnWayPointChange"
+    "UnsubscribeWayPoints", "OnVehicleData", "OnWayPointChange", "CreateWindow"
   }
   pt.policy_table.functional_groupings.NewTestCaseGroup = { rpcs = { } }
   for _, v in pairs(additionalRPCs) do
@@ -1138,6 +1164,45 @@ function m.log(...)
     str = str .. delimiter .. p
   end
   utils.cprint(color.magenta, str)
+end
+
+--[[ @createWindowResumption: check resumption of createWindow data
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pErrorResponseInterface - interface of RPC for error response
+--! @return: none
+--]]
+function m.createWindowResumption(pAppId, pErrorResponseInterface)
+  m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
+  :Do(function(_, data)
+      m.sendResponse(data, pErrorResponseInterface, "UI")
+    end)
+end
+
+--[[ @addSubMenu: adding subMenu
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! @return: none
+--]]
+function m.createWindow(pAppId)
+  if not pAppId then pAppId = 1 end
+  local params = {
+    windowID = 2,
+    windowName = "Name",
+    type = "WIDGET",
+    associatedServiceType = "MEDIA"
+  }
+  local cid = m.getMobileSession(pAppId):SendRPC("CreateWindow", params)
+  m.getHMIConnection():ExpectRequest("UI.CreateWindow")
+  :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      m.resumptionData[pAppId].createWindow = { UI = data.params }
+    end)
+  m.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
+  m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
+  :Do(function(_, data)
+      m.hashId[pAppId] = data.payload.hashID
+    end)
 end
 
 return m
