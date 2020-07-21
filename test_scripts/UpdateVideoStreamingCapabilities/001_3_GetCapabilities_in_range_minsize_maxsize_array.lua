@@ -24,6 +24,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
 local appSessionId = 1
+local isSubscribe = false
 local arraySize = {
   minSize = 1,
   maxSize = 100
@@ -39,7 +40,7 @@ for parameter, value in pairs(arraySize) do
 
   common.Title("Test")
   common.Step("GetSystemCapability in range " .. parameter .. " " .. value, common.getSystemCapability,
-    { false, appSessionId, common.getVideoStreamingCapability(value) })
+    { isSubscribe, appSessionId, common.getVideoStreamingCapability(value) })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

@@ -12,7 +12,7 @@ local utils = require("user_modules/utils")
 
 --[[ General configuration parameters ]]
 runner.testSettings.isSelfIncluded = false
-config.defaultProtocolVersion = 2
+config.defaultProtocolVersion = 5
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 

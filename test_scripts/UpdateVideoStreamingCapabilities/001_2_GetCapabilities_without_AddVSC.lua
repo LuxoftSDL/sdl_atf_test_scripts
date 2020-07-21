@@ -22,6 +22,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
 local appSessionId = 1
+local isSubscribe = false
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -32,7 +33,7 @@ common.Step("RAI", common.registerAppWOPTU)
 
 common.Title("Test")
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
-  { false, appSessionId, common.videoStreamingCapabilityWithOutAddVSC })
+  { isSubscribe, appSessionId, common.videoStreamingCapabilityWithOutAddVSC })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

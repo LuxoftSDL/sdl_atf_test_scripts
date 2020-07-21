@@ -22,6 +22,10 @@
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
+--[[ Local Variables ]]
+local appSessionId = 1
+local isSubscribe = false
+
 local vsc = common.getVideoStreamingCapability(10)
 vsc.additionalVideoStreamingCapabilities[8] = common.getVideoStreamingCapability(1)
 vsc.additionalVideoStreamingCapabilities[6] = common.getVideoStreamingCapability(4)
@@ -37,7 +41,7 @@ common.Step("RAI", common.registerAppWOPTU)
 
 common.Title("Test")
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
-  { false, 1, vsc })
+  { isSubscribe, appSessionId, vsc })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
