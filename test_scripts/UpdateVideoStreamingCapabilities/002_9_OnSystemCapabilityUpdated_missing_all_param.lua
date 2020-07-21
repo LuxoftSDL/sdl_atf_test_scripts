@@ -1,18 +1,18 @@
--- https://adc.luxoft.com/jira/browse/FORDTCN-6980
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
--- Description: Processing of empty OnSystemCapabilityUpdated notification 
+-- Description: Processing of empty OnSystemCapabilityUpdated notification
 --
 -- Preconditions:
--- 1. Default HMI capabilities contain data about videoStreamingCapability 
+-- 1. HMI capabilities contain data about videoStreamingCapability
 -- 2. SDL and HMI are started
--- 3. App is registered without PTU, activated and subscribed on SystemCapabilities
+-- 3. App is registered, activated and subscribed on videoStreamingCapability updates
 --
 -- Sequence:
--- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL 
--- with no params for videoStreamingCapabilities
---  a. SDL sends OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile 
+-- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+--   with no params for videoStreamingCapabilities
+-- SDL does:
+--  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
@@ -23,7 +23,6 @@ local expected = 1
 local isSubscribe = true
 
 local vsc = {}
-
 
 --[[ Scenario ]]
 common.Title("Preconditions")

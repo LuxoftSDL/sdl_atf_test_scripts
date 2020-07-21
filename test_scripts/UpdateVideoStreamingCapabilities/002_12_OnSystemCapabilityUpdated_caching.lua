@@ -1,21 +1,21 @@
--- https://adc.luxoft.com/jira/browse/FORDTCN-6984
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
--- Description: Processing of OnSystemCapabilityUpdated notification with cached capabilities
+-- Description: Check that OnSystemCapabilityUpdated notification data is not persisted as capabilities
 --
 -- Preconditions:
--- 1. Default HMI capabilities contain data about videoStreamingCapability 
+-- 1. HMI capabilities contain data about videoStreamingCapability
 -- 2. SDL and HMI are started
--- 3. App is registered without PTU, activated and subscribed on SystemCapabilities
+-- 3. App is registered, activated and subscribed on videoStreamingCapability updates
 --
 -- Sequence:
--- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL 
---  a. SDL sends OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
--- 2. SDL restarts ignition cycle 
+-- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+--  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
+-- 2. SDL restarts ignition cycle
 -- 3. App is registered again
 -- 4. App sends GetSystemCapability request
---  a. SDL sends GetSystemCapability response with cached capabilities
+-- SDL does:
+--  a. send GetSystemCapability response with initial videoStreamingCapability received from HMI on startup
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')

@@ -1,18 +1,18 @@
--- https://adc.luxoft.com/jira/browse/FORDTCN-XXXX
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
 -- Description: Processing of OnSystemCapabilityUpdated notification with not existing appID
 --
 -- Preconditions:
--- 1. Default HMI capabilities contain data about videoStreamingCapability 
+-- 1. HMI capabilities contain data about videoStreamingCapability
 -- 2. SDL and HMI are started
--- 3. App is registered without PTU, activated and subscribed on SystemCapabilities
+-- 3. App is registered, activated and subscribed on videoStreamingCapability updates
 --
 -- Sequence:
--- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL 
--- with not existing appID
---  a. SDL doesn't send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile 
+-- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+--   with not existing appID
+-- SDL does:
+--  a. not send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
@@ -23,6 +23,7 @@ local isSubscribe = true
 
 local vsc = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
 
+--[[ Local Functions ]]
 local function sendOnSystemCapabilityUpdatedWithNotExistingAppId()
   local systemCapabilityParam = {
     systemCapability = {

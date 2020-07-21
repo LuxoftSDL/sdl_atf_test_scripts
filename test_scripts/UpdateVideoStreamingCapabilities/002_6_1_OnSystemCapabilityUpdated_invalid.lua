@@ -1,18 +1,18 @@
--- https://adc.luxoft.com/jira/browse/FORDTCN-6981
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
 -- Description: Processing of OnSystemCapabilityUpdated notification with invalid params
 --
 -- Preconditions:
--- 1. Default HMI capabilities contain data about videoStreamingCapability 
+-- 1. HMI capabilities contain data about videoStreamingCapability
 -- 2. SDL and HMI are started
--- 3. App is registered without PTU, activated and subscribed on SystemCapabilities
+-- 3. App is registered, activated and subscribed on videoStreamingCapability updates
 --
 -- Sequence:
--- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL with invalid 
+-- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL with invalid
 -- values of VideoStreamingCapabilities parameters
---  a. SDL sends OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile 
+-- SDL does:
+--  a. not send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
@@ -48,14 +48,18 @@ checks.invalid_deep_nested_type = common.cloneTable(common.anotherVideoStreaming
 checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities = {
   [1] = common.getVideoStreamingCapability(2)
 }
-checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1] = common.getVideoStreamingCapability(3)
-checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[3].supportedFormats = 2 -- invalid type
+
+checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1] =
+  common.getVideoStreamingCapability(3)
+checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1]
+  .additionalVideoStreamingCapabilities[3].supportedFormats = 2 -- invalid type
 
 checks.invalid_deep_nested_value = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
 checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities = {
   [1] = common.getVideoStreamingCapability(3)
 }
-checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[2].pixelPerInch = -2 -- invalid value
+checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[2]
+  .pixelPerInch = -2 -- invalid value
 
 --[[ Scenario ]]
 for type, value in pairs(checks) do
@@ -68,7 +72,8 @@ for type, value in pairs(checks) do
   common.Step("GetSystemCapability with subscribe = true", common.getSystemCapability, { isSubscribe })
 
   common.Title("Test")
-  common.Step("OnSystemCapabilityUpdated " .. type, common.sendOnSystemCapabilityUpdated, {appSessionId, notExpected, value })
+  common.Step("OnSystemCapabilityUpdated " .. type, common.sendOnSystemCapabilityUpdated,
+    {appSessionId, notExpected, value })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)
