@@ -25,6 +25,7 @@ m.start = actions.start
 m.postconditions = actions.postconditions
 m.registerAppWOPTU = actions.registerAppWOPTU
 m.activateApp = actions.activateApp
+m.cloneTable = utils.cloneTable
 m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 m.EMPTY_ARRAY = json.EMPTY_ARRAY
 
