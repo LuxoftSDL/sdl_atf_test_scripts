@@ -2,10 +2,10 @@
 --
 -- Description: SDL applies default videoStreamingCapability in case HMI responds with videoStreamingCapability
 -- that contains additionalVideoStreamingCapabilities array with count of items out of range
-
+--
 -- Preconditions:
 -- 1. SDL and HMI are started
-
+--
 -- Sequence:
 -- 1. SDL requests UI.GetCapabilities()
 -- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities

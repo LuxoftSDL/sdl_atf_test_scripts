@@ -5,7 +5,7 @@
 --
 -- Preconditions:
 -- 1. SDL and HMI are started
-
+--
 -- Sequence:
 -- 1. SDL requests UI.GetCapabilities()
 -- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with only additionalVideoStreamingCapabilities
@@ -26,7 +26,7 @@ local appSessionId = 1
 local isSubscribe = false
 
 local vsc = {
-    additionalVideoStreamingCapabilities = {}
+  additionalVideoStreamingCapabilities = {}
 }
 vsc.additionalVideoStreamingCapabilities[1] = common.anotherVideoStreamingCapabilityWithOutAddVSC
 
