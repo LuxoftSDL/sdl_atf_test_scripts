@@ -398,7 +398,58 @@ function module.getDefaultHMITable()
           hapticSpatialDataSupported = false,
           diagonalScreenSize = 10,
           pixelPerInch = 150,
-          scale = 2.5
+          scale = 2.5,
+          additionalVideoStreamingCapabilities = {
+            {
+                preferredResolution =
+                {
+                    resolutionWidth = 800,
+                    resolutionHeight = 350
+                },
+                hapticSpatialDataSupported = true,
+                scale = 1
+            },
+            {
+                preferredResolution =
+                {
+                    resolutionWidth = 320,
+                    resolutionHeight = 240
+                },
+                hapticSpatialDataSupported = false
+            },
+            {
+                preferredResolution =
+                {
+                    resolutionWidth = 400,
+                    resolutionHeight = 480
+                },
+                hapticSpatialDataSupported = true
+            },
+            {
+                preferredResolution =
+                {
+                    resolutionWidth = 640,
+                    resolutionHeight = 480
+                },
+                hapticSpatialDataSupported = true
+            },
+            {
+                preferredResolution =
+                {
+                    resolutionWidth = 800,
+                    resolutionHeight = 240
+                },
+                hapticSpatialDataSupported = true
+            },
+            {
+                hapticSpatialDataSupported = false,
+                scale = 2.5
+            },
+            {
+                hapticSpatialDataSupported = true,
+                scale = 5
+            }
+          }
         }
       }
     },
