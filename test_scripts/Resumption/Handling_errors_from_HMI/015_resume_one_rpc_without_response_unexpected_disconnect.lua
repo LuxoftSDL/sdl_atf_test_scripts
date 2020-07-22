@@ -36,7 +36,7 @@ runner.Step("Clean environment", common.preconditions)
 runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 
 runner.Title("Test")
-for k, value in pairs(common.rpcs) do
+for k, value in pairs({ createWindow = { "UI" } }) do
   for _, interface in pairs(value) do
     runner.Title("Rpc " .. k .. " error resultCode to interface " .. interface)
     runner.Step("Register app", common.registerAppWOPTU)
@@ -45,7 +45,7 @@ for k, value in pairs(common.rpcs) do
     runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
     runner.Step("Connect mobile", common.connectMobile)
     runner.Step("Reregister App resumption " .. k, common.reRegisterApp,
-      { 1, common.checkResumptionData, common.resumptionFullHMILevel, k, interface, 12000})
+      { 1, common.checkResumptionData, common.resumptionFullHMILevel, k, interface, 15000})
     runner.Step("Unregister App", common.unregisterAppInterface)
   end
 end
