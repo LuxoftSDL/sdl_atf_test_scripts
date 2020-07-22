@@ -9,12 +9,15 @@ local hmi_values = require('user_modules/hmi_values')
 local SDL = require('SDL')
 local json = require("modules/json")
 local utils = require("user_modules/utils")
+local constants = require('protocol_handler/ford_protocol_constants')
+local bson = require("bson4lua")
 
 --[[ General configuration parameters ]]
 runner.testSettings.isSelfIncluded = false
 config.defaultProtocolVersion = 5
 config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
 config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
+constants.FRAME_SIZE.P5 = 131084
 
 --[[ Shared Functions ]]
 local m = {}
@@ -37,6 +40,16 @@ m.preconditions = actions.preconditions
 m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 local defaultSDLcapabilities = SDL.HMICap.get()
 m.defaultVideoStreamingCapability = defaultSDLcapabilities.UI.systemCapabilities.videoStreamingCapability
+
+local bsonType = {
+  DOUBLE   = 0x01,
+  STRING   = 0x02,
+  DOCUMENT = 0x03,
+  ARRAY    = 0x04,
+  BOOLEAN  = 0x08,
+  INT32    = 0x10,
+  INT64    = 0x12
+}
 
 --[[ Common Functions ]]
 m.videoStreamingCapabilityWithOutAddVSC = {
@@ -83,6 +96,11 @@ function m.getVideoStreamingCapability(pArraySizeAddVSC)
     end
   end
   return vSC
+end
+
+function m.setHMICapabilities(pVSC)
+  if not pVSC then pVSC = m.getVideoStreamingCapability() end
+  m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
 end
 
 function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
@@ -136,18 +154,90 @@ function m.sendOnSystemCapabilityUpdatedMultipleApps(pTimesAppId1, pTimesAppId2,
   :Times(pTimesAppId2)
 end
 
-function m.sendOnAppCapabilityUpdated(appCapability, pTimesOnHMI)
+function m.sendOnAppCapabilityUpdated(appCapability, pTimesOnHMI, pAppId)
+  if not pAppId then pAppId = 1 end
   if not pTimesOnHMI then pTimesOnHMI = 1 end
   local uiGetCapabilities = m.hmiDefaultCapabilities.UI.GetCapabilities.params
   if not appCapability then appCapability = {
-    appCapability = {
-      appCapabilityType = "VIDEO_STREAMING",
-      videoStreamingCapability = uiGetCapabilities.systemCapabilities.videoStreamingCapability
+      appCapability = {
+        appCapabilityType = "VIDEO_STREAMING",
+        videoStreamingCapability = uiGetCapabilities.systemCapabilities.videoStreamingCapability
+      }
     }
-  } end
-  actions.getMobileSession(1):SendNotification("OnAppCapabilityUpdated", appCapability)
+  end
+  actions.getMobileSession(pAppId):SendNotification("OnAppCapabilityUpdated", appCapability)
   actions.getHMIConnection():ExpectNotification("BasicCommunication.OnAppCapabilityUpdated", appCapability)
   :Times(pTimesOnHMI)
+end
+
+local function getVideoDataForStartServicePayload(pData)
+  local out = {
+    height = pData.preferredResolution.resolutionHeight,
+    width = pData.preferredResolution.resolutionWidth,
+    videoProtocol = pData.supportedFormats[1].protocol,
+    videoCodec = pData.supportedFormats[1].codec
+  }
+  return out
+end
+
+function m.startVideoService(pData, pAppId, isEncryption)
+  if not pAppId then pAppId = 1 end
+  if isEncryption == nil then isEncryption = false end
+
+  local videoData = getVideoDataForStartServicePayload(pData)
+
+  local videoPayload = {
+    height          = { type = bsonType.INT32,  value = videoData.height },
+    width           = { type = bsonType.INT32,  value = videoData.width },
+    videoProtocol   = { type = bsonType.STRING, value = videoData.videoProtocol },
+    videoCodec      = { type = bsonType.STRING, value = videoData.videoCodec },
+  }
+
+  local msg = {
+      serviceType = constants.SERVICE_TYPE.VIDEO,
+      frameInfo = constants.FRAME_INFO.START_SERVICE,
+      encryption = isEncryption,
+      frameType = constants.FRAME_TYPE.CONTROL_FRAME,
+      binaryData = bson.to_bytes(videoPayload)
+    }
+  actions.getMobileSession(pAppId):Send(msg)
+
+  actions.getHMIConnection():ExpectRequest("Navigation.SetVideoConfig",{
+    config = {
+      height = videoData.height,
+      width = videoData.width,
+      protocol = videoData.videoProtocol,
+      codec = videoData.videoCodec
+    }
+  })
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  actions.getHMIConnection(pAppId):ExpectRequest("Navigation.StartStream")
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
+    end)
+end
+
+function m.startVideoStreaming(pAppId)
+  if not pAppId then pAppId = 1 end
+  actions.getMobileSession(pAppId):StartStreaming(11, "files/SampleVideo_5mb.mp4")
+  actions.getHMIConnection():ExpectNotification("Navigation.OnVideoDataStreaming", { available = true })
+  utils.cprint(33, "Streaming...")
+  utils.wait(1000)
+end
+
+function m.stopVideoStreaming(pAppId)
+  actions.getMobileSession(pAppId):StopStreaming("files/SampleVideo_5mb.mp4")
+  actions.getHMIConnection():ExpectNotification("Navigation.OnVideoDataStreaming", { available = false })
+end
+
+function m.stopVideoService(pAppId)
+  actions.getMobileSession(pAppId):StopService(11)
+  actions.getHMIConnection(pAppId):ExpectRequest("Navigation.StopStream")
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
+    end)
 end
 
 return m
