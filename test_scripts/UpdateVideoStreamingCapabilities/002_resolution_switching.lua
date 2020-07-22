@@ -39,7 +39,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 --[[ Variables ]]
 local isSubscribed = true
 local expected = 1
-local appId = 1
+local appSessionId = 1
 local videoCapSupportedByApp = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
@@ -56,7 +56,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { com
 common.Step("RAI", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
-  { isSubscribed, appId, videoCapSupportedByHMI })
+  { isSubscribed, appSessionId, videoCapSupportedByHMI })
 common.Step("OnAppCapabilityUpdated with supported video capabilities", common.sendOnAppCapabilityUpdated,
   { videoCapSupportedByApp })
 common.Step("Start video service", common.startVideoService, { common.videoStreamingCapabilityWithOutAddVSC })
@@ -64,7 +64,7 @@ common.Step("Start video streaming", common.startVideoStreaming)
 
 common.Title("Test")
 common.Step("OnSystemCapabilityUpdated with new video params", common.sendOnSystemCapabilityUpdated,
-  { expected, common.anotherVideoStreamingCapabilityWithOutAddVSC })
+  { appSessionId, expected, common.anotherVideoStreamingCapabilityWithOutAddVSC })
 common.Step("Stop video streaming", common.stopVideoStreaming)
 common.Step("Stop video service", common.stopVideoService)
 common.Step("Start video service with new parameters", common.startVideoService,
