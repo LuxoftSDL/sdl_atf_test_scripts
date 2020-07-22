@@ -127,12 +127,11 @@ common.Step("Connect mobile", common.connectMobile)
 common.Step("Re-register App resumption data", common.reRegisterAppSuccess,
   { widgets, 1, checkResumption, "RESUME_FAILED" })
 
-common.Step("Show RPC to Widget 1 with unsuccess INVALID_ID",
-  common.sendShowToWindowUnsuccess, { widgets[1].windowID, "INVALID_ID" })
-common.Step("Show RPC to Widget 2 with unsuccess INVALID_ID",
-  common.sendShowToWindowUnsuccess, { widgets[2].windowID, "INVALID_ID" })
-common.Step("Show RPC to Widget 3 with unsuccess INVALID_ID",
-  common.sendShowToWindowUnsuccess, { widgets[3].windowID, "INVALID_ID" })
+common.Step("Show RPC to Main window", common.sendShowToWindow, { 0 })
+for i = 1, 3 do
+  common.Step("Show RPC to Widget " .. i .. " with unsuccess INVALID_ID",
+    common.sendShowToWindowUnsuccess, { widgets[i].windowID, "INVALID_ID" })
+end
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore SDL settings and PPT", common.postcondition)
