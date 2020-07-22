@@ -283,10 +283,9 @@ function m.startVideoService(pData, pAppId, isEncryption)
     end)
 end
 
-function m.startVideoStreaming(pData, pAppId)
+function m.startVideoStreaming(pAppId)
   if not pAppId then pAppId = 1 end
-  local videoData = getVideoDataForStartServicePayload(pData)
-  actions.getMobileSession(pAppId):StartStreaming(11, "files/SampleVideo_5mb.mp4", videoData.height*videoData.width )
+  actions.getMobileSession(pAppId):StartStreaming(11, "files/SampleVideo_5mb.mp4")
   actions.getHMIConnection():ExpectNotification("Navigation.OnVideoDataStreaming", { available = true })
   utils.cprint(33, "Streaming...")
   utils.wait(1000)
