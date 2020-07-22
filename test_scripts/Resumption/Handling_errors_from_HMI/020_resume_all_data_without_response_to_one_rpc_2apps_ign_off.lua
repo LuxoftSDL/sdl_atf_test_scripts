@@ -31,14 +31,16 @@ local rpcs = {
   addSubMenu = { "UI" },
   createIntrerationChoiceSet = { "VR" },
   setGlobalProperties = { "UI", "TTS" },
-  subscribeVehicleData = { "VehicleInfo" }
+  subscribeVehicleData = { "VehicleInfo" },
+  createWindow = { "UI" }
 }
 
 local rpcsForApp2 = {
   addCommand = { "UI", "VR" },
   addSubMenu = { "UI" },
   createIntrerationChoiceSet = { "VR" },
-  setGlobalProperties = { "UI", "TTS" }
+  setGlobalProperties = { "UI", "TTS" },
+  createWindow = { "UI" }
 }
 
 local VehicleDataForApp2 = {
@@ -77,7 +79,7 @@ for k, value in pairs(rpcs) do
     runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
     runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
     runner.Step("Reregister Apps resumption error to " .. interface .. " " .. k,common.reRegisterApps,
-      {common.checkResumptionData2Apps, k, interface, 12000})
+      {common.checkResumptionData2Apps, k, interface, 15000})
     runner.Step("Unregister app1", common.unregisterAppInterface, { 1 })
     runner.Step("Unregister app2", common.unregisterAppInterface, { 2 })
   end

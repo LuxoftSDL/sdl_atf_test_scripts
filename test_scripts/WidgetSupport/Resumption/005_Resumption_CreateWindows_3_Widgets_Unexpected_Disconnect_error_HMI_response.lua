@@ -20,13 +20,14 @@
 -- SDL does:
 --  - not send CreateWindow response to app
 --  - send OnHMIStatus (FULL level) notification for Main window to app
---  - send OnHMIStatus (NONE level) notification for each Widget window to app
+--  - not send OnHMIStatus notification for each Widget window to app
+--  - send RESUME_FAILED to app
 -- 4) HMI sends valid BC.OnSystemCapabilityUpdated notifications to SDL for each window (0, 1 and 3)
 -- SDL does:
---  - accumulate all 3 notifications
---  - send one notification to mobile app with information about 3 windows (0, 1 and 3)
--- 5) Each widget is activated on the HMI and has FULL level
--- 6) App send Show(with WindowID for Widget window) request to SDL
+--  - accumulate notification for main window (0)
+--  - ignore notifications for widget windows (1 and 3)
+--  - send one notification to mobile app with information about main window (0)
+-- 5) App send Show(with WindowID for Widget window) request to SDL
 -- SDL does:
 --  - proceed with request as normal (SUCCESS or not depending on HMI response)
 ---------------------------------------------------------------------------------------------------
@@ -78,7 +79,7 @@ local function checkResumption(pWidgetParams, pAppId)
     return out
   end
   local windowIds = getAllWindowIds(pWidgetParams)
-  local winCaps = common.getOnSCUParams(windowIds)
+  local winCaps = common.getOnSCUParams({ 0 }, 0)
   common.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated", winCaps)
   common.getHMIConnection():ExpectRequest("UI.CreateWindow", pWidgetParams[1], pWidgetParams[2], pWidgetParams[3])
   :Do(function(e, data)
@@ -96,10 +97,8 @@ local function checkResumption(pWidgetParams, pAppId)
     end)
   common.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",
     { windowID = 0, hmiLevel = "NONE" },
-    { windowID = 0, hmiLevel = "FULL" },
-    { windowID = pWidgetParams[1].windowID, hmiLevel = "NONE" },
-    { windowID = pWidgetParams[3].windowID, hmiLevel = "NONE" })
-  :Times(4)
+    { windowID = 0, hmiLevel = "FULL" })
+  :Times(2)
 end
 
 --[[ Scenario ]]
@@ -118,17 +117,17 @@ common.Title("Test")
 common.Step("Unexpected disconnect", common.unexpectedDisconnect)
 common.Step("Connect mobile", common.connectMobile)
 common.Step("Re-register App resumption data", common.reRegisterAppSuccess,
-  { widgets, 1, checkResumption })
+  { widgets, 1, checkResumption, "RESUME_FAILED" })
 
-common.Step("Widget 1 is activated after restore", common.activateWidgetFromNoneToFULL, { widgets[1].windowID })
-common.Step("Widget 3 is activated after restore", common.activateWidgetFromNoneToFULL, { widgets[3].windowID })
+-- common.Step("Widget 1 is activated after restore", common.activateWidgetFromNoneToFULL, { widgets[1].windowID })
+-- common.Step("Widget 3 is activated after restore", common.activateWidgetFromNoneToFULL, { widgets[3].windowID })
 
-common.Step("Show RPC to widget 1 SUCCESS",
-  common.sendShowToWindow, { widgets[1].windowID })
-common.Step("Show RPC to Widget 2 with duplicate ID unsuccess INVALID_ID",
+common.Step("Show RPC to Widget 1 with unsuccess INVALID_ID",
+  common.sendShowToWindowUnsuccess, { widgets[1].windowID, "INVALID_ID" })
+common.Step("Show RPC to Widget 2 with unsuccess INVALID_ID",
   common.sendShowToWindowUnsuccess, { widgets[2].windowID, "INVALID_ID" })
-common.Step("Show RPC to Widget 3 with duplicate ID unsuccess REJECTED",
-  common.sendShowToWindowUnsuccessHMIREJECTED, { widgets[3].windowID })
+common.Step("Show RPC to Widget 3 with unsuccess INVALID_ID",
+  common.sendShowToWindowUnsuccess, { widgets[3].windowID, "INVALID_ID" })
 
 common.Title("Postconditions")
 common.Step("Stop SDL, restore SDL settings and PPT", common.postcondition)

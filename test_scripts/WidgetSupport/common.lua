@@ -639,8 +639,8 @@ function m.checkResumption_LIMITED(pWidgetParams, pAppId)
   m.getHMIConnection():ExpectNotification("BasicCommunication.OnResumeAudioSource", { appID = m.getHMIAppId(pAppId) })
   m.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",
     { windowID = 0, hmiLevel = "NONE" },
-    { windowID = 0, hmiLevel = "LIMITED" },
-    { windowID = pWidgetParams.windowID, hmiLevel = "NONE" })
+    { windowID = pWidgetParams.windowID, hmiLevel = "NONE" },
+    { windowID = 0, hmiLevel = "LIMITED" })
   :Times(3)
   checkResumption(pWidgetParams, pAppId)
 end
@@ -658,8 +658,8 @@ function m.checkResumption_FULL(pWidgetParams, pAppId)
     end)
   m.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",
     { windowID = 0, hmiLevel = "NONE" },
-    { windowID = 0, hmiLevel = "FULL" },
-    { windowID = pWidgetParams.windowID, hmiLevel = "NONE" })
+    { windowID = pWidgetParams.windowID, hmiLevel = "NONE" },
+    { windowID = 0, hmiLevel = "FULL" })
   :Times(3)
   checkResumption(pWidgetParams, pAppId)
 end
