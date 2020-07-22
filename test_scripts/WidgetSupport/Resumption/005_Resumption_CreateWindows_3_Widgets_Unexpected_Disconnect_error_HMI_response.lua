@@ -21,15 +21,16 @@
 --  - not send CreateWindow response to app
 --  - send OnHMIStatus (FULL level) notification for Main window to app
 --  - not send OnHMIStatus notification for each Widget window to app
---  - send RESUME_FAILED to app
+--  - send RESUME_FAILED in RAI response to app
+--  - send UI.DeleteWindow requests for widgets 1 and 3
 -- 4) HMI sends valid BC.OnSystemCapabilityUpdated notifications to SDL for each window (0, 1 and 3)
 -- SDL does:
 --  - accumulate notification for main window (0)
 --  - ignore notifications for widget windows (1 and 3)
 --  - send one notification to mobile app with information about main window (0)
--- 5) App send Show(with WindowID for Widget window) request to SDL
--- SDL does:
---  - proceed with request as normal (SUCCESS or not depending on HMI response)
+-- 5) App send Show(with WindowID for Widget window) request to SDL (for each widget)
+-- SDL does: (for each request)
+--  - send Show response with (success = false, resultCode = INVALID_ID") to App
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WidgetSupport/common')
@@ -91,6 +92,13 @@ local function checkResumption(pWidgetParams, pAppId)
       common.sendOnSCU(common.getOnSCUParams(windowIds, e.occurences), pAppId)
     end)
   :Times(3)
+  common.getHMIConnection():ExpectRequest("UI.DeleteWindow",
+    { appID = common.getHMIAppId(1), windowID = 1 },
+    { appID = common.getHMIAppId(1), windowID = 3 })
+  :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
+    end)
+  :Times(2)
   common.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", {})
   :Do(function(_, data)
       common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
@@ -118,9 +126,6 @@ common.Step("Unexpected disconnect", common.unexpectedDisconnect)
 common.Step("Connect mobile", common.connectMobile)
 common.Step("Re-register App resumption data", common.reRegisterAppSuccess,
   { widgets, 1, checkResumption, "RESUME_FAILED" })
-
--- common.Step("Widget 1 is activated after restore", common.activateWidgetFromNoneToFULL, { widgets[1].windowID })
--- common.Step("Widget 3 is activated after restore", common.activateWidgetFromNoneToFULL, { widgets[3].windowID })
 
 common.Step("Show RPC to Widget 1 with unsuccess INVALID_ID",
   common.sendShowToWindowUnsuccess, { widgets[1].windowID, "INVALID_ID" })
