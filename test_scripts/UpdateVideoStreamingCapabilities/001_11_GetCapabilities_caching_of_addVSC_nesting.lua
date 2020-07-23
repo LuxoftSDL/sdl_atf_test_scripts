@@ -10,7 +10,7 @@
 --
 -- Sequence:
 -- 1. SDL requests UI.GetCapabilities()
---   HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
+-- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
 --   and additionalVideoStreamingCapabilities parameter contains nested additionalVideoStreamingCapabilities parameter
 -- SDL does:
 -- - a. cache the videoStreamingCapability with additionalVideoStreamingCapabilities
@@ -18,7 +18,7 @@
 -- SDL does:
 -- - a. not requests UI.GetCapabilities()
 -- 3. App registers with 5 transport protocol
---   App requests GetSystemCapability(VIDEO_STREAMING)
+-- 4. App requests GetSystemCapability(VIDEO_STREAMING)
 -- SDL does:
 -- - a. send GetSystemCapability response with videoStreamingCapability that contains
 --    the additionalVideoStreamingCapabilities from cache

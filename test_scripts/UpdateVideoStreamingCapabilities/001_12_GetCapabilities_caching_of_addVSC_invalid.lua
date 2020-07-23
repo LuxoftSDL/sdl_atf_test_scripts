@@ -10,15 +10,15 @@
 --
 -- Sequence:
 -- 1. SDL requests UI.GetCapabilities()
---   HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
+-- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
 --   which contains additionalVideoStreamingCapabilities array with incorrect parameters
 -- SDL does:
 -- - a. not cache the videoStreamingCapability with additionalVideoStreamingCapabilities
--- 2. It is restarted ignition cycle
+-- 3. It is restarted ignition cycle
 -- SDL does:
 -- - a. requests UI.GetCapabilities()
--- 3. App registers with 5 transport protocol
---   App requests GetSystemCapability(VIDEO_STREAMING)
+-- 4. App registers with 5 transport protocol
+-- 5. App requests GetSystemCapability(VIDEO_STREAMING)
 -- SDL does:
 -- - a. send GetSystemCapability response with videoStreamingCapability that contains
 --    the additionalVideoStreamingCapabilities received from HMI in UI.GetCapabilities response in last ignition cycle
