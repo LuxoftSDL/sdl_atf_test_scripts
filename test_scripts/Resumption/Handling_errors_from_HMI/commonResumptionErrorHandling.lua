@@ -50,6 +50,32 @@ m.rpcs = {
 
 --[[ Common Functions ]]
 
+m.revertRpcs = {
+  addCommand = {
+    UI = "DeleteCommand",
+    VR = "DeleteCommand"
+  },
+  addSubMenu = {
+    UI = "DeleteSubMenu"
+  },
+  createIntrerationChoiceSet = {
+    VR = "DeleteCommand"
+  },
+  setGlobalProperties = {
+    UI = "SetGlobalProperties",
+    TTS = "SetGlobalProperties"
+  },
+  subscribeVehicleData = {
+    VehicleInfo = "UnsubscribeVehicleData"
+  },
+  subscribeWayPoints = {
+    Navigation = "UnsubscribeWayPoints"
+  },
+  createWindow = {
+    UI = "DeleteWindow"
+  }
+}
+
 --[[ @waitUntilResumptionDataIsStored: wait some time until SDL saves resumption data
 --! @parameters: none
 --! @return: none
@@ -138,6 +164,7 @@ m.removeData = {
     deleteCommandRequestParams.appID = m.resumptionData[pAppId].addCommand.UI.appID
     m.getHMIConnection():ExpectRequest("UI.DeleteCommand", deleteCommandRequestParams)
     :Do(function(_,deleteData)
+        m.log("m.removeData", "UI.DeleteCommand")
         m.sendResponse(deleteData)
       end)
   end,
@@ -161,6 +188,7 @@ m.removeData = {
     deleteCommandRequestParams.vrCommands = nil
       m.getHMIConnection():ExpectRequest("VR.DeleteCommand", deleteCommandRequestParams[1], deleteCommandRequestParams[2])
       :Do(function(_,deleteData)
+          m.log("m.removeData", "VR.DeleteCommand")
           m.sendResponse(deleteData)
         end)
       :Times(pTimes)
@@ -171,12 +199,14 @@ m.removeData = {
     deleteSubMenuRequestParams.appID = m.resumptionData[pAppId].addSubMenu.UI.appID
     m.getHMIConnection():ExpectRequest("UI.DeleteSubMenu", deleteSubMenuRequestParams)
     :Do(function(_,deleteData)
+        m.log("m.removeData", "DeleteSubMenu")
         m.sendResponse(deleteData)
       end)
   end,
   UnsubscribeVehicleData = function(pAppId)
     m.getHMIConnection():ExpectRequest("VehicleInfo.UnsubscribeVehicleData", m.resumptionData[pAppId].subscribeVehicleData.VehicleInfo)
     :Do(function(_,deleteData)
+        m.log("m.removeData", "UnsubscribeVehicleData")
         m.sendResponse(deleteData)
       end)
   end,
@@ -184,6 +214,7 @@ m.removeData = {
     if not pTimes then pTimes = 1 end
     m.getHMIConnection():ExpectRequest("Navigation.UnsubscribeWayPoints", m.resumptionData[pAppId].subscribeWayPoints.Navigation)
     :Do(function(_,deleteData)
+        m.log("m.removeData", "UnsubscribeWayPoints")
         m.sendResponse(deleteData)
       end)
     :Times(pTimes)
@@ -195,6 +226,7 @@ m.removeData = {
     }
     m.getHMIConnection():ExpectRequest("UI.DeleteWindow", params)
     :Do(function(_,deleteData)
+        m.log("m.removeData", "DeleteWindow")
         m.sendResponse(deleteData)
       end)
   end
@@ -238,6 +270,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 1 end
       m.getHMIConnection():ExpectRequest("UI.AddCommand",m.resumptionData[pAppId].addCommand.UI)
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "addCommand", "UI")
           m.sendResponse(data)
           m.removeData.DeleteUICommand(pAppId)
         end)
@@ -247,6 +280,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 2 end
       m.getHMIConnection():ExpectRequest("VR.AddCommand")
       :Do(function(exp, data)
+          m.log("m.rpcsRevert", "addCommand", "VR")
           m.sendResponse(data)
           if pTimes == 2 and exp.occurences == 1 then
             m.removeData.DeleteVRCommand(pAppId, _, 2)
@@ -278,6 +312,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 1 end
       m.getHMIConnection():ExpectRequest("UI.AddSubMenu",m.resumptionData[pAppId].addSubMenu.UI)
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "addSubMenu", "UI")
           m.sendResponse(data)
           m.removeData.DeleteSubMenu(pAppId)
         end)
@@ -289,6 +324,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 2 end
       m.getHMIConnection():ExpectRequest("TTS.SetGlobalProperties")
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "setGlobalProperties", "TTS")
           m.sendResponse(data)
         end)
       :ValidIf(function(exp, data)
@@ -317,6 +353,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 2 end
       m.getHMIConnection():ExpectRequest("UI.SetGlobalProperties")
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "setGlobalProperties", "UI")
           m.sendResponse(data)
         end)
       :ValidIf(function(exp, data)
@@ -347,6 +384,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 1 end
       m.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",m.resumptionData[pAppId].subscribeVehicleData.VehicleInfo)
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "subscribeVehicleData", "VehicleInfo")
           m.sendResponse(data)
           m.removeData.UnsubscribeVehicleData(pAppId)
         end)
@@ -358,6 +396,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 1 end
       m.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints",m.resumptionData[pAppId].subscribeWayPoints.Navigation)
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "subscribeWayPoints", "Navigation")
           m.sendResponse(data)
           m.removeData.UnsubscribeWayPoints(pAppId)
         end)
@@ -369,6 +408,7 @@ m.rpcsRevert = {
       if not pTimes then pTimes = 1 end
       m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
       :Do(function(_, data)
+          m.log("m.rpcsRevert", "createWindow", "UI")
           m.sendResponse(data)
           m.removeData.DeleteWindow(pAppId)
         end)
@@ -386,44 +426,53 @@ m.rpcsRevert = {
 --! @return: none
 ]]
 function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponceRpc, pErrorResponseInterface)
-
+  m.log("m.checkResumptionDataWithErrorResponse", "Enter", pErrorResponceRpc, pErrorResponseInterface)
   local rpcsRevertLocal = m.cloneTable(m.rpcsRevert)
   if pErrorResponceRpc == "addCommand" and pErrorResponseInterface == "VR" then
+    m.log("m.checkResumptionDataWithErrorResponse", "1")
     rpcsRevertLocal.addCommand.VR = nil
     m.getHMIConnection():ExpectRequest("VR.AddCommand")
     :Do(function(_, data)
+        m.log("m.rpcsRevert", "AddCommand", "VR")
         if data.params.type == "Command" then
           m.errorResponse(data)
         else
           m.sendResponse(data)
-        end
-        if data.params.type == "Choice" then
           m.removeData.DeleteVRCommand(pAppId, data.params.type, 1)
         end
       end)
     :Times(2)
   elseif pErrorResponceRpc == "createIntrerationChoiceSet" then
+    m.log("m.checkResumptionDataWithErrorResponse", "2")
     rpcsRevertLocal.addCommand.VR = nil
     m.getHMIConnection():ExpectRequest("VR.AddCommand")
     :Do(function(_, data)
+        m.log("m.rpcsRevert", "AddCommand", "VR")
         if data.params.type == "Choice" then
           m.errorResponse(data)
         else
           m.sendResponse(data)
-        end
-        if data.params.type == "Command" then
           m.removeData.DeleteVRCommand(pAppId, data.params.type, 1)
         end
       end)
     :Times(2)
   else
+    m.log("m.checkResumptionDataWithErrorResponse", "5")
+    local errorResponseRpc = m.getRpcName(pErrorResponceRpc, pErrorResponseInterface)
+    local notExpRevertRpc = m.getRpcName(m.revertRpcs[pErrorResponceRpc][pErrorResponseInterface], pErrorResponseInterface)
+    m.log("m.checkResumptionDataWithErrorResponse", errorResponseRpc, notExpRevertRpc)
     rpcsRevertLocal[pErrorResponceRpc][pErrorResponseInterface] = nil
-    m.getHMIConnection():ExpectRequest(m.getRpcName(pErrorResponceRpc, pErrorResponseInterface))
+    if pErrorResponceRpc ~= "setGlobalProperties" then
+      m.getHMIConnection():ExpectRequest(notExpRevertRpc)
+      :Times(0)
+    end
+    m.getHMIConnection():ExpectRequest(errorResponseRpc)
     :Do(function(_, data)
+        m.log("error RPC", errorResponseRpc)
         m.errorResponse(data)
       end)
   end
-
+  m.log("m.checkResumptionDataWithErrorResponse", "6")
   for k, value in pairs (rpcsRevertLocal) do
     if m.resumptionData[pAppId][k] then
       for interface in pairs (value) do
