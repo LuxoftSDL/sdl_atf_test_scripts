@@ -32,7 +32,7 @@ checks.invalid_type = common.getVideoStreamingCapability(1)
 checks.invalid_type.additionalVideoStreamingCapabilities[1].preferredResolution.resolutionWidth = true -- invalid type
 
 checks.invalid_value = common.getVideoStreamingCapability(2)
-checks.invalid_value.additionalVideoStreamingCapabilities[1].supportedFormats[1].codec = "H266" -- invalid value
+checks.invalid_value.additionalVideoStreamingCapabilities[1].maxBitrate = -1 -- invalid value
 
 checks.invalid_nested_type = common.getVideoStreamingCapability(2)
 checks.invalid_nested_type.additionalVideoStreamingCapabilities[2] = common.getVideoStreamingCapability(1)
