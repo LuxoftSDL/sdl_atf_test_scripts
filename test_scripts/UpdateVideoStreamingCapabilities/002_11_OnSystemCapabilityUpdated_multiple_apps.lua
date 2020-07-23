@@ -13,21 +13,21 @@
 -- SDL does:
 --  a. not send OnSystemCapabilityUpdated (videoStreamingCapability) notification to App1 and App2
 -- 2. App1 subscribes on videoStreamingCapability updates
---   HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+-- 3. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
 -- SDL does:
 --  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification to App1
---    and doesn't send notification to App2
--- 3. App2 subscribes on videoStreamingCapability updates
---   HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+--   and doesn't send notification to App2
+-- 4. App2 subscribes on videoStreamingCapability updates
+-- 5. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
 -- SDL does:
 --  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification to each apps
--- 4. App1 unsubscribes from videoStreamingCapability updates
---   HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+-- 6. App1 unsubscribes from videoStreamingCapability updates
+-- 7. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
 -- SDL does:
 --  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification to App2
---    and doesn't send notification to App1
--- 5. App2 unsubscribes from videoStreamingCapability updates
---   HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
+--   and doesn't send notification to App1
+-- 8. App2 unsubscribes from videoStreamingCapability updates
+-- 9. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
 -- SDL does:
 --  a. not send OnSystemCapabilityUpdated (videoStreamingCapability) notification to each apps
 ---------------------------------------------------------------------------------------------------
@@ -85,47 +85,47 @@ common.Step("Register App1", common.registerAppWOPTU, { appSessionId1 })
 common.Step("Register App2", common.registerAppWOPTU, { appSessionId2 })
 
 common.Title("Test")
-common.Step("OnSystemCapabilityUpdated appID = 1",
+common.Step("Check OnSystemCapabilityUpdated notification processing with appID = 1",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId1, notExpected, notExpected })
-common.Step("OnSystemCapabilityUpdated appID = 2",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 2",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId2, notExpected, notExpected })
-common.Step("OnSystemCapabilityUpdated no appID",
+common.Step("Check OnSystemCapabilityUpdated notification processing no appID",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionIdAbsent, notExpected, notExpected })
 
 common.Step("App1 sends GetSystemCapability with subscribe = true",
   common.getSystemCapability, { isSubscribe, appSessionId1 })
-common.Step("OnSystemCapabilityUpdated appID = 1",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 1",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId1, expected, notExpected })
-common.Step("OnSystemCapabilityUpdated appID = 2",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 2",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId2, notExpected, notExpected })
-common.Step("OnSystemCapabilityUpdated no appID",
+common.Step("Check OnSystemCapabilityUpdated notification processing no appID",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionIdAbsent, notExpected, notExpected })
 
 common.Step("App2 sends GetSystemCapability with subscribe = true",
   common.getSystemCapability, { isSubscribe, appSessionId2 })
-common.Step("OnSystemCapabilityUpdated appID = 1",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 1",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId1, expected, notExpected })
-common.Step("OnSystemCapabilityUpdated appID = 2",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 2",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId2, notExpected, expected })
-common.Step("OnSystemCapabilityUpdated no appID",
+common.Step("Check OnSystemCapabilityUpdated notification processing no appID",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionIdAbsent, notExpected, notExpected })
 
 common.Step("App1 sends GetSystemCapability with subscribe = false",
   common.getSystemCapability, { isUnSubscribe, appSessionId1 })
-common.Step("OnSystemCapabilityUpdated appID = 1",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 1",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId1, notExpected, notExpected })
-common.Step("OnSystemCapabilityUpdated appID = 2",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 2",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId2, notExpected, expected })
-common.Step("OnSystemCapabilityUpdated no appID",
+common.Step("Check OnSystemCapabilityUpdated notification processing no appID",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionIdAbsent, notExpected, notExpected })
 
 common.Step("App2 sends GetSystemCapability with subscribe = false",
   common.getSystemCapability, { isUnSubscribe, appSessionId2 })
-common.Step("OnSystemCapabilityUpdated appID = 1",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 1",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId1, notExpected, notExpected })
-common.Step("OnSystemCapabilityUpdated appID = 2",
+common.Step("Check OnSystemCapabilityUpdated notification processing appID = 2",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionId2, notExpected, notExpected })
-common.Step("OnSystemCapabilityUpdated no appID",
+common.Step("Check OnSystemCapabilityUpdated notification processing no appID",
   sendOnSystemCapabilityUpdatedMultipleApps, { appSessionIdAbsent, notExpected, notExpected })
 
 common.Title("Postconditions")

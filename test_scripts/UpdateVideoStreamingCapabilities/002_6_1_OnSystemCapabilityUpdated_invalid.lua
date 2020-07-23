@@ -10,7 +10,7 @@
 --
 -- Sequence:
 -- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL with invalid
--- values of VideoStreamingCapabilities parameters
+--  values of VideoStreamingCapabilities parameters
 -- SDL does:
 --  a. not send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
 ---------------------------------------------------------------------------------------------------
@@ -67,12 +67,12 @@ for type, value in pairs(checks) do
   common.Step("Clean environment", common.preconditions)
   common.Step("Set HMI Capabilities", common.setHMICapabilities)
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-  common.Step("RAI", common.registerAppWOPTU)
+  common.Step("Register App", common.registerAppWOPTU)
   common.Step("Activate App", common.activateApp)
-  common.Step("GetSystemCapability with subscribe = true", common.getSystemCapability, { isSubscribe })
+  common.Step("Subscribe App on VIDEO_STREAMING updates", common.getSystemCapability, { isSubscribe })
 
   common.Title("Test")
-  common.Step("OnSystemCapabilityUpdated " .. type, common.sendOnSystemCapabilityUpdated,
+  common.Step("Check OnSystemCapabilityUpdated notification processing " .. type, common.sendOnSystemCapabilityUpdated,
     {appSessionId, notExpected, value })
 
   common.Title("Postconditions")

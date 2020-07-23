@@ -11,7 +11,7 @@
 -- Sequence:
 -- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
 --  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification to mobile
--- 2. SDL restarts ignition cycle
+-- 2. It is restarted ignition cycle
 -- 3. App is registered again
 -- 4. App sends GetSystemCapability request
 -- SDL does:
@@ -34,17 +34,17 @@ common.Step("Update HMICapabilitiesCacheFile in SDL.ini file ", common.setSDLIni
   { "HMICapabilitiesCacheFile", "hmi_capabilities_cache.json" })
 common.Step("Set HMI Capabilities", common.setHMICapabilities)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
-common.Step("GetSystemCapability with subscribe = true", common.getSystemCapability, { isSubscribe })
+common.Step("Subscribe App on VIDEO_STREAMING updates", common.getSystemCapability, { isSubscribe })
 
 common.Title("Test")
-common.Step("OnSystemCapabilityUpdated", common.sendOnSystemCapabilityUpdated,
+common.Step("OnSystemCapabilityUpdated notification processing", common.sendOnSystemCapabilityUpdated,
   { appSessionId, expected, vsc })
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, SDL doesn't send HMI capabilities requests to HMI",
   common.start, { common.getHMIParamsWithOutRequests() })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
 common.Step("GetSystemCapability to check stored capabilities", common.getSystemCapability)
 

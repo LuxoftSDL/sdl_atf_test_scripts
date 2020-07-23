@@ -1,7 +1,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
 -- Description: SDL applies default videoStreamingCapability in case HMI responds with videoStreamingCapability
--- that contains additionalVideoStreamingCapabilities array with incorrect parameters in single item
+--  that contains additionalVideoStreamingCapabilities array with incorrect parameters in single item
 --
 -- Preconditions:
 -- 1. SDL and HMI are started
@@ -12,7 +12,7 @@
 --  and additionalVideoStreamingCapabilities array contains parameters with invalid type of value in single item
 -- SDL does:
 -- - a. ignore the videoStreamingCapability with additionalVideoStreamingCapabilities
---  received from HMI in UI.GetCapabilities response
+--    received from HMI in UI.GetCapabilities response
 -- - b. apply the default videoStreamingCapability from hmi_capabilities.json
 -- 3. App registers with 5 transport protocol
 -- 4. App requests GetSystemCapability(VIDEO_STREAMING)
@@ -50,7 +50,7 @@ for type, value in pairs(checks) do
   common.Step("Clean environment", common.preconditions)
   common.Step("Set HMI Capabilities", common.setHMICapabilities, { value })
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-  common.Step("RAI", common.registerAppWOPTU)
+  common.Step("Register App", common.registerAppWOPTU)
 
   common.Title("Test")
   common.Step("App sends GetSystemCapability for VIDEO_STREAMING " .. type, common.getSystemCapability,

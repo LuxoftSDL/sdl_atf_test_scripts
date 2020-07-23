@@ -11,8 +11,8 @@
 -- Sequence:
 -- 1. SDL requests UI.GetCapabilities()
 -- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
---   and additionalVideoStreamingCapabilities parameter does not contain nested additionalVideoStreamingCapabilities
---   parameter
+--  and additionalVideoStreamingCapabilities parameter does not contain nested additionalVideoStreamingCapabilities
+--  parameter
 -- SDL does:
 -- - a. cache the videoStreamingCapability with additionalVideoStreamingCapabilities
 -- 3. It is restarted ignition cycle
@@ -30,6 +30,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 --[[ Local Variables ]]
 local appSessionId = 1
 local isSubscribe = false
+
 local vsc = common.getVideoStreamingCapability(2)
 
 --[[ Scenario ]]
@@ -44,7 +45,7 @@ common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Ignition on, SDL doesn't send HMI capabilities requests to HMI",
   common.start, { common.getHMIParamsWithOutRequests() })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
   { isSubscribe, appSessionId, vsc })
 

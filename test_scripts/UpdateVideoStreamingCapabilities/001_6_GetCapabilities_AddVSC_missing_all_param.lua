@@ -1,7 +1,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0296-Update-video-streaming-capabilities-during-ignition-cycle.md
 --
 -- Description: SDL applies the videoStreamingCapability in case HMI responds with videoStreamingCapability
--- that contains additionalVideoStreamingCapabilities array with empty single element
+--  that contains additionalVideoStreamingCapabilities array with empty single element
 --
 -- Preconditions:
 -- 1. SDL and HMI are started
@@ -25,19 +25,19 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 local appSessionId = 1
 local isSubscribe = false
 
-local emptyAddVSC = common.getVideoStreamingCapability()
-emptyAddVSC.additionalVideoStreamingCapabilities = {{ }}
+local vsc = common.getVideoStreamingCapability()
+vsc.additionalVideoStreamingCapabilities = {{ }}
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setHMICapabilities, { emptyAddVSC })
+common.Step("Set HMI Capabilities", common.setHMICapabilities, { vsc })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 
 common.Title("Test")
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
-  { isSubscribe, appSessionId, emptyAddVSC })
+  { isSubscribe, appSessionId, vsc })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

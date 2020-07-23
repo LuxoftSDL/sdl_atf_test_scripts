@@ -19,7 +19,8 @@
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
-local notExpect = 0
+local notExpected = 0
+local defaultAppCapability = nil
 
 --[[ Local Functions ]]
 local function ptUpdate(pTbl)
@@ -37,7 +38,7 @@ common.Step("App sends OnAppCapabilityUpdated allowed by Policy", common.sendOnA
 common.Title("Test")
 common.Step("Policy Table Update Certificate", common.policyTableUpdate, { ptUpdate })
 common.Step("App sends OnAppCapabilityUpdated not allowed by Policy", common.sendOnAppCapabilityUpdated,
-	{ nil, notExpect })
+	{ defaultAppCapability, notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

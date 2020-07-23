@@ -6,12 +6,12 @@
 -- Preconditions:
 -- 1. SDL and HMI are started
 -- 2. SDL received videoStreamingCapabilities from HMI
--- 3. Application is registered and activated
+-- 3. App is registered and activated
 --
 -- Sequence:
--- 1. Application requests videoStreamingCapabilities via GetSystemCapability RPC
+-- 1. App requests videoStreamingCapabilities via GetSystemCapability RPC
 -- SDL does:
--- - a. send response to the Application with videoStreamingCapabilities with additionalVideoStreamingCapabilities
+-- - a. send response to the App with videoStreamingCapabilities with additionalVideoStreamingCapabilities
 --    stored internally
 -- - b. not request videoStreamingCapabilities from HMI
 ---------------------------------------------------------------------------------------------------
@@ -24,6 +24,7 @@ vsc.additionalVideoStreamingCapabilities[1].preferredResolution = { resolutionWi
 vsc.additionalVideoStreamingCapabilities[3].preferredResolution = { resolutionWidth = 1024, resolutionHeight = 768 }
 vsc.additionalVideoStreamingCapabilities[4].preferredResolution = { resolutionWidth = 15, resolutionHeight = 2 }
 
+--[[ Local Functions ]]
 local function getSystemCapability()
   local requestParams = {
     systemCapabilityType = "VIDEO_STREAMING"
@@ -53,10 +54,10 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities, { vsc })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 
 common.Title("Test")
-common.Step("GetSystemCapability", getSystemCapability)
+common.Step("Check GetSystemCapability processing", getSystemCapability)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

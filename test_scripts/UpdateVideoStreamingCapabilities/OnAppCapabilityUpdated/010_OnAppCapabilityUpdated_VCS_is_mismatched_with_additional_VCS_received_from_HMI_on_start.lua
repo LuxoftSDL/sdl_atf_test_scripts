@@ -12,7 +12,7 @@
 --
 -- Sequence:
 -- 1. App sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type with videoStreamingCapability that doesn't
---    match with the videoStreamingCapability received from HMI on start
+--  match with the videoStreamingCapability received from HMI on start
 -- SDL does:
 -- - a. send OnAppCapabilityUpdated notification to the HMI
 ---------------------------------------------------------------------------------------------------

@@ -19,6 +19,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
 local notExpected = 0
+
 local appCapability = {
   appCapability = {
     -- appCapabilityType - mandatory parameter is missed

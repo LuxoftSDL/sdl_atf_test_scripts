@@ -11,7 +11,7 @@
 --
 -- Sequence:
 -- 1. App sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type with videoStreamingCapability that has
--- the incorrect parameter
+--  the incorrect parameter
 -- SDL does:
 -- - a. not send OnAppCapabilityUpdated notification to the HMI
 ---------------------------------------------------------------------------------------------------
@@ -20,6 +20,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
 local notExpected = 0
+
 local appCapability = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",

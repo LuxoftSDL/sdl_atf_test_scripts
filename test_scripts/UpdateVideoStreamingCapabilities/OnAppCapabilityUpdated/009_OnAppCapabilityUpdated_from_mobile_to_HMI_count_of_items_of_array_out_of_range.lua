@@ -12,7 +12,7 @@
 --
 -- Sequence:
 -- 1. App sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type with 101 or 0 items in
---    additionalVideoStreamingCapabilities array (out of range)
+--  additionalVideoStreamingCapabilities array (out of range)
 -- SDL does:
 -- - a. not send OnAppCapabilityUpdated notification to the HMI
 ---------------------------------------------------------------------------------------------------
@@ -21,6 +21,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
 local notExpected = 0
+
 local cases = {
   outOfLowerBound = {
     appCapability = {

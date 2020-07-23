@@ -25,6 +25,7 @@ local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
 --[[ Local Variables ]]
 local appSessionId = 1
 local isSubscribe = false
+
 local arraySize = {
   minSize = 1,
   maxSize = 100
@@ -36,7 +37,7 @@ for parameter, value in pairs(arraySize) do
   common.Step("Clean environment", common.preconditions)
   common.Step("Set HMI Capabilities", common.setHMICapabilities, { common.getVideoStreamingCapability(value) })
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-  common.Step("RAI", common.registerAppWOPTU)
+  common.Step("Register App", common.registerAppWOPTU)
 
   common.Title("Test")
   common.Step("GetSystemCapability in range " .. parameter .. " " .. value, common.getSystemCapability,

@@ -12,7 +12,7 @@
 --
 -- Sequence:
 -- 1. App sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type with 100 items in
---    additionalVideoStreamingCapabilities array (in range)
+--  additionalVideoStreamingCapabilities array (in range)
 -- SDL does:
 -- - a. send OnAppCapabilityUpdated notification to the HMI
 ---------------------------------------------------------------------------------------------------

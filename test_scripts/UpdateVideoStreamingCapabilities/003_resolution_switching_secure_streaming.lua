@@ -16,7 +16,7 @@
 -- Sequence:
 -- 1. HMI sends OnSystemCapabilityUpdated with new video capabilities
 -- SDL does:
---  a. send OnSystemCapabilityUpdated notification to mobile app with received parameters
+--  a. send OnSystemCapabilityUpdated notification to App with received parameters
 -- 2. App stops streaming and video service by sending EndService(VIDEO) to SDL
 -- SDL does:
 --  a. send Navi.OnVideoDataStreaming(available=false) to HMI
@@ -28,7 +28,7 @@
 --  b. request Navi.SetVideoConfig(new_video_params)
 -- 4. HMI responds with SUCCESS resultCode to Navi.SetVideoConfig(new_video_params)
 -- SDL does:
---  a. send StartService(VIDEO, new_video_params) to mobile app
+--  a. send StartService(VIDEO, new_video_params) to App
 -- 5. Mobile app starts streaming with new video params
 -- SDL does:
 --  a. request Navi.StopStream
@@ -47,12 +47,14 @@ local isSubscribed = true
 local expected = 1
 local notExpected = 0
 local appSessionId = 1
+
 local videoCapSupportedByApp = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
     videoStreamingCapability = common.getVideoStreamingCapability(3)
   }
 }
+
 local videoCapSupportedByHMI = common.getVideoStreamingCapability(5)
 
 --[[ Scenario ]]
@@ -62,7 +64,7 @@ common.Step("Set HMI Capabilities", common.setHMICapabilities, { videoCapSupport
 
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithGetSystemTime,
   { common.hmiDefaultCapabilities })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
   { isSubscribed, appSessionId, videoCapSupportedByHMI })

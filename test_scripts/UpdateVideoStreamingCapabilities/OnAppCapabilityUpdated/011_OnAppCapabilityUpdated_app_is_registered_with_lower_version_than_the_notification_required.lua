@@ -24,6 +24,7 @@ config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 
 --[[ Local Variables ]]
 local notExpected = 0
+local defaultAppCapability = nil
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -34,7 +35,7 @@ common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
 common.Step("App sends OnAppCapabilityUpdated for VIDEO_STREAMING", common.sendOnAppCapabilityUpdated,
-	{ nil, notExpected })
+  { defaultAppCapability, notExpected })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

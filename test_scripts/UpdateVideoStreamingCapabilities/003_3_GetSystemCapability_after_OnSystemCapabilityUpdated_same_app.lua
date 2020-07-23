@@ -6,16 +6,16 @@
 -- Preconditions:
 -- 1. SDL and HMI are started
 -- 2. SDL received videoStreamingCapabilities from HMI
--- 3. Application is registered and activated
--- 4. Application is subscribed on OnSystemCapabilityUpdated notification with VIDEO_STREAMING capability type
+-- 3. App is registered and activated
+-- 4. App is subscribed on OnSystemCapabilityUpdated notification with VIDEO_STREAMING capability type
 --
 -- Sequence:
--- 1. HMI sends OnSystemCapabilityUpdated notification with updates of VIDEO_STREAMING capability type for Application
+-- 1. HMI sends OnSystemCapabilityUpdated notification with updates of VIDEO_STREAMING capability type for App
 -- SDL does:
--- - a. resend OnSystemCapabilityUpdated notification with updates of VIDEO_STREAMING capability type to the Application
--- 2. Application requests videoStreamingCapabilities via GetSystemCapability RPC
+-- - a. resend OnSystemCapabilityUpdated notification with updates of VIDEO_STREAMING capability type to the App
+-- 2. App requests videoStreamingCapabilities via GetSystemCapability RPC
 -- SDL does:
--- - a. send response to the Application with received from HMI on startup videoStreamingCapabilities
+-- - a. send response to the App with received from HMI on startup videoStreamingCapabilities
 --    which stored internally
 -- - b. not request videoStreamingCapabilities from HMI
 ---------------------------------------------------------------------------------------------------
@@ -31,6 +31,7 @@ vsc.additionalVideoStreamingCapabilities[1].preferredResolution = { resolutionWi
 vsc.additionalVideoStreamingCapabilities[2].preferredResolution = { resolutionWidth = 1024, resolutionHeight = 768 }
 vsc.additionalVideoStreamingCapabilities[5].preferredResolution = { resolutionWidth = 15, resolutionHeight = 2 }
 
+--[[ Local Functions ]]
 local function getSystemCapability()
   local requestParams = {
     systemCapabilityType = "VIDEO_STREAMING"
@@ -60,12 +61,13 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-common.Step("RAI", common.registerAppWOPTU)
-common.Step("GetSystemCapability with subscribe = true", common.getSystemCapability, { true })
+common.Step("Register App", common.registerAppWOPTU)
+common.Step("Subscribe App on VIDEO_STREAMING updates", common.getSystemCapability, { true })
 
 common.Title("Test")
-common.Step("OnSystemCapabilityUpdated", common.sendOnSystemCapabilityUpdated, { appSessionId, expected, vsc })
-common.Step("GetSystemCapability", getSystemCapability)
+common.Step("OnSystemCapabilityUpdated notification processing",
+  common.sendOnSystemCapabilityUpdated, { appSessionId, expected, vsc })
+common.Step("Check GetSystemCapability processing", getSystemCapability)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

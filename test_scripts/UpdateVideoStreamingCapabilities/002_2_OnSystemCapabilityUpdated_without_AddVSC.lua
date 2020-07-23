@@ -11,10 +11,10 @@
 --
 -- Sequence:
 -- 1. HMI sends OnSystemCapabilityUpdated notification for "VIDEO_STREAMING" to SDL
---   without additionalVideoStreamingCapabilities
+--  without additionalVideoStreamingCapabilities
 -- SDL does:
 --  a. send OnSystemCapabilityUpdated (videoStreamingCapability) notification
---    without additionalVideoStreamingCapabilities received from HMI to App
+--   without additionalVideoStreamingCapabilities received from HMI to App
 ---------------------------------------------------------------------------------------------------
 -- [[ Required Shared libraries ]]
 local common = require('test_scripts/UpdateVideoStreamingCapabilities/common')
@@ -32,12 +32,12 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
-common.Step("RAI", common.registerAppWOPTU)
+common.Step("Register App", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
-common.Step("GetSystemCapability with subscribe = true", common.getSystemCapability, { isSubscribe })
+common.Step("Subscribe App on VIDEO_STREAMING updates", common.getSystemCapability, { isSubscribe })
 
 common.Title("Test")
-common.Step("OnSystemCapabilityUpdated", common.sendOnSystemCapabilityUpdated,
+common.Step("Check OnSystemCapabilityUpdated notification processing", common.sendOnSystemCapabilityUpdated,
   { appSessionId, expected, vsc })
 
 common.Title("Postconditions")

@@ -11,7 +11,7 @@
 -- Sequence:
 -- 1. SDL requests UI.GetCapabilities()
 -- 2. HMI sends UI.GetCapabilities(videoStreamingCapability) response with additionalVideoStreamingCapabilities
---   which contains additionalVideoStreamingCapabilities array with incorrect parameters
+--  which contains additionalVideoStreamingCapabilities array with incorrect parameters
 -- SDL does:
 -- - a. not cache the videoStreamingCapability with additionalVideoStreamingCapabilities
 -- 3. It is restarted ignition cycle
@@ -70,7 +70,7 @@ for type, value in pairs(checks) do
   common.Step("Ignition off", common.ignitionOff)
   common.Step("Ignition on, SDL sends HMI capabilities request to HMI for UI.GetCapabilities only",
     common.start, { getHMIParamsWithUiRequestOnly() })
-  common.Step("RAI", common.registerAppWOPTU)
+  common.Step("Register App", common.registerAppWOPTU)
   common.Step("App sends GetSystemCapability for VIDEO_STREAMING " .. type, common.getSystemCapability,
     { isSubscribe, appSessionId, common.anotherVideoStreamingCapabilityWithOutAddVSC })
 

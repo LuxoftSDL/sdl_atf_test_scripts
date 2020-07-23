@@ -12,7 +12,7 @@
 --
 -- Sequence:
 -- 1. App sends OnAppCapabilityUpdated for VIDEO_STREAMING capability type with additionalVideoStreamingCapabilities
--- parameter that has a nesting additionalVideoStreamingCapabilities parameter
+--  parameter that has a nesting additionalVideoStreamingCapabilities parameter
 -- SDL does:
 -- - a. send OnAppCapabilityUpdated notification to the HMI
 ---------------------------------------------------------------------------------------------------
