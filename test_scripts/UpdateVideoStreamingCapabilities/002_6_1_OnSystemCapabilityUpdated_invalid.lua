@@ -28,7 +28,7 @@ checks.invalid_type = common.cloneTable(common.anotherVideoStreamingCapabilityWi
 checks.invalid_type.preferredResolution.resolutionWidth = "8000"  -- invalid type
 
 checks.invalid_value = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
-checks.invalid_value.supportedFormats[1].codec = "H266" -- invalid value
+checks.invalid_value.maxBitrate = -1 -- invalid value
 
 checks.invalid_additional_type = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
 checks.invalid_additional_type.additionalVideoStreamingCapabilities = {
