@@ -46,7 +46,7 @@ checks.invalid_nested_type.additionalVideoStreamingCapabilities[2].additionalVid
 checks.invalid_nested_value = common.getVideoStreamingCapability(3)
 checks.invalid_nested_value.additionalVideoStreamingCapabilities[2] = common.getVideoStreamingCapability(2)
 checks.invalid_nested_value.additionalVideoStreamingCapabilities[2].additionalVideoStreamingCapabilities[2]
-  .supportedFormats = "RTP" -- invalid value
+  .scale = -3 -- invalid value
 
 --[[ Local Functions ]]
 local function getHMIParamsWithUiRequestOnly()
