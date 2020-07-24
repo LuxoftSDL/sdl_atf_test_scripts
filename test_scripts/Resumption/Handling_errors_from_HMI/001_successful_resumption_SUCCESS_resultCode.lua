@@ -22,58 +22,25 @@ local common = require('test_scripts/Resumption/Handling_errors_from_HMI/commonR
 --[[ Test Configuration ]]
 runner.testSettings.isSelfIncluded = false
 
--- [[ Local Function ]]
-local function checkResumptionData(pAppId)
-  common.addSubMenuResumption(pAppId)
-  common.setGlobalPropertiesResumption(pAppId)
-  common.subscribeVehicleDataResumption(pAppId)
-  common.subscribeWayPointsResumption(pAppId)
-  common.createWindowResumption(pAppId)
-  common.getHMIConnection():ExpectRequest("UI.AddCommand",
-    common.resumptionData[pAppId].addCommand.UI)
-  :Do(function(_, data)
-      common.sendResponse(data)
-    end)
-  common.getHMIConnection():ExpectRequest("VR.AddCommand",
-    common.resumptionData[pAppId].addCommand.VR,
-    common.resumptionData[pAppId].createIntrerationChoiceSet.VR)
-  :Do(function(_, data)
-      common.sendResponse(data)
-    end)
-  :Times(2)
-
-  local isCustomButtonSubscribed = false
-  local isOkButtonSubscribed = false
-  EXPECT_HMINOTIFICATION("Buttons.OnButtonSubscription")
-  :ValidIf(function(_, data)
-      if data.params.name == "CUSTOM_BUTTON" and isCustomButtonSubscribed == false then
-        isCustomButtonSubscribed = true
-      elseif data.params.name == "OK" and data.params.isSubscribed == true and isOkButtonSubscribed == false then
-        isOkButtonSubscribed = true
-      else
-        return false, "Came unexpected Buttons.OnButtonSubscription notification"
-      end
-      return true
-    end)
-  :Times(2)
-end
-
 --[[ Scenario ]]
 runner.Title("Preconditions")
 runner.Step("Clean environment", common.preconditions)
 runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 runner.Step("Register app", common.registerAppWOPTU)
 runner.Step("Activate app", common.activateApp)
+runner.Step("Check subscriptions", common.checkSubscriptions, { false })
 
 runner.Title("Test")
 for k in pairs(common.rpcs) do
   runner.Step("Add " .. k, common[k])
 end
 runner.Step("Add buttonSubscription", common.buttonSubscription)
+runner.Step("Check subscriptions", common.checkSubscriptions, { true })
 runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
 runner.Step("Connect mobile", common.connectMobile)
 runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,
-  { 1, checkResumptionData, common.resumptionFullHMILevel})
+  { 1, common.checkResumptionDataSuccess, common.resumptionFullHMILevel})
+runner.Step("Check subscriptions", common.checkSubscriptions, { true })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)
