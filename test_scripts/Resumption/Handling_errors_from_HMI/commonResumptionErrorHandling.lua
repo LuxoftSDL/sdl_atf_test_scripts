@@ -1243,4 +1243,152 @@ function m.createWindow(pAppId)
     end)
 end
 
+function m.sendOnSysCapUpd(pAppId)
+  local params = {
+    systemCapability = {
+      systemCapabilityType = "DISPLAYS",
+      displayCapabilities = {
+        {
+          displayName = "displayName",
+          windowTypeSupported = {
+            {
+              type = "MAIN",
+              maximumNumberOfWindows = 1
+            },
+            {
+              type = "WIDGET",
+              maximumNumberOfWindows = 1
+            }
+          },
+          windowCapabilities = {
+            {
+              windowID = 0,
+              textFields = {
+                {
+                  name = "mainField1",
+                  characterSet = "TYPE2SET",
+                  width = 1,
+                  rows = 1
+                }
+              },
+              imageFields = {
+                {
+                  name = "choiceImage",
+                  imageTypeSupported = { "GRAPHIC_PNG"
+                  },
+                  imageResolution = {
+                    resolutionWidth = 35,
+                    resolutionHeight = 35
+                  }
+                }
+              },
+              imageTypeSupported = {
+                "STATIC"
+              },
+              templatesAvailable = {
+                "Template1", "Template2", "Template3", "Template4", "Template5"
+              },
+              numCustomPresetsAvailable = 100,
+              buttonCapabilities = {
+                {
+                  longPressAvailable = true,
+                  name = "VOLUME_UP",
+                  shortPressAvailable = true,
+                  upDownAvailable = false
+                }
+              },
+              softButtonCapabilities = {
+                {
+                  shortPressAvailable = true,
+                  longPressAvailable = true,
+                  upDownAvailable = true,
+                  imageSupported = true,
+                  textSupported = true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  local paramsToSDL = m.cloneTable(params)
+  paramsToSDL.appID = m.getHMIAppId(pAppId)
+  m.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", paramsToSDL)
+  m.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated", params)
+end
+
+function m.sendOnButtonPress(pAppId, pIsExp)
+  if pAppId == nil then pAppId = 1 end
+  local occurences = pIsExp == true and 1 or 0
+  local btnName = "OK"
+  local btnEventMode = "BUTTONDOWN"
+  local btnPressMode = "SHORT"
+  m.getMobileSession(pAppId):ExpectNotification("OnButtonEvent",
+    { buttonName = btnName, buttonEventMode = btnEventMode })
+  :Times(occurences)
+  m.getMobileSession(pAppId):ExpectNotification("OnButtonPress",
+    { buttonName = btnName, buttonPressMode = btnPressMode })
+  :Times(occurences)
+  m.getHMIConnection():SendNotification("Buttons.OnButtonEvent",
+    { name = btnName, appID = m.getHMIAppId(pAppId), mode = btnEventMode })
+  m.getHMIConnection():SendNotification("Buttons.OnButtonPress",
+    { name = btnName, appID = m.getHMIAppId(pAppId), mode = btnPressMode })
+end
+
+function m.sendOnVehicleData(pAppId, pIsExp)
+  if pAppId == nil then pAppId = 1 end
+  local occurences = pIsExp == true and 1 or 0
+  local params = {
+    gps = {
+      longitudeDegrees = 10,
+      latitudeDegrees = 10
+    }
+  }
+  m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", params)
+  m.getMobileSession(pAppId):ExpectNotification("OnVehicleData", params):Times(occurences)
+end
+
+
+function m.checkResumptionDataSuccess(pAppId)
+  m.addSubMenuResumption(pAppId)
+  m.setGlobalPropertiesResumption(pAppId)
+  m.subscribeVehicleDataResumption(pAppId)
+  m.subscribeWayPointsResumption(pAppId)
+  m.createWindowResumption(pAppId)
+  m.getHMIConnection():ExpectRequest("UI.AddCommand",
+    m.resumptionData[pAppId].addCommand.UI)
+  :Do(function(_, data)
+      m.sendResponse(data)
+    end)
+  m.getHMIConnection():ExpectRequest("VR.AddCommand",
+    m.resumptionData[pAppId].addCommand.VR,
+    m.resumptionData[pAppId].createIntrerationChoiceSet.VR)
+  :Do(function(_, data)
+      m.sendResponse(data)
+    end)
+  :Times(2)
+
+  local isCustomButtonSubscribed = false
+  local isOkButtonSubscribed = false
+  EXPECT_HMINOTIFICATION("Buttons.OnButtonSubscription")
+  :ValidIf(function(_, data)
+      if data.params.name == "CUSTOM_BUTTON" and isCustomButtonSubscribed == false then
+        isCustomButtonSubscribed = true
+      elseif data.params.name == "OK" and data.params.isSubscribed == true and isOkButtonSubscribed == false then
+        isOkButtonSubscribed = true
+      else
+        return false, "Came unexpected Buttons.OnButtonSubscription notification"
+      end
+      return true
+    end)
+  :Times(2)
+end
+
+function m.checkSubscriptions(pIsExp, pAppId)
+  m.sendOnSysCapUpd(pAppId) --SDL always subscribes App to DISPLAYS capabilities
+  m.sendOnButtonPress(pAppId, pIsExp)
+  m.sendOnVehicleData(pAppId, pIsExp)
+end
+
 return m

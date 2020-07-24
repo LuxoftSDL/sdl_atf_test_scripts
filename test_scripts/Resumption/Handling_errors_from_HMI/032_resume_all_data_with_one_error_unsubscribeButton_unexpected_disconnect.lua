@@ -108,14 +108,17 @@ for k, value in pairs(common.rpcs) do
     runner.Title("Rpc " .. k .. " error resultCode to interface " .. interface)
     runner.Step("Register app", common.registerAppWOPTU)
     runner.Step("Activate app", common.activateApp)
+    runner.Step("Check subscriptions", common.checkSubscriptions, { false })
     for rpc in pairs(common.rpcs) do
       runner.Step("Add " .. rpc, common[rpc])
     end
     runner.Step("Add buttonSubscription", common.buttonSubscription)
+    runner.Step("Check subscriptions", common.checkSubscriptions, { true })
     runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
     runner.Step("Connect mobile", common.connectMobile)
     runner.Step("Reregister App resumption " .. k, common.reRegisterApp,
       { 1, checkResumptionDataWithErrorResponse, common.resumptionFullHMILevel, k, interface})
+    runner.Step("Check subscriptions", common.checkSubscriptions, { false })
     runner.Step("Unregister App", common.unregisterAppInterface)
   end
 end
