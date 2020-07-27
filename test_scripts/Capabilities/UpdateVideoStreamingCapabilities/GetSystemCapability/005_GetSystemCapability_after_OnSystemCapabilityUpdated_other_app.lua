@@ -33,31 +33,6 @@ vsc.additionalVideoStreamingCapabilities[1].preferredResolution = { resolutionWi
 vsc.additionalVideoStreamingCapabilities[2].preferredResolution = { resolutionWidth = 1024, resolutionHeight = 768 }
 vsc.additionalVideoStreamingCapabilities[5].preferredResolution = { resolutionWidth = 15, resolutionHeight = 2 }
 
---[[ Local Functions ]]
-local function getSystemCapability(pAppId)
-  local requestParams = {
-    systemCapabilityType = "VIDEO_STREAMING"
-  }
-  local responseParams = {
-    success = true,
-    resultCode = "SUCCESS",
-    systemCapability = {
-      systemCapabilityType = "VIDEO_STREAMING",
-      videoStreamingCapability = common.buildVideoStreamingCapabilities()
-    }
-  }
-  local corId = common.getMobileSession(pAppId):SendRPC("GetSystemCapability", requestParams)
-  common.getHMIConnection():ExpectRequest("UI.GetCapabilities"):Times(0)
-  common.getMobileSession(pAppId):ExpectResponse(corId, responseParams)
-  :ValidIf(function(_, data)
-    if not common.isTableEqual(responseParams, data.payload) then
-      return false, "Parameters of the response are incorrect: \nExpected: " .. common.toString(responseParams)
-      .. "\nActual: " .. common.toString(data.payload)
-    end
-    return true
-  end)
-end
-
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
@@ -69,10 +44,10 @@ common.Step("Subscribe App on VIDEO_STREAMING updates", common.getSystemCapabili
 common.Title("Test")
 common.Step("OnSystemCapabilityUpdated notification processing", common.sendOnSystemCapabilityUpdated,
   { appSessionId1, expected, vsc })
-common.Step("Check GetSystemCapability processing App1", getSystemCapability, { appSessionId1 })
+common.Step("Check GetSystemCapability processing App1", common.getSystemCapabilityExtended, { appSessionId1 })
 common.Step("Register App 2", common.registerAppWOPTU, { appSessionId2 })
 common.Step("Activate App 2", common.activateApp, { appSessionId2 })
-common.Step("Check GetSystemCapability processing App2", getSystemCapability, { appSessionId2 })
+common.Step("Check GetSystemCapability processing App2", common.getSystemCapabilityExtended, { appSessionId2 })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

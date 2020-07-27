@@ -19,35 +19,11 @@
 local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
+local appSessionId = 1
 local vsc = common.buildVideoStreamingCapabilities(5)
 vsc.additionalVideoStreamingCapabilities[1].preferredResolution = { resolutionWidth = 1920, resolutionHeight = 1080 }
 vsc.additionalVideoStreamingCapabilities[3].preferredResolution = { resolutionWidth = 1024, resolutionHeight = 768 }
 vsc.additionalVideoStreamingCapabilities[4].preferredResolution = { resolutionWidth = 15, resolutionHeight = 2 }
-
---[[ Local Functions ]]
-local function getSystemCapability()
-  local requestParams = {
-    systemCapabilityType = "VIDEO_STREAMING"
-  }
-  local responseParams = {
-    success = true,
-    resultCode = "SUCCESS",
-    systemCapability = {
-      systemCapabilityType = "VIDEO_STREAMING",
-      videoStreamingCapability = vsc
-    }
-  }
-  local corId = common.getMobileSession():SendRPC("GetSystemCapability", requestParams)
-  common.getHMIConnection():ExpectRequest("UI.GetCapabilities"):Times(0)
-  common.getMobileSession():ExpectResponse(corId, responseParams)
-  :ValidIf(function(_, data)
-      if not common.isTableEqual(responseParams, data.payload) then
-        return false, "Parameters of the notification are incorrect: \nExpected: " .. common.toString(responseParams)
-          .. "\nActual: " .. common.toString(data.payload)
-      end
-      return true
-    end)
-  end
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -57,7 +33,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 
 common.Title("Test")
-common.Step("Check GetSystemCapability processing", getSystemCapability)
+common.Step("Check GetSystemCapability processing", common.getSystemCapabilityExtended, { appSessionId, vsc })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
