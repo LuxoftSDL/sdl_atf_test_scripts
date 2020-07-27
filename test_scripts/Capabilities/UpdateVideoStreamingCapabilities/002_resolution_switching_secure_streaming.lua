@@ -62,8 +62,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.securePreconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities, { videoCapSupportedByHMI })
 
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithGetSystemTime,
-  { common.hmiDefaultCapabilities })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithGetSystemTime)
 common.Step("Register App", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,

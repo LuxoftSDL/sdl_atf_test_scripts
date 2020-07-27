@@ -64,7 +64,7 @@ for type, value in pairs(checks) do
   common.Step("Update HMICapabilitiesCacheFile in SDL.ini file ", common.setSDLIniParameter,
     { "HMICapabilitiesCacheFile", "hmi_capabilities_cache.json" })
   common.Step("Set HMI Capabilities", common.setHMICapabilities, { value })
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
+  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 
   common.Title("Test")
   common.Step("Ignition off", common.ignitionOff)

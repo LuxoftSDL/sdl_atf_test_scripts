@@ -36,7 +36,7 @@ vsc.additionalVideoStreamingCapabilities[10] = common.getVideoStreamingCapabilit
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities, { vsc })
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 
 common.Title("Test")

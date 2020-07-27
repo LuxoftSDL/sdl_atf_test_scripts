@@ -36,7 +36,7 @@ for parameter, value in pairs(arraySize) do
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
   common.Step("Set HMI Capabilities", common.setHMICapabilities, { common.getVideoStreamingCapability(value) })
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
+  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
   common.Step("Register App", common.registerAppWOPTU)
 
   common.Title("Test")

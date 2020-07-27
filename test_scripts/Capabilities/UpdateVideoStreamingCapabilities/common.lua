@@ -17,15 +17,14 @@ local security = require("user_modules/sequences/security")
 runner.testSettings.isSelfIncluded = false
 config.defaultProtocolVersion = 5
 config.ValidateSchema = false
-config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
-config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
+-- config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
+-- config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 constants.FRAME_SIZE.P5 = 131084
 
 --[[ Shared Functions ]]
 local m = {}
 m.Title = runner.Title
 m.Step = runner.Step
-m.start = actions.start
 m.postconditions = actions.postconditions
 m.preconditions = actions.preconditions
 m.registerAppWOPTU = actions.registerAppWOPTU
@@ -44,7 +43,7 @@ m.policyTableUpdate = actions.policyTableUpdate
 m.registerApp = actions.registerApp
 
 --[[ Common Variables ]]
-m.hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
+local hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 local defaultSDLcapabilities = SDL.HMICap.get()
 m.defaultVideoStreamingCapability = defaultSDLcapabilities.UI.systemCapabilities.videoStreamingCapability
 
@@ -121,7 +120,7 @@ function m.startWithGetSystemTime(pHMIParams)
   :Do(function()
       actions.init.HMI()
       :Do(function()
-        actions.init.HMI_onReady(pHMIParams)
+        actions.init.HMI_onReady(pHMIParams or hmiDefaultCapabilities)
           :Do(function()
               actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemTimeReady")
               registerGetSystemTimeResponse()
@@ -136,6 +135,10 @@ function m.startWithGetSystemTime(pHMIParams)
         end)
     end)
   return actions.hmi.getConnection():ExpectEvent(event, "Start event")
+end
+
+function m.start(pHMIParams)
+  return actions.start(pHMIParams or hmiDefaultCapabilities)
 end
 
 function m.getVideoStreamingCapability(pArraySizeAddVSC)
@@ -154,7 +157,7 @@ end
 
 function m.setHMICapabilities(pVSC)
   if not pVSC then pVSC = m.getVideoStreamingCapability() end
-  m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
+  hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
 end
 
 function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
@@ -171,11 +174,6 @@ function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
       videoStreamingCapability = pResponseParams
     }
   })
-end
-
-function m.setHMICapabilities(pVSC)
-  if not pVSC then pVSC = m.getVideoStreamingCapability() end
-  m.hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
 end
 
 function m.sendOnSystemCapabilityUpdated(pAppId, pTimes, pParams)
@@ -202,7 +200,7 @@ function m.sendOnSystemCapabilityUpdated(pAppId, pTimes, pParams)
 end
 
 function m.getHMIParamsWithOutRequests(pParams)
-  local params = pParams or utils.cloneTable(m.hmiDefaultCapabilities)
+  local params = pParams or utils.cloneTable(hmiDefaultCapabilities)
   params.RC.GetCapabilities.occurrence = 0
   params.UI.GetSupportedLanguages.occurrence = 0
   params.UI.GetCapabilities.occurrence = 0
@@ -266,7 +264,7 @@ end
 function m.sendOnAppCapabilityUpdated(appCapability, pTimesOnHMI, pAppId)
   if not pAppId then pAppId = 1 end
   if not pTimesOnHMI then pTimesOnHMI = 1 end
-  local uiGetCapabilities = m.hmiDefaultCapabilities.UI.GetCapabilities.params
+  local uiGetCapabilities = hmiDefaultCapabilities.UI.GetCapabilities.params
   if not appCapability then appCapability = {
       appCapability = {
         appCapabilityType = "VIDEO_STREAMING",

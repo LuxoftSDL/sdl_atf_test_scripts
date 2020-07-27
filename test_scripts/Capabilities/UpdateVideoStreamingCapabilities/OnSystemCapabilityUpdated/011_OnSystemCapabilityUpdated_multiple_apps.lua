@@ -80,7 +80,7 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities)
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App1", common.registerAppWOPTU, { appSessionId1 })
 common.Step("Register App2", common.registerAppWOPTU, { appSessionId2 })
 

@@ -62,7 +62,7 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set HMI Capabilities", common.setHMICapabilities)
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { common.hmiDefaultCapabilities })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App 1", common.registerAppWOPTU)
 common.Step("Subscribe App on VIDEO_STREAMING updates", common.getSystemCapability, { true })
 
