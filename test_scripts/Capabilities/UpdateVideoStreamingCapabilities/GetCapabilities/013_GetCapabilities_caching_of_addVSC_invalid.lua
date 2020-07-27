@@ -29,6 +29,7 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 --[[ Local Variables ]]
 local isSubscribe = false
 local appSessionId = 1
+local anotherVSC = 2
 
 local checks = { }
 
@@ -50,7 +51,7 @@ checks.invalid_nested_value.additionalVideoStreamingCapabilities[2].additionalVi
 
 --[[ Local Functions ]]
 local function getHMIParamsWithUiRequestOnly()
-  local vsc = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+  local vsc = common.getVscData(anotherVSC)
   local params = common.getHMIParamsWithOutRequests()
   params.UI.GetCapabilities.occurrence = 1
   params.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = vsc
@@ -72,7 +73,7 @@ for type, value in pairs(checks) do
     common.start, { getHMIParamsWithUiRequestOnly() })
   common.Step("Register App", common.registerAppWOPTU)
   common.Step("App sends GetSystemCapability for VIDEO_STREAMING " .. type, common.getSystemCapability,
-    { isSubscribe, appSessionId, common.anotherVideoStreamingCapabilityWithOutAddVSC })
+    { isSubscribe, appSessionId, common.getVscData(anotherVSC) })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

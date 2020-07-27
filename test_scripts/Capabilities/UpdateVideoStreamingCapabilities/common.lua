@@ -44,8 +44,6 @@ m.registerApp = actions.registerApp
 
 --[[ Common Variables ]]
 local hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
-local defaultSDLcapabilities = SDL.HMICap.get()
-m.defaultVideoStreamingCapability = defaultSDLcapabilities.UI.systemCapabilities.videoStreamingCapability
 
 local bsonType = {
   DOUBLE   = 0x01,
@@ -58,38 +56,6 @@ local bsonType = {
 }
 
 --[[ Common Functions ]]
-m.videoStreamingCapabilityWithOutAddVSC = {
-  preferredResolution = {
-    resolutionWidth = 5000,
-    resolutionHeight = 5000
-  },
-  maxBitrate = 1073741823,
-  supportedFormats = {{
-    protocol = "RTP",
-    codec = "VP9"
-  }},
-  hapticSpatialDataSupported = true,
-  diagonalScreenSize = 1000,
-  pixelPerInch = 500,
-  scale = 5.5
-}
-
-m.anotherVideoStreamingCapabilityWithOutAddVSC = {
-  preferredResolution = {
-    resolutionWidth = 200,
-    resolutionHeight = 200
-  },
-  maxBitrate = 200,
-  supportedFormats = {{
-    protocol = "WEBM",
-    codec = "H265"
-  }},
-  hapticSpatialDataSupported = false,
-  diagonalScreenSize = 200,
-  pixelPerInch = 200,
-  scale = 3
-}
-
 local function getSystemTimeValue()
   local dd = os.date("*t")
   return {
@@ -141,15 +107,56 @@ function m.start(pHMIParams)
   return actions.start(pHMIParams or hmiDefaultCapabilities)
 end
 
+function m.getVscData(pIdx)
+  pIdx = pIdx or 1
+  local videoStreamingCapabilitiesWithOutAddVSC = {
+    [1] = {
+      preferredResolution = {
+        resolutionWidth = 5000,
+        resolutionHeight = 5000
+      },
+      maxBitrate = 1073741823,
+      supportedFormats = {{
+        protocol = "RTP",
+        codec = "VP9"
+      }},
+      hapticSpatialDataSupported = true,
+      diagonalScreenSize = 1000,
+      pixelPerInch = 500,
+      scale = 5.5
+    },
+    [2] = {
+      preferredResolution = {
+        resolutionWidth = 200,
+        resolutionHeight = 200
+      },
+      maxBitrate = 200,
+      supportedFormats = {{
+        protocol = "WEBM",
+        codec = "H265"
+      }},
+      hapticSpatialDataSupported = false,
+      diagonalScreenSize = 200,
+      pixelPerInch = 200,
+      scale = 3
+    }
+  }
+  return utils.cloneTable(videoStreamingCapabilitiesWithOutAddVSC[pIdx])
+end
+
+function m.getVscFromDefaultCapabilitiesFile()
+  return SDL.HMICap.get().UI.systemCapabilities.videoStreamingCapability
+end
+
 function m.buildVideoStreamingCapabilities(pArraySizeAddVSC)
   if not pArraySizeAddVSC then pArraySizeAddVSC = 1 end
-  local vSC = utils.cloneTable(m.videoStreamingCapabilityWithOutAddVSC)
+  local vSC = m.getVscData()
   vSC.additionalVideoStreamingCapabilities = {}
   if pArraySizeAddVSC == 0 then
-    vSC.additionalVideoStreamingCapabilities = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
+    vSC.additionalVideoStreamingCapabilities = m.getVscData(2)
   else
     for i = 1, pArraySizeAddVSC do
-      vSC.additionalVideoStreamingCapabilities[i] = utils.cloneTable(m.anotherVideoStreamingCapabilityWithOutAddVSC)
+      vSC.additionalVideoStreamingCapabilities[i] = m.getVscData(2)
     end
   end
   return vSC

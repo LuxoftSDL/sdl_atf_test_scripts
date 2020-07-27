@@ -54,7 +54,7 @@ for type, value in pairs(checks) do
 
   common.Title("Test")
   common.Step("App sends GetSystemCapability for VIDEO_STREAMING " .. type, common.getSystemCapability,
-    { isSubscribe, appSessionId, common.defaultVideoStreamingCapability })
+    { isSubscribe, appSessionId, common.getVscFromDefaultCapabilitiesFile() })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

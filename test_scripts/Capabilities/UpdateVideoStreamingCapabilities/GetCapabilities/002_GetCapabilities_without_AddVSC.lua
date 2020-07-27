@@ -27,13 +27,13 @@ local isSubscribe = false
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { common.videoStreamingCapabilityWithOutAddVSC })
+common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { common.getVscData() })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 
 common.Title("Test")
 common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSystemCapability,
-  { isSubscribe, appSessionId, common.videoStreamingCapabilityWithOutAddVSC })
+  { isSubscribe, appSessionId, common.getVscData() })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

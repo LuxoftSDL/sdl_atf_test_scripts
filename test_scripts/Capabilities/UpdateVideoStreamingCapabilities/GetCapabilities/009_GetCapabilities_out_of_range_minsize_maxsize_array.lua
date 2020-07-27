@@ -35,13 +35,14 @@ local arraySize = {
 for parameter, value in pairs(arraySize) do
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
-  common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { common.buildVideoStreamingCapabilities(value) })
+  common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities,
+    { common.buildVideoStreamingCapabilities(value) })
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
   common.Step("Register App", common.registerAppWOPTU)
 
   common.Title("Test")
   common.Step("GetSystemCapability out of range " .. parameter .. " " .. value, common.getSystemCapability,
-    { isSubscribe, appSessionId, common.defaultVideoStreamingCapability })
+    { isSubscribe, appSessionId, common.getVscFromDefaultCapabilitiesFile() })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

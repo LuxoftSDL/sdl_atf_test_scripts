@@ -24,8 +24,9 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 --[[ Local Variables ]]
 local appSessionId = 1
 local isSubscribe = false
+local anotherVSC = 2
 
-local vsc = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+local vsc = common.getVscData(anotherVSC)
 vsc.additionalVideoStreamingCapabilities = {
   {
     preferredResolution = { resolutionWidth = 200, resolutionHeight = 200 },

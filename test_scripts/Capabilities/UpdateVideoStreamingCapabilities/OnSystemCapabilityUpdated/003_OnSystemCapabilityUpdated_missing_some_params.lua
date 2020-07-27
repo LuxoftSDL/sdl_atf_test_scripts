@@ -21,10 +21,12 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local appSessionId = 1
 local expected = 1
 local isSubscribe = true
+local anotherVSC = 2
 
+local baseVsc = common.getVscData(anotherVSC)
 local vsc = {
-  preferredResolution = common.anotherVideoStreamingCapabilityWithOutAddVSC.preferredResolution,
-  scale = common.anotherVideoStreamingCapabilityWithOutAddVSC.scale
+  preferredResolution = baseVsc.preferredResolution,
+  scale = baseVsc.scale
 }
 
 --[[ Scenario ]]

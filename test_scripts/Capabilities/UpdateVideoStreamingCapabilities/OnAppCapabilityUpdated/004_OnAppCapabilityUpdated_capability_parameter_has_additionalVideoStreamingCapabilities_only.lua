@@ -24,7 +24,7 @@ local appCapability = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
     videoStreamingCapability = {
-      additionalVideoStreamingCapabilities = { common.videoStreamingCapabilityWithOutAddVSC }
+      additionalVideoStreamingCapabilities = { common.getVscData() }
     }
   }
 }

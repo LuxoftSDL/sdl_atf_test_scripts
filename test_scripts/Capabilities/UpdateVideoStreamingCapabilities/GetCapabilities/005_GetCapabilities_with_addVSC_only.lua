@@ -24,11 +24,12 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 --[[ Local Variables ]]
 local appSessionId = 1
 local isSubscribe = false
+local anotherVSC = 2
 
 local vsc = {
   additionalVideoStreamingCapabilities = {}
 }
-vsc.additionalVideoStreamingCapabilities[1] = common.anotherVideoStreamingCapabilityWithOutAddVSC
+vsc.additionalVideoStreamingCapabilities[1] = common.getVscData(anotherVSC)
 
 --[[ Scenario ]]
 common.Title("Preconditions")

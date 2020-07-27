@@ -20,8 +20,9 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 --[[ Local Variables ]]
 local appSessionId = 1
 local isSubscribe = true
+local anotherVSC = 2
 
-local vsc = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+local vsc = common.getVscData(anotherVSC)
 
 --[[ Local Functions ]]
 local function sendOnSystemCapabilityUpdatedWithNotExistingAppId()

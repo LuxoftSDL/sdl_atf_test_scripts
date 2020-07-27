@@ -24,8 +24,9 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local appSessionId = 1
 local expected = 1
 local isSubscribe = true
+local anotherVSC = 2
 
-local vsc = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+local vsc = common.getVscData(anotherVSC)
 
 --[[ Scenario ]]
 common.Title("Preconditions")

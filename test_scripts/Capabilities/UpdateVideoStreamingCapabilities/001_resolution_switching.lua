@@ -40,6 +40,7 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local isSubscribed = true
 local expected = 1
 local appSessionId = 1
+local anotherVSC = 2
 
 local videoCapSupportedByApp = {
   appCapability = {
@@ -61,16 +62,15 @@ common.Step("App sends GetSystemCapability for VIDEO_STREAMING", common.getSyste
   { isSubscribed, appSessionId, videoCapSupportedByHMI })
 common.Step("OnAppCapabilityUpdated with supported video capabilities", common.sendOnAppCapabilityUpdated,
   { videoCapSupportedByApp })
-common.Step("Start video service", common.startVideoService, { common.videoStreamingCapabilityWithOutAddVSC })
+common.Step("Start video service", common.startVideoService, { common.getVscData() })
 common.Step("Start video streaming", common.startVideoStreaming)
 
 common.Title("Test")
 common.Step("OnSystemCapabilityUpdated with new video params", common.sendOnSystemCapabilityUpdated,
-  { appSessionId, expected, common.anotherVideoStreamingCapabilityWithOutAddVSC })
+  { appSessionId, expected, common.getVscData(anotherVSC) })
 common.Step("Stop video streaming", common.stopVideoStreaming)
 common.Step("Stop video service", common.stopVideoService)
-common.Step("Start video service with new parameters", common.startVideoService,
-  { common.anotherVideoStreamingCapabilityWithOutAddVSC })
+common.Step("Start video service with new parameters", common.startVideoService, { common.getVscData(anotherVSC) })
 common.Step("Start video streaming with new parameters", common.startVideoStreaming)
 
 common.Title("Postconditions")

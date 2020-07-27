@@ -21,30 +21,31 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local appSessionId = 1
 local notExpected = 0
 local isSubscribe = true
+local anotherVSC = 2
 
 local checks = { }
 
-checks.invalid_type = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+checks.invalid_type = common.getVscData(anotherVSC)
 checks.invalid_type.preferredResolution.resolutionWidth = "8000"  -- invalid type
 
-checks.invalid_value = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+checks.invalid_value = common.getVscData(anotherVSC)
 checks.invalid_value.maxBitrate = -1 -- invalid value
 
-checks.invalid_additional_type = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+checks.invalid_additional_type = common.getVscData(anotherVSC)
 checks.invalid_additional_type.additionalVideoStreamingCapabilities = {
-  [1] = common.cloneTable(common.videoStreamingCapabilityWithOutAddVSC),
-  [2] = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+  [1] = common.getVscData(),
+  [2] = common.getVscData(anotherVSC)
 }
 checks.invalid_additional_type.additionalVideoStreamingCapabilities[2].hapticSpatialDataSupported = 18 -- invalid type
 
-checks.invalid_additional_value = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+checks.invalid_additional_value = common.getVscData(anotherVSC)
 checks.invalid_additional_value.additionalVideoStreamingCapabilities = {
-  [1] = common.cloneTable(common.videoStreamingCapabilityWithOutAddVSC),
-  [2] = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+  [1] = common.getVscData(),
+  [2] = common.getVscData(anotherVSC)
 }
 checks.invalid_additional_value.additionalVideoStreamingCapabilities[1].scale = -1 -- invalid value
 
-checks.invalid_deep_nested_type = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+checks.invalid_deep_nested_type = common.getVscData(anotherVSC)
 checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities = {
   [1] = common.buildVideoStreamingCapabilities(2)
 }
@@ -54,7 +55,7 @@ checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].addition
 checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1]
   .additionalVideoStreamingCapabilities[3].supportedFormats = 2 -- invalid type
 
-checks.invalid_deep_nested_value = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
+checks.invalid_deep_nested_value = common.getVscData(anotherVSC)
 checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities = {
   [1] = common.buildVideoStreamingCapabilities(3)
 }
