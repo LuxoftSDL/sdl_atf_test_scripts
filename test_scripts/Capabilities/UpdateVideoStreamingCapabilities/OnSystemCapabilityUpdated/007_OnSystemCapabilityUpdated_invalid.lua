@@ -46,17 +46,17 @@ checks.invalid_additional_value.additionalVideoStreamingCapabilities[1].scale = 
 
 checks.invalid_deep_nested_type = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
 checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities = {
-  [1] = common.getVideoStreamingCapability(2)
+  [1] = common.buildVideoStreamingCapabilities(2)
 }
 
 checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1] =
-  common.getVideoStreamingCapability(3)
+  common.buildVideoStreamingCapabilities(3)
 checks.invalid_deep_nested_type.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[1]
   .additionalVideoStreamingCapabilities[3].supportedFormats = 2 -- invalid type
 
 checks.invalid_deep_nested_value = common.cloneTable(common.anotherVideoStreamingCapabilityWithOutAddVSC)
 checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities = {
-  [1] = common.getVideoStreamingCapability(3)
+  [1] = common.buildVideoStreamingCapabilities(3)
 }
 checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities[1].additionalVideoStreamingCapabilities[2]
   .pixelPerInch = -2 -- invalid value
@@ -65,7 +65,7 @@ checks.invalid_deep_nested_value.additionalVideoStreamingCapabilities[1].additio
 for type, value in pairs(checks) do
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
-  common.Step("Set HMI Capabilities", common.setHMICapabilities)
+  common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities)
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
   common.Step("Register App", common.registerAppWOPTU)
   common.Step("Activate App", common.activateApp)

@@ -19,7 +19,7 @@
 local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabilities/common')
 
 --[[ Local Variables ]]
-local vsc = common.getVideoStreamingCapability(5)
+local vsc = common.buildVideoStreamingCapabilities(5)
 vsc.additionalVideoStreamingCapabilities[1].preferredResolution = { resolutionWidth = 1920, resolutionHeight = 1080 }
 vsc.additionalVideoStreamingCapabilities[3].preferredResolution = { resolutionWidth = 1024, resolutionHeight = 768 }
 vsc.additionalVideoStreamingCapabilities[4].preferredResolution = { resolutionWidth = 15, resolutionHeight = 2 }
@@ -52,7 +52,7 @@ local function getSystemCapability()
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setHMICapabilities, { vsc })
+common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { vsc })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 

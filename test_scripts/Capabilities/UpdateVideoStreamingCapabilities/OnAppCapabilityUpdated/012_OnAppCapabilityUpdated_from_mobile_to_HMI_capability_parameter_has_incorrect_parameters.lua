@@ -24,7 +24,7 @@ local notExpected = 0
 local appCapability = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
-    videoStreamingCapability = common.getVideoStreamingCapability()
+    videoStreamingCapability = common.buildVideoStreamingCapabilities()
   }
 }
 appCapability.appCapability.videoStreamingCapability.preferredResolution.resolutionWidth = "resolutionWidth"

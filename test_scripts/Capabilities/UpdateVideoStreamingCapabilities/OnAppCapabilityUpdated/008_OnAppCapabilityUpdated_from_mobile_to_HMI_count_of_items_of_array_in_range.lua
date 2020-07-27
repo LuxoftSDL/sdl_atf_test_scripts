@@ -23,7 +23,7 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local appCapability = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
-    videoStreamingCapability = common.getVideoStreamingCapability(100)
+    videoStreamingCapability = common.buildVideoStreamingCapabilities(100)
   }
 }
 

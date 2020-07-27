@@ -44,16 +44,16 @@ local appSessionId = 1
 local videoCapSupportedByApp = {
   appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
-    videoStreamingCapability = common.getVideoStreamingCapability(3)
+    videoStreamingCapability = common.buildVideoStreamingCapabilities(3)
   }
 }
 
-local videoCapSupportedByHMI = common.getVideoStreamingCapability(5)
+local videoCapSupportedByHMI = common.buildVideoStreamingCapabilities(5)
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setHMICapabilities, { videoCapSupportedByHMI })
+common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { videoCapSupportedByHMI })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 common.Step("Activate App", common.activateApp)

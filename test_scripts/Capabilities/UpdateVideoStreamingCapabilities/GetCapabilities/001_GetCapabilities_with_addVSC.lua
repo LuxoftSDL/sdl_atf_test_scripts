@@ -23,7 +23,7 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setHMICapabilities)
+common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 

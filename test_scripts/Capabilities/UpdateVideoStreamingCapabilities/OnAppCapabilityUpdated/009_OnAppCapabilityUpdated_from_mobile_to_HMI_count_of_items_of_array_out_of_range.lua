@@ -32,7 +32,7 @@ local cases = {
   outOfUpperBound = {
     appCapability = {
       appCapabilityType = "VIDEO_STREAMING",
-      videoStreamingCapability = common.getVideoStreamingCapability(101)
+      videoStreamingCapability = common.buildVideoStreamingCapabilities(101)
     }
   }
 }

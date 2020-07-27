@@ -23,7 +23,7 @@ local notExpected = 0
 local appCapability = {
   appCapability = {
     -- appCapabilityType - mandatory parameter is missed
-    videoStreamingCapability = common.getVideoStreamingCapability()
+    videoStreamingCapability = common.buildVideoStreamingCapabilities()
   }
 }
 

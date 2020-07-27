@@ -141,7 +141,7 @@ function m.start(pHMIParams)
   return actions.start(pHMIParams or hmiDefaultCapabilities)
 end
 
-function m.getVideoStreamingCapability(pArraySizeAddVSC)
+function m.buildVideoStreamingCapabilities(pArraySizeAddVSC)
   if not pArraySizeAddVSC then pArraySizeAddVSC = 1 end
   local vSC = utils.cloneTable(m.videoStreamingCapabilityWithOutAddVSC)
   vSC.additionalVideoStreamingCapabilities = {}
@@ -155,14 +155,14 @@ function m.getVideoStreamingCapability(pArraySizeAddVSC)
   return vSC
 end
 
-function m.setHMICapabilities(pVSC)
-  if not pVSC then pVSC = m.getVideoStreamingCapability() end
+function m.setVideoStreamingCapabilities(pVSC)
+  if not pVSC then pVSC = m.buildVideoStreamingCapabilities() end
   hmiDefaultCapabilities.UI.GetCapabilities.params.systemCapabilities.videoStreamingCapability = pVSC
 end
 
 function m.getSystemCapability(pSubscribe, pAppId, pResponseParams)
   if not pAppId then pAppId = 1 end
-  if not pResponseParams then pResponseParams = m.getVideoStreamingCapability() end
+  if not pResponseParams then pResponseParams = m.buildVideoStreamingCapabilities() end
   local requestParams = {
     systemCapabilityType = "VIDEO_STREAMING",
     subscribe = pSubscribe
@@ -178,7 +178,7 @@ end
 
 function m.sendOnSystemCapabilityUpdated(pAppId, pTimes, pParams)
   if not pTimes then pTimes = 1 end
-  if not pParams then pParams = m.getVideoStreamingCapability() end
+  if not pParams then pParams = m.buildVideoStreamingCapabilities() end
   local mobileParams = {
     systemCapability = {
       systemCapabilityType = "VIDEO_STREAMING",

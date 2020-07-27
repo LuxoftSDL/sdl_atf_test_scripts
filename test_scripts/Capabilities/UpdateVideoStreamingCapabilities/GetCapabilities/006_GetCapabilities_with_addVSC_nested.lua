@@ -26,16 +26,16 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local appSessionId = 1
 local isSubscribe = false
 
-local vsc = common.getVideoStreamingCapability(10)
-vsc.additionalVideoStreamingCapabilities[8] = common.getVideoStreamingCapability(1)
-vsc.additionalVideoStreamingCapabilities[6] = common.getVideoStreamingCapability(4)
-vsc.additionalVideoStreamingCapabilities[5] = common.getVideoStreamingCapability(2)
-vsc.additionalVideoStreamingCapabilities[10] = common.getVideoStreamingCapability(2)
+local vsc = common.buildVideoStreamingCapabilities(10)
+vsc.additionalVideoStreamingCapabilities[8] = common.buildVideoStreamingCapabilities(1)
+vsc.additionalVideoStreamingCapabilities[6] = common.buildVideoStreamingCapabilities(4)
+vsc.additionalVideoStreamingCapabilities[5] = common.buildVideoStreamingCapabilities(2)
+vsc.additionalVideoStreamingCapabilities[10] = common.buildVideoStreamingCapabilities(2)
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set HMI Capabilities", common.setHMICapabilities, { vsc })
+common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { vsc })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppWOPTU)
 

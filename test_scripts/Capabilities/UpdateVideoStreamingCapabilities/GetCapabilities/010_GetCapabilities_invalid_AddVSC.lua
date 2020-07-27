@@ -28,19 +28,19 @@ local isSubscribe = false
 
 local checks = { }
 
-checks.invalid_type = common.getVideoStreamingCapability(1)
+checks.invalid_type = common.buildVideoStreamingCapabilities(1)
 checks.invalid_type.additionalVideoStreamingCapabilities[1].preferredResolution.resolutionWidth = true -- invalid type
 
-checks.invalid_value = common.getVideoStreamingCapability(2)
+checks.invalid_value = common.buildVideoStreamingCapabilities(2)
 checks.invalid_value.additionalVideoStreamingCapabilities[1].maxBitrate = -1 -- invalid value
 
-checks.invalid_nested_type = common.getVideoStreamingCapability(2)
-checks.invalid_nested_type.additionalVideoStreamingCapabilities[2] = common.getVideoStreamingCapability(1)
+checks.invalid_nested_type = common.buildVideoStreamingCapabilities(2)
+checks.invalid_nested_type.additionalVideoStreamingCapabilities[2] = common.buildVideoStreamingCapabilities(1)
 checks.invalid_nested_type.additionalVideoStreamingCapabilities[2]
   .additionalVideoStreamingCapabilities[1].hapticSpatialDataSupported = 18 -- invalid type
 
-checks.invalid_nested_value = common.getVideoStreamingCapability(3)
-checks.invalid_nested_value.additionalVideoStreamingCapabilities[2] = common.getVideoStreamingCapability(2)
+checks.invalid_nested_value = common.buildVideoStreamingCapabilities(3)
+checks.invalid_nested_value.additionalVideoStreamingCapabilities[2] = common.buildVideoStreamingCapabilities(2)
 checks.invalid_nested_value.additionalVideoStreamingCapabilities[2]
   .additionalVideoStreamingCapabilities[2].scale = -1 -- invalid value
 
@@ -48,7 +48,7 @@ checks.invalid_nested_value.additionalVideoStreamingCapabilities[2]
 for type, value in pairs(checks) do
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
-  common.Step("Set HMI Capabilities", common.setHMICapabilities, { value })
+  common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { value })
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
   common.Step("Register App", common.registerAppWOPTU)
 

@@ -31,14 +31,14 @@ local common = require('test_scripts/Capabilities/UpdateVideoStreamingCapabiliti
 local appSessionId = 1
 local isSubscribe = false
 
-local vsc = common.getVideoStreamingCapability(2)
+local vsc = common.buildVideoStreamingCapabilities(2)
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update HMICapabilitiesCacheFile in SDL.ini file ", common.setSDLIniParameter,
   { "HMICapabilitiesCacheFile", "hmi_capabilities_cache.json" })
-common.Step("Set HMI Capabilities", common.setHMICapabilities, { vsc })
+common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { vsc })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 
 common.Title("Test")

@@ -25,7 +25,7 @@ local appCapability = {
     appCapabilityType = "VIDEO_STREAMING",
     videoStreamingCapability = {
       additionalVideoStreamingCapabilities = {
-        common.getVideoStreamingCapability()
+        common.buildVideoStreamingCapabilities()
       }
     }
   }

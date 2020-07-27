@@ -32,19 +32,19 @@ local appSessionId = 1
 
 local checks = { }
 
-checks.invalid_type = common.getVideoStreamingCapability(1)
+checks.invalid_type = common.buildVideoStreamingCapabilities(1)
 checks.invalid_type.additionalVideoStreamingCapabilities[1].supportedFormats[1].pixelPerInch = "264" -- invalid type
 
-checks.invalid_value = common.getVideoStreamingCapability(2)
+checks.invalid_value = common.buildVideoStreamingCapabilities(2)
 checks.invalid_value.additionalVideoStreamingCapabilities[1].preferredResolution.resolutionHeight = -2 -- invalid value
 
-checks.invalid_nested_type = common.getVideoStreamingCapability(2)
-checks.invalid_nested_type.additionalVideoStreamingCapabilities[2] = common.getVideoStreamingCapability(1)
+checks.invalid_nested_type = common.buildVideoStreamingCapabilities(2)
+checks.invalid_nested_type.additionalVideoStreamingCapabilities[2] = common.buildVideoStreamingCapabilities(1)
 checks.invalid_nested_type.additionalVideoStreamingCapabilities[2].additionalVideoStreamingCapabilities[1]
   .diagonalScreenSize = true -- invalid type
 
-checks.invalid_nested_value = common.getVideoStreamingCapability(3)
-checks.invalid_nested_value.additionalVideoStreamingCapabilities[2] = common.getVideoStreamingCapability(2)
+checks.invalid_nested_value = common.buildVideoStreamingCapabilities(3)
+checks.invalid_nested_value.additionalVideoStreamingCapabilities[2] = common.buildVideoStreamingCapabilities(2)
 checks.invalid_nested_value.additionalVideoStreamingCapabilities[2].additionalVideoStreamingCapabilities[2]
   .scale = -3 -- invalid value
 
@@ -63,7 +63,7 @@ for type, value in pairs(checks) do
   common.Step("Clean environment", common.preconditions)
   common.Step("Update HMICapabilitiesCacheFile in SDL.ini file ", common.setSDLIniParameter,
     { "HMICapabilitiesCacheFile", "hmi_capabilities_cache.json" })
-  common.Step("Set HMI Capabilities", common.setHMICapabilities, { value })
+  common.Step("Set HMI Capabilities", common.setVideoStreamingCapabilities, { value })
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 
   common.Title("Test")
