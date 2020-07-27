@@ -17,8 +17,6 @@ local security = require("user_modules/sequences/security")
 runner.testSettings.isSelfIncluded = false
 config.defaultProtocolVersion = 5
 config.ValidateSchema = false
--- config.application1.registerAppInterfaceParams.syncMsgVersion.majorVersion = 7
--- config.application1.registerAppInterfaceParams.syncMsgVersion.minorVersion = 0
 constants.FRAME_SIZE.P5 = 131084
 
 --[[ Shared Functions ]]
