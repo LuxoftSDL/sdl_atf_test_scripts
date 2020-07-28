@@ -703,6 +703,7 @@ function m.setGlobalProperties(pAppId)
       }
     },
     menuTitle = "Menu Title" .. pAppId,
+    userLocation = { grid = { col = 2, colspan = 1, row = 0, rowspan = 1, level = 0, levelspan = 1 } }
   }
   local cid = m.getMobileSession(pAppId):SendRPC("SetGlobalProperties", params)
   m.resumptionData[pAppId].setGlobalProperties = {}
@@ -716,6 +717,11 @@ function m.setGlobalProperties(pAppId)
   :Do(function(_,data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
       m.resumptionData[pAppId].setGlobalProperties.TTS = data.params
+    end)
+  EXPECT_HMICALL("RC.SetGlobalProperties")
+  :Do(function(_,data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      m.resumptionData[pAppId].setGlobalProperties.RC = data.params
     end)
 
   m.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
@@ -854,6 +860,7 @@ end
 function m.setGlobalPropertiesResumption(pAppId, pErrorResponseInterface)
   local timesTTS = 1
   local timesUI  = 1
+  local timesRC  = 1
   local restoreData = {}
   if pErrorResponseInterface == "TTS" then
     timesUI  = 2
@@ -861,6 +868,9 @@ function m.setGlobalPropertiesResumption(pAppId, pErrorResponseInterface)
   elseif pErrorResponseInterface == "UI" then
     timesTTS = 2
     restoreData = getGlobalPropertiesResetData(pAppId, "TTS")
+  elseif pErrorResponseInterface == "RC" then
+    timesRC = 2
+    restoreData = getGlobalPropertiesResetData(pAppId, "RC")
   end
   m.getHMIConnection():ExpectRequest("UI.SetGlobalProperties",
     m.resumptionData[pAppId].setGlobalProperties.UI,
@@ -876,6 +886,13 @@ function m.setGlobalPropertiesResumption(pAppId, pErrorResponseInterface)
       m.sendResponse(data, pErrorResponseInterface, "TTS")
     end)
   :Times(timesTTS)
+  m.getHMIConnection():ExpectRequest("RC.SetGlobalProperties",
+    m.resumptionData[pAppId].setGlobalProperties.RC,
+    restoreData)
+  :Do(function(_, data)
+      m.sendResponse(data, pErrorResponseInterface, "RC")
+    end)
+  :Times(timesRC)
 end
 
 --[[ @subscribeVehicleDataResumption: check resumption of subscribeVehicleDat data
