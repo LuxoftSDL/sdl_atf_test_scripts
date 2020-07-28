@@ -134,13 +134,13 @@ end
 --[[ @checkResumptionData: checks resumption data and answer with error to defined RPC
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
---! pErrorResponceRpc - RPC for response with errorCode
+--! pErrorResponseRpc - RPC for response with errorCode
 --! pErrorResponseInterface - interface of RPC for response with errorCode
 --! @return: none
 --]]
-function m.checkResumptionData(pAppId, pErrorResponceRpc, pErrorResponseInterface)
+function m.checkResumptionData(pAppId, pErrorResponseRpc, pErrorResponseInterface)
   for rpc in pairs(m.resumptionData[pAppId]) do
-    if pErrorResponceRpc == rpc then
+    if pErrorResponseRpc == rpc then
       m[rpc .. "Resumption"](pAppId, pErrorResponseInterface)
     else
       m[rpc .. "Resumption"](pAppId)
@@ -148,14 +148,14 @@ function m.checkResumptionData(pAppId, pErrorResponceRpc, pErrorResponseInterfac
   end
 end
 
-local function expOnHMIStatus(pAppId, pExpLevel, pErrorResponceRpc, pTimeout)
+local function expOnHMIStatus(pAppId, pExpLevel, pErrorResponseRpc, pTimeout)
   if not pTimeout then pTimeout = 10000 end
   local exp = {
     { hmiLevel = "NONE", windowID = 0 },
     { hmiLevel = "NONE", windowID = 2 },
     { hmiLevel = pExpLevel, windowID = 0 }
   }
-  if m.resumptionData[pAppId].createWindow == nil or (pErrorResponceRpc ~= nil and pAppId == 1) then
+  if m.resumptionData[pAppId].createWindow == nil or (pErrorResponseRpc ~= nil and pAppId == 1) then
     table.remove(exp, 2)
   end
   m.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",table.unpack(exp))
@@ -168,9 +168,9 @@ end
 --! pAppId - application number (1, 2, etc.)
 --! @return: none
 --]]
-function m.resumptionFullHMILevel(pAppId, pErrorResponceRpc, pTimeout)
+function m.resumptionFullHMILevel(pAppId, pErrorResponseRpc, pTimeout)
   if not pTimeout then pTimeout = 10000 end
-  expOnHMIStatus(pAppId, "FULL", pErrorResponceRpc, pTimeout)
+  expOnHMIStatus(pAppId, "FULL", pErrorResponseRpc, pTimeout)
   m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(pAppId) })
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
@@ -439,13 +439,13 @@ m.rpcsRevert = {
 --! checking reverting already added data
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
---! pErrorResponceRpc - RPC name for error response
+--! pErrorResponseRpc - RPC name for error response
 --! pErrorResponseInterface - interface of RPC for error response
 --! @return: none
 ]]
-function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponceRpc, pErrorResponseInterface)
+function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponseRpc, pErrorResponseInterface)
   local rpcsRevertLocal = m.cloneTable(m.rpcsRevert)
-  if pErrorResponceRpc == "addCommand" and pErrorResponseInterface == "VR" then
+  if pErrorResponseRpc == "addCommand" and pErrorResponseInterface == "VR" then
     rpcsRevertLocal.addCommand.VR = nil
     m.getHMIConnection():ExpectRequest("VR.AddCommand")
     :Do(function(_, data)
@@ -457,7 +457,7 @@ function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponceRpc, pErro
         end
       end)
     :Times(2)
-  elseif pErrorResponceRpc == "createIntrerationChoiceSet" then
+  elseif pErrorResponseRpc == "createIntrerationChoiceSet" then
     rpcsRevertLocal.addCommand.VR = nil
     m.getHMIConnection():ExpectRequest("VR.AddCommand")
     :Do(function(_, data)
@@ -470,10 +470,10 @@ function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponceRpc, pErro
       end)
     :Times(2)
   else
-    local errorResponseRpc = m.getRpcName(pErrorResponceRpc, pErrorResponseInterface)
-    local notExpRevertRpc = m.getRpcName(m.revertRpcs[pErrorResponceRpc][pErrorResponseInterface], pErrorResponseInterface)
-    rpcsRevertLocal[pErrorResponceRpc][pErrorResponseInterface] = nil
-    if pErrorResponceRpc ~= "setGlobalProperties" then
+    local errorResponseRpc = m.getRpcName(pErrorResponseRpc, pErrorResponseInterface)
+    local notExpRevertRpc = m.getRpcName(m.revertRpcs[pErrorResponseRpc][pErrorResponseInterface], pErrorResponseInterface)
+    rpcsRevertLocal[pErrorResponseRpc][pErrorResponseInterface] = nil
+    if pErrorResponseRpc ~= "setGlobalProperties" then
       m.getHMIConnection():ExpectRequest(notExpRevertRpc)
       :Times(0)
     end
@@ -515,12 +515,12 @@ end
 --! pAppId - application number (1, 2, etc.)
 --! pCheckResumptionData - verification function for resumption data
 --! pCheckResumptionHMILevel - verification function for resumption HMI level
---! pErrorResponceRpc - RPC name for error response
+--! pErrorResponseRpc - RPC name for error response
 --! pErrorResponseInterface - interface of RPC for error response
 --! pRAIResponseExp - time for expectation of RAI response
 --! @return: none
 --]]
-function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel, pErrorResponceRpc, pErrorResponseInterface, pTimeout)
+function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel, pErrorResponseRpc, pErrorResponseInterface, pTimeout)
   if not pAppId then pAppId = 1 end
   if not pTimeout then pTimeout = 10000 end
   local mobSession = m.getMobileSession(pAppId)
@@ -538,8 +538,8 @@ function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel,
         end)
       :Timeout(pTimeout)
     end)
-  pCheckResumptionData(pAppId, pErrorResponceRpc, pErrorResponseInterface)
-  pCheckResumptionHMILevel(pAppId, pErrorResponceRpc, pTimeout)
+  pCheckResumptionData(pAppId, pErrorResponseRpc, pErrorResponseInterface)
+  pCheckResumptionHMILevel(pAppId, pErrorResponseRpc, pTimeout)
 end
 
 --[[ @reRegisterAppSuccess: re-register application with SUCCESS resultCode
