@@ -76,6 +76,38 @@ m.revertRpcs = {
   }
 }
 
+local function getOnSCUParams(pWinArray)
+  local params = {
+    systemCapability = {
+      systemCapabilityType = "DISPLAYS",
+      displayCapabilities = {
+        {
+          displayName = "displayName",
+          windowTypeSupported = {
+            {
+              type = "MAIN",
+              maximumNumberOfWindows = 1
+            },
+            {
+              type = "WIDGET",
+              maximumNumberOfWindows = 1
+            }
+          },
+          windowCapabilities = { }
+        }
+      }
+    }
+  }
+  for _, winId in pairs(pWinArray) do
+    local winCap = {
+      windowID = winId,
+      templatesAvailable = { "Template_" .. winId }
+    }
+    table.insert(params.systemCapability.displayCapabilities[1].windowCapabilities, winCap)
+  end
+  return params
+end
+
 --[[ @waitUntilResumptionDataIsStored: wait some time until SDL saves resumption data
 --! @parameters: none
 --! @return: none
@@ -458,6 +490,24 @@ function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponceRpc, pErro
     end
   end
 
+  local isCustomButtonSubscribed = false
+  local isOkButtonSubscribed = false
+  local isOkButtonUnsubscribed = false
+  m.getHMIConnection():ExpectNotification("Buttons.OnButtonSubscription")
+  :ValidIf(function(_, data)
+      local params = data.params
+      if params.name == "CUSTOM_BUTTON" and params.isSubscribed == true and isCustomButtonSubscribed == false then
+        isCustomButtonSubscribed = true
+      elseif params.name == "OK" and params.isSubscribed == true and isOkButtonSubscribed == false then
+        isOkButtonSubscribed = true
+      elseif params.name == "OK" and params.isSubscribed == false and isOkButtonUnsubscribed == false then
+        isOkButtonUnsubscribed = true
+      else
+        return false, "Came unexpected Buttons.OnButtonSubscription notification"
+      end
+      return true
+    end)
+  :Times(3)
 end
 
 --[[ @reRegisterApp: re-register application with RESUME_FAILED resultCode
@@ -510,9 +560,13 @@ function m.reRegisterAppSuccess(pAppId, pCheckResumptionData, pCheckResumptionHM
       m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered", {
           application = { appName = m.getConfigAppParams(pAppId).appName }
         })
+      :Do(function()
+          m.sendOnSCU(0, pAppId)
+        end)
       mobSession:ExpectResponse(corId, { success = true, resultCode = "SUCCESS" })
       :Do(function()
           mobSession:ExpectNotification("OnPermissionsChange")
+          mobSession:ExpectNotification("OnSystemCapabilityUpdated")
         end)
     end)
   pCheckResumptionData(pAppId)
@@ -895,8 +949,8 @@ function m.updatePreloadedPT()
   local pt = actions.sdl.getPreloadedPT()
   pt.policy_table.functional_groupings["DataConsent-2"].rpcs = json.null
   local additionalRPCs = {
-    "SubscribeVehicleData", "UnsubscribeVehicleData", "SubscribeWayPoints",
-    "UnsubscribeWayPoints", "OnVehicleData", "OnWayPointChange", "CreateWindow"
+    "SubscribeVehicleData", "UnsubscribeVehicleData", "SubscribeWayPoints", "UnsubscribeWayPoints",
+    "OnVehicleData", "OnWayPointChange", "CreateWindow", "GetAppServiceData", "OnAppServiceData"
   }
   pt.policy_table.functional_groupings.NewTestCaseGroup = { rpcs = { } }
   for _, v in pairs(additionalRPCs) do
@@ -1204,6 +1258,13 @@ function m.log(...)
   utils.cprint(color.magenta, str)
 end
 
+function m.sendOnSCU(pWinId, pAppId)
+  if not pAppId then pAppId = 1 end
+  local params = getOnSCUParams({ pWinId })
+  params.appID = m.getHMIAppId(pAppId)
+  m.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", params)
+end
+
 --[[ @createWindowResumption: check resumption of createWindow data
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
@@ -1214,6 +1275,9 @@ function m.createWindowResumption(pAppId, pErrorResponseInterface)
   m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
   :Do(function(_, data)
       m.sendResponse(data, pErrorResponseInterface, "UI")
+      if not pErrorResponseInterface then
+        m.sendOnSCU(2)
+      end
     end)
 end
 
@@ -1241,81 +1305,6 @@ function m.createWindow(pAppId)
   :Do(function(_, data)
       m.hashId[pAppId] = data.payload.hashID
     end)
-end
-
-function m.sendOnSysCapUpd(pAppId)
-  local params = {
-    systemCapability = {
-      systemCapabilityType = "DISPLAYS",
-      displayCapabilities = {
-        {
-          displayName = "displayName",
-          windowTypeSupported = {
-            {
-              type = "MAIN",
-              maximumNumberOfWindows = 1
-            },
-            {
-              type = "WIDGET",
-              maximumNumberOfWindows = 1
-            }
-          },
-          windowCapabilities = {
-            {
-              windowID = 0,
-              textFields = {
-                {
-                  name = "mainField1",
-                  characterSet = "TYPE2SET",
-                  width = 1,
-                  rows = 1
-                }
-              },
-              imageFields = {
-                {
-                  name = "choiceImage",
-                  imageTypeSupported = { "GRAPHIC_PNG"
-                  },
-                  imageResolution = {
-                    resolutionWidth = 35,
-                    resolutionHeight = 35
-                  }
-                }
-              },
-              imageTypeSupported = {
-                "STATIC"
-              },
-              templatesAvailable = {
-                "Template1", "Template2", "Template3", "Template4", "Template5"
-              },
-              numCustomPresetsAvailable = 100,
-              buttonCapabilities = {
-                {
-                  longPressAvailable = true,
-                  name = "VOLUME_UP",
-                  shortPressAvailable = true,
-                  upDownAvailable = false
-                }
-              },
-              softButtonCapabilities = {
-                {
-                  shortPressAvailable = true,
-                  longPressAvailable = true,
-                  upDownAvailable = true,
-                  imageSupported = true,
-                  textSupported = true
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  local paramsToSDL = m.cloneTable(params)
-  paramsToSDL.appID = m.getHMIAppId(pAppId)
-  m.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", paramsToSDL)
-  m.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated", params)
 end
 
 function m.sendOnButtonPress(pAppId, pIsExp)
@@ -1386,7 +1375,6 @@ function m.checkResumptionDataSuccess(pAppId)
 end
 
 function m.checkSubscriptions(pIsExp, pAppId)
-  m.sendOnSysCapUpd(pAppId) --SDL always subscribes App to DISPLAYS capabilities
   m.sendOnButtonPress(pAppId, pIsExp)
   m.sendOnVehicleData(pAppId, pIsExp)
 end
