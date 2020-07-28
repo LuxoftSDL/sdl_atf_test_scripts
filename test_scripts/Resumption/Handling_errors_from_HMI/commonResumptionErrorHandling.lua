@@ -707,13 +707,13 @@ function m.setGlobalProperties(pAppId)
   }
   local cid = m.getMobileSession(pAppId):SendRPC("SetGlobalProperties", params)
   m.resumptionData[pAppId].setGlobalProperties = {}
-  EXPECT_HMICALL("UI.SetGlobalProperties")
+  m.getHMIConnection():ExpectRequest("UI.SetGlobalProperties")
   :Do(function(_,data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
       m.resumptionData[pAppId].setGlobalProperties.UI = data.params
     end)
 
-  EXPECT_HMICALL("TTS.SetGlobalProperties")
+  m.getHMIConnection():ExpectRequest("TTS.SetGlobalProperties")
   :Do(function(_,data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
       m.resumptionData[pAppId].setGlobalProperties.TTS = data.params
@@ -743,7 +743,7 @@ function m.subscribeVehicleData(pAppId, pParams, pHMIrequest)
   end
   if not pHMIrequest then pHMIrequest = 1 end
   local cid = m.getMobileSession(pAppId):SendRPC("SubscribeVehicleData", pParams.requestParams)
-  EXPECT_HMICALL("VehicleInfo.SubscribeVehicleData")
+  m.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData")
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pParams.responseParams)
       m.resumptionData[pAppId].subscribeVehicleData = { VehicleInfo = data.params }
@@ -769,7 +769,7 @@ function m.subscribeWayPoints(pAppId, pHMIrequest)
   if not pAppId then pAppId = 1 end
   if not pHMIrequest then pHMIrequest = 1 end
   local cid = m.getMobileSession(pAppId):SendRPC("SubscribeWayPoints", {})
-  EXPECT_HMICALL("Navigation.SubscribeWayPoints")
+  m.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints")
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
       m.resumptionData[pAppId].subscribeWayPoints = { Navigation = data.params }
@@ -790,7 +790,7 @@ end
 function m.buttonSubscription(pAppId)
   if not pAppId then pAppId = 1 end
   local cid = m.getMobileSession(pAppId):SendRPC("SubscribeButton", { buttonName = "OK" })
-  EXPECT_HMINOTIFICATION("Buttons.OnButtonSubscription")
+  m.getHMIConnection():ExpectNotification("Buttons.OnButtonSubscription")
   m.getMobileSession(pAppId):ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
   m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Do(function(_, data)
@@ -905,6 +905,22 @@ function m.subscribeWayPointsResumption(pAppId, pErrorResponseInterface)
     end)
 end
 
+--[[ @createWindowResumption: check resumption of createWindow data
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pErrorResponseInterface - interface of RPC for error response
+--! @return: none
+--]]
+function m.createWindowResumption(pAppId, pErrorResponseInterface)
+  m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
+  :Do(function(_, data)
+      m.sendResponse(data, pErrorResponseInterface, "UI")
+      if not pErrorResponseInterface then
+        m.sendOnSCU(2)
+      end
+    end)
+end
+
 --[[ @unregisterAppInterface: unregister app
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
@@ -942,7 +958,7 @@ function m.preconditions()
   m.updatePreloadedPT()
 end
 
---[[ @updatePreloadedPT: update preloaded file with permissions for "SubscribeVehicleData", "UnsubscribeVehicleData", "SubscribeWayPoints", "UnsubscribeWayPoints"
+--[[ @updatePreloadedPT: update preloaded file with permissions for additional RPCs
 --! @parameters: none
 --! @return: none
 --]]
@@ -999,7 +1015,7 @@ function m.openRPCservice(pAppId)
   m.getMobileSession(pAppId):StartService(7)
 end
 
---[[ @reRegisterApps: reregister 2 apps
+--[[ @reRegisterApps: re-register 2 apps
 --! @parameters:
 --! pCheckResumptionData - verification function for resumption data
 --! pErrorRpc - RPC name for error response
@@ -1249,6 +1265,11 @@ function m.splitString(pInputStr, pSep)
   return splitted
 end
 
+--[[ @log: print text to console
+--! @parameters:
+--! ... - set of strings to print (e.g. 'aaa', 'bbb' etc.)
+--! @return: none
+--]]
 function m.log(...)
   local str = "[" .. atf_logger.formated_time(true) .. "]"
   for i, p in pairs({...}) do
@@ -1259,6 +1280,12 @@ function m.log(...)
   utils.cprint(color.magenta, str)
 end
 
+--[[ @sendOnSCU: Send BC.OnSystemCapabilityUpdated for window
+--! @parameters:
+--! pWinId - window identifier (0, 1, etc.)
+--! pAppId - application number (1, 2, etc.)
+--! @return: none
+--]]
 function m.sendOnSCU(pWinId, pAppId)
   if not pAppId then pAppId = 1 end
   local params = getOnSCUParams({ pWinId })
@@ -1266,23 +1293,7 @@ function m.sendOnSCU(pWinId, pAppId)
   m.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", params)
 end
 
---[[ @createWindowResumption: check resumption of createWindow data
---! @parameters:
---! pAppId - application number (1, 2, etc.)
---! pErrorResponseInterface - interface of RPC for error response
---! @return: none
---]]
-function m.createWindowResumption(pAppId, pErrorResponseInterface)
-  m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
-  :Do(function(_, data)
-      m.sendResponse(data, pErrorResponseInterface, "UI")
-      if not pErrorResponseInterface then
-        m.sendOnSCU(2)
-      end
-    end)
-end
-
---[[ @createWindow: adding createWindow
+--[[ @createWindow: adding of window
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
 --! @return: none
@@ -1308,6 +1319,12 @@ function m.createWindow(pAppId)
     end)
 end
 
+--[[ @sendOnButtonPress: send OnButtonEvent and OnButtonPress
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pIsExp - true (default) - if it's expected notification on mobile app
+--! @return: none
+--]]
 function m.sendOnButtonPress(pAppId, pIsExp)
   if pAppId == nil then pAppId = 1 end
   local occurences = pIsExp == true and 1 or 0
@@ -1326,6 +1343,12 @@ function m.sendOnButtonPress(pAppId, pIsExp)
     { name = btnName, appID = m.getHMIAppId(pAppId), mode = btnPressMode })
 end
 
+--[[ @sendOnVehicleData: send OnVehicleData
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pIsExp - true (default) - if it's expected notification on mobile app
+--! @return: none
+--]]
 function m.sendOnVehicleData(pAppId, pIsExp)
   if pAppId == nil then pAppId = 1 end
   local occurences = pIsExp == true and 1 or 0
@@ -1339,7 +1362,11 @@ function m.sendOnVehicleData(pAppId, pIsExp)
   m.getMobileSession(pAppId):ExpectNotification("OnVehicleData", params):Times(occurences)
 end
 
-
+--[[ @checkResumptionDataSuccess: verify resumption for successful scenario
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! @return: none
+--]]
 function m.checkResumptionDataSuccess(pAppId)
   m.addSubMenuResumption(pAppId)
   m.setGlobalPropertiesResumption(pAppId)
@@ -1361,7 +1388,7 @@ function m.checkResumptionDataSuccess(pAppId)
 
   local isCustomButtonSubscribed = false
   local isOkButtonSubscribed = false
-  EXPECT_HMINOTIFICATION("Buttons.OnButtonSubscription")
+  m.getHMIConnection():ExpectNotification("Buttons.OnButtonSubscription")
   :ValidIf(function(_, data)
       if data.params.name == "CUSTOM_BUTTON" and isCustomButtonSubscribed == false then
         isCustomButtonSubscribed = true
@@ -1375,6 +1402,12 @@ function m.checkResumptionDataSuccess(pAppId)
   :Times(2)
 end
 
+--[[ @checkSubscriptions: verify subscriptions to Button events and Vehicle data
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pIsExp - true (default) - if it's expected notification on mobile app
+--! @return: none
+--]]
 function m.checkSubscriptions(pIsExp, pAppId)
   m.sendOnButtonPress(pAppId, pIsExp)
   m.sendOnVehicleData(pAppId, pIsExp)
