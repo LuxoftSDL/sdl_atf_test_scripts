@@ -48,33 +48,7 @@ m.rpcs = {
   createWindow = { "UI" }
 }
 
---[[ Common Functions ]]
-
-m.revertRpcs = {
-  addCommand = {
-    UI = "DeleteCommand",
-    VR = "DeleteCommand"
-  },
-  addSubMenu = {
-    UI = "DeleteSubMenu"
-  },
-  createIntrerationChoiceSet = {
-    VR = "DeleteCommand"
-  },
-  setGlobalProperties = {
-    UI = "SetGlobalProperties",
-    TTS = "SetGlobalProperties"
-  },
-  subscribeVehicleData = {
-    VehicleInfo = "UnsubscribeVehicleData"
-  },
-  subscribeWayPoints = {
-    Navigation = "UnsubscribeWayPoints"
-  },
-  createWindow = {
-    UI = "DeleteWindow"
-  }
-}
+--[[ Local Functions ]]
 
 local function getOnSCUParams(pWinArray)
   local params = {
@@ -107,6 +81,8 @@ local function getOnSCUParams(pWinArray)
   end
   return params
 end
+
+--[[ Common Functions ]]
 
 --[[ @waitUntilResumptionDataIsStored: wait some time until SDL saves resumption data
 --! @parameters: none
@@ -292,146 +268,170 @@ end
 
 m.rpcsRevert = {
   addCommand = {
-    UI = function(pAppId, pTimes)
-      if not pTimes then pTimes = 1 end
-      m.getHMIConnection():ExpectRequest("UI.AddCommand",m.resumptionData[pAppId].addCommand.UI)
-      :Do(function(_, data)
-          m.sendResponse(data)
-          m.removeData.DeleteUICommand(pAppId)
-        end)
-      :Times(pTimes)
-    end,
-    VR = function(pAppId, pTimes)
-      if not pTimes then pTimes = 2 end
-      m.getHMIConnection():ExpectRequest("VR.AddCommand")
-      :Do(function(exp, data)
-          m.sendResponse(data)
-          if pTimes == 2 and exp.occurences == 1 then
-            m.removeData.DeleteVRCommand(pAppId, _, 2)
-          elseif pTimes == 1 then
-            m.removeData.DeleteVRCommand(pAppId, data.params.type)
-          end
-        end)
-      :ValidIf(function(_, data)
-          if data.params.type == "Choice" then
-            if utils.isTableEqual(data.params, m.resumptionData[pAppId].createIntrerationChoiceSet.VR) == false then
-              return false, "Params in VR.AddCommand with type = Choice are not match to expected result.\n" ..
-              "Actual result:" .. m.tableToString(data.params) .. "\n" ..
-              "Expected result:" .. m.tableToString(m.resumptionData[pAppId].createIntrerationChoiceSet.VR) .."\n"
+    rpc = "DeleteCommand",
+    iface = {
+      UI = function(pAppId, pTimes)
+        if not pTimes then pTimes = 1 end
+        m.getHMIConnection():ExpectRequest("UI.AddCommand",m.resumptionData[pAppId].addCommand.UI)
+        :Do(function(_, data)
+            m.sendResponse(data)
+            m.removeData.DeleteUICommand(pAppId)
+          end)
+        :Times(pTimes)
+      end,
+      VR = function(pAppId, pTimes)
+        if not pTimes then pTimes = 2 end
+        m.getHMIConnection():ExpectRequest("VR.AddCommand")
+        :Do(function(exp, data)
+            m.sendResponse(data)
+            if pTimes == 2 and exp.occurences == 1 then
+              m.removeData.DeleteVRCommand(pAppId, nil, 2)
+            elseif pTimes == 1 then
+              m.removeData.DeleteVRCommand(pAppId, data.params.type)
             end
-          else
-            if utils.isTableEqual(data.params, m.resumptionData[pAppId].addCommand.VR) == false then
-              return false, "Params in VR.AddCommand with type = Command are not match to expected result.\n" ..
-              "Actual result:" .. m.tableToString(data.params) .. "\n" ..
-              "Expected result:" .. m.tableToString(m.resumptionData[pAppId].addCommand.VR) .."\n"
+          end)
+        :ValidIf(function(_, data)
+            if data.params.type == "Choice" then
+              if utils.isTableEqual(data.params, m.resumptionData[pAppId].createIntrerationChoiceSet.VR) == false then
+                return false, "Params in VR.AddCommand with type = Choice are not match to expected result.\n" ..
+                "Actual result:" .. m.tableToString(data.params) .. "\n" ..
+                "Expected result:" .. m.tableToString(m.resumptionData[pAppId].createIntrerationChoiceSet.VR) .."\n"
+              end
+            else
+              if utils.isTableEqual(data.params, m.resumptionData[pAppId].addCommand.VR) == false then
+                return false, "Params in VR.AddCommand with type = Command are not match to expected result.\n" ..
+                "Actual result:" .. m.tableToString(data.params) .. "\n" ..
+                "Expected result:" .. m.tableToString(m.resumptionData[pAppId].addCommand.VR) .."\n"
+              end
             end
-          end
-          return true
-        end)
-      :Times(pTimes)
-    end,
+            return true
+          end)
+        :Times(pTimes)
+      end
+    }
   },
   addSubMenu = {
-    UI = function(pAppId, pTimes)
-      if not pTimes then pTimes = 1 end
-      m.getHMIConnection():ExpectRequest("UI.AddSubMenu",m.resumptionData[pAppId].addSubMenu.UI)
-      :Do(function(_, data)
-          m.sendResponse(data)
-          m.removeData.DeleteSubMenu(pAppId)
-        end)
-      :Times(pTimes)
-    end
+    rpc = "DeleteSubMenu",
+    iface = {
+      UI = function(pAppId, pTimes)
+        if not pTimes then pTimes = 1 end
+        m.getHMIConnection():ExpectRequest("UI.AddSubMenu",m.resumptionData[pAppId].addSubMenu.UI)
+        :Do(function(_, data)
+            m.sendResponse(data)
+            m.removeData.DeleteSubMenu(pAppId)
+          end)
+        :Times(pTimes)
+      end
+    }
+  },
+  createIntrerationChoiceSet = {
+    rpc = "DeleteCommand",
+    iface = {
+      VR = function() end
+    }
   },
   setGlobalProperties = {
-    TTS = function(pAppId, pTimes)
-      if not pTimes then pTimes = 2 end
-      m.getHMIConnection():ExpectRequest("TTS.SetGlobalProperties")
-      :Do(function(_, data)
-          m.sendResponse(data)
-        end)
-      :ValidIf(function(exp, data)
-          if exp.occurences == 1 then
-            if utils.isTableEqual(data.params, m.resumptionData[pAppId].setGlobalProperties.TTS) == true then
-              return true
+    rpc = "SetGlobalProperties",
+    iface = {
+      TTS = function(pAppId, pTimes)
+        if not pTimes then pTimes = 2 end
+        m.getHMIConnection():ExpectRequest("TTS.SetGlobalProperties")
+        :Do(function(_, data)
+            m.sendResponse(data)
+          end)
+        :ValidIf(function(exp, data)
+            if exp.occurences == 1 then
+              if utils.isTableEqual(data.params, m.resumptionData[pAppId].setGlobalProperties.TTS) == true then
+                return true
+              else
+                return false, "Params in TTS.SetGlobalProperties are not match to expected result.\n" ..
+                "Actual result:" .. m.tableToString(data.params) .. "\n" ..
+                "Expected result:" .. m.tableToString(m.resumptionData[pAppId].setGlobalProperties.TTS) .."\n"
+              end
             else
-              return false, "Params in TTS.SetGlobalProperties are not match to expected result.\n" ..
-              "Actual result:" .. m.tableToString(data.params) .. "\n" ..
-              "Expected result:" .. m.tableToString(m.resumptionData[pAppId].setGlobalProperties.TTS) .."\n"
+              local resetData = getGlobalPropertiesResetData(pAppId, "TTS")
+              if utils.isTableEqual(data.params, resetData) == true then
+                return true
+              else
+                return false, "Params in TTS.SetGlobalProperties are not match to expected result.\n" ..
+                "Actual result:" .. m.tableToString(data.params) .. "\n" ..
+                "Expected result:" .. m.tableToString(resetData) .."\n"
+              end
             end
-          else
-            local resetData = getGlobalPropertiesResetData(pAppId, "TTS")
-            if utils.isTableEqual(data.params, resetData) == true then
-              return true
+          end)
+        :Times(pTimes)
+      end,
+      UI = function(pAppId, pTimes)
+        if not pTimes then pTimes = 2 end
+        m.getHMIConnection():ExpectRequest("UI.SetGlobalProperties")
+        :Do(function(_, data)
+            m.sendResponse(data)
+          end)
+        :ValidIf(function(exp, data)
+            if exp.occurences == 1 then
+              if utils.isTableEqual(data.params, m.resumptionData[pAppId].setGlobalProperties.UI) == true then
+                return true
+              else
+                return false, "Params in UI.SetGlobalProperties are not match to expected result.\n" ..
+                "Actual result:" .. m.tableToString(data.params) .. "\n" ..
+                "Expected result:" .. m.tableToString(m.resumptionData[pAppId].setGlobalProperties.UI) .."\n"
+              end
             else
-              return false, "Params in TTS.SetGlobalProperties are not match to expected result.\n" ..
-              "Actual result:" .. m.tableToString(data.params) .. "\n" ..
-              "Expected result:" .. m.tableToString(resetData) .."\n"
+              local resetData = getGlobalPropertiesResetData(pAppId, "UI")
+              if utils.isTableEqual(data.params, resetData) == true then
+                return true
+              else
+                return false, "Params in UI.SetGlobalProperties are not match to expected result.\n" ..
+                "Actual result:" .. m.tableToString(data.params) .. "\n" ..
+                "Expected result:" .. m.tableToString(resetData) .."\n"
+              end
             end
-          end
-        end)
-      :Times(pTimes)
-    end,
-    UI = function(pAppId, pTimes)
-      if not pTimes then pTimes = 2 end
-      m.getHMIConnection():ExpectRequest("UI.SetGlobalProperties")
-      :Do(function(_, data)
-          m.sendResponse(data)
-        end)
-      :ValidIf(function(exp, data)
-          if exp.occurences == 1 then
-            if utils.isTableEqual(data.params, m.resumptionData[pAppId].setGlobalProperties.UI) == true then
-              return true
-            else
-              return false, "Params in UI.SetGlobalProperties are not match to expected result.\n" ..
-              "Actual result:" .. m.tableToString(data.params) .. "\n" ..
-              "Expected result:" .. m.tableToString(m.resumptionData[pAppId].setGlobalProperties.UI) .."\n"
-            end
-          else
-            local resetData = getGlobalPropertiesResetData(pAppId, "UI")
-            if utils.isTableEqual(data.params, resetData) == true then
-              return true
-            else
-              return false, "Params in UI.SetGlobalProperties are not match to expected result.\n" ..
-              "Actual result:" .. m.tableToString(data.params) .. "\n" ..
-              "Expected result:" .. m.tableToString(resetData) .."\n"
-            end
-          end
-        end)
-      :Times(pTimes)
-    end
+          end)
+        :Times(pTimes)
+      end
+    }
   },
   subscribeVehicleData = {
-    VehicleInfo = function(pAppId,pTimes)
-      if not pTimes then pTimes = 1 end
-      m.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",m.resumptionData[pAppId].subscribeVehicleData.VehicleInfo)
-      :Do(function(_, data)
-          m.sendResponse(data)
-          m.removeData.UnsubscribeVehicleData(pAppId)
-        end)
-      :Times(pTimes)
-    end
+    rpc = "UnsubscribeVehicleData",
+    iface = {
+      VehicleInfo = function(pAppId,pTimes)
+        if not pTimes then pTimes = 1 end
+        m.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",m.resumptionData[pAppId].subscribeVehicleData.VehicleInfo)
+        :Do(function(_, data)
+            m.sendResponse(data)
+            m.removeData.UnsubscribeVehicleData(pAppId)
+          end)
+        :Times(pTimes)
+      end
+    }
   },
   subscribeWayPoints = {
-    Navigation = function(pAppId, pTimes)
-      if not pTimes then pTimes = 1 end
-      m.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints",m.resumptionData[pAppId].subscribeWayPoints.Navigation)
-      :Do(function(_, data)
-          m.sendResponse(data)
-          m.removeData.UnsubscribeWayPoints(pAppId)
-        end)
-      :Times(pTimes)
-    end
+    rpc = "UnsubscribeWayPoints",
+    iface = {
+      Navigation = function(pAppId, pTimes)
+        if not pTimes then pTimes = 1 end
+        m.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints",m.resumptionData[pAppId].subscribeWayPoints.Navigation)
+        :Do(function(_, data)
+            m.sendResponse(data)
+            m.removeData.UnsubscribeWayPoints(pAppId)
+          end)
+        :Times(pTimes)
+      end
+    }
   },
   createWindow = {
-    UI = function(pAppId, pTimes)
-      if not pTimes then pTimes = 1 end
-      m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
-      :Do(function(_, data)
-          m.sendResponse(data)
-          m.removeData.DeleteWindow(pAppId)
-        end)
-      :Times(pTimes)
-    end
+    rpc = "DeleteWindow",
+    iface = {
+      UI = function(pAppId, pTimes)
+        if not pTimes then pTimes = 1 end
+        m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
+        :Do(function(_, data)
+            m.sendResponse(data)
+            m.removeData.DeleteWindow(pAppId)
+          end)
+        :Times(pTimes)
+      end
+    }
   }
 }
 
@@ -446,7 +446,7 @@ m.rpcsRevert = {
 function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponseRpc, pErrorResponseInterface)
   local rpcsRevertLocal = m.cloneTable(m.rpcsRevert)
   if pErrorResponseRpc == "addCommand" and pErrorResponseInterface == "VR" then
-    rpcsRevertLocal.addCommand.VR = nil
+    rpcsRevertLocal.addCommand.iface.VR = nil
     m.getHMIConnection():ExpectRequest("VR.AddCommand")
     :Do(function(_, data)
         if data.params.type == "Command" then
@@ -458,7 +458,7 @@ function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponseRpc, pErro
       end)
     :Times(2)
   elseif pErrorResponseRpc == "createIntrerationChoiceSet" then
-    rpcsRevertLocal.addCommand.VR = nil
+    rpcsRevertLocal.addCommand.iface.VR = nil
     m.getHMIConnection():ExpectRequest("VR.AddCommand")
     :Do(function(_, data)
         if data.params.type == "Choice" then
@@ -471,8 +471,9 @@ function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponseRpc, pErro
     :Times(2)
   else
     local errorResponseRpc = m.getRpcName(pErrorResponseRpc, pErrorResponseInterface)
-    local notExpRevertRpc = m.getRpcName(m.revertRpcs[pErrorResponseRpc][pErrorResponseInterface], pErrorResponseInterface)
-    rpcsRevertLocal[pErrorResponseRpc][pErrorResponseInterface] = nil
+    local revertRpc = rpcsRevertLocal[pErrorResponseRpc].rpc
+    local notExpRevertRpc = m.getRpcName(revertRpc, pErrorResponseInterface)
+    rpcsRevertLocal[pErrorResponseRpc].iface[pErrorResponseInterface] = nil
     if pErrorResponseRpc ~= "setGlobalProperties" then
       m.getHMIConnection():ExpectRequest(notExpRevertRpc)
       :Times(0)
@@ -482,10 +483,10 @@ function m.checkResumptionDataWithErrorResponse(pAppId, pErrorResponseRpc, pErro
         m.errorResponse(data)
       end)
   end
-  for k, value in pairs (rpcsRevertLocal) do
-    if m.resumptionData[pAppId][k] then
-      for interface in pairs (value) do
-        rpcsRevertLocal[k][interface](pAppId)
+  for rpc, data in pairs(rpcsRevertLocal) do
+    if m.resumptionData[pAppId][rpc] then
+      for interface in pairs(data.iface) do
+        rpcsRevertLocal[rpc].iface[interface](pAppId)
       end
     end
   end
