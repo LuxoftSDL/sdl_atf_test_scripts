@@ -50,6 +50,11 @@ m.rpcs = {
 
 --[[ Local Functions ]]
 
+--[[ @getOnSCUParams: return parameters for OnSystemCapabilityUpdated
+--! @parameters:
+--! pWinArray - table with window identifiers (e.g. { 0, 1 })
+--! @return: table with parameters
+--]]
 local function getOnSCUParams(pWinArray)
   local params = {
     systemCapability = {
@@ -82,48 +87,6 @@ local function getOnSCUParams(pWinArray)
   return params
 end
 
---[[ Common Functions ]]
-
---[[ @waitUntilResumptionDataIsStored: wait some time until SDL saves resumption data
---! @parameters: none
---! @return: none
---]]
-function m.waitUntilResumptionDataIsStored()
-  utils.cprint(color.magenta, "Wait ...")
-  local timeoutToSafe = SDL.INI.get("AppSavePersistentDataTimeout")
-  local fileName = SDL.AppInfo.file()
-  local function isFileExist()
-    local f = io.open(fileName, "r")
-    if f ~= nil then
-      io.close(f)
-      m.wait(timeoutToSafe + 1000)
-      return true
-    else
-      return false
-    end
-  end
-  while not isFileExist() do
-    os.execute("sleep 1")
-  end
-end
-
---[[ @checkResumptionData: checks resumption data and answer with error to defined RPC
---! @parameters:
---! pAppId - application number (1, 2, etc.)
---! pErrorResponseRpc - RPC for response with errorCode
---! pErrorResponseInterface - interface of RPC for response with errorCode
---! @return: none
---]]
-function m.checkResumptionData(pAppId, pErrorResponseRpc, pErrorResponseInterface)
-  for rpc in pairs(m.resumptionData[pAppId]) do
-    if pErrorResponseRpc == rpc then
-      m[rpc .. "Resumption"](pAppId, pErrorResponseInterface)
-    else
-      m[rpc .. "Resumption"](pAppId)
-    end
-  end
-end
-
 --[[ @expOnHMIStatus: check OnHMIStatus notification
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
@@ -145,6 +108,107 @@ local function expOnHMIStatus(pAppId, pExpLevel, pErrorResponseRpc, pTimeout)
   m.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",table.unpack(exp))
   :Times(#exp)
   :Timeout(pTimeout)
+end
+
+--[[ @getGlobalPropertiesResetData: construct data for reset SetGlobalProperties
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pInterface - name of RPC interface for reseting
+--! @return: RPC with interface
+--]]
+local function getGlobalPropertiesResetData(pAppId, pInterface)
+  local resetData = {}
+  resetData.appID = m.getHMIAppId(pAppId)
+  if pInterface == "TTS" then
+    resetData.helpPrompt = { }
+    resetData.timeoutPrompt = { }
+    local ttsDelimiter = SDL.INI.get("TTSDelimiter")
+    local helpPromptString = SDL.INI.get("HelpPromt")
+    local helpPromptList = m.splitString(helpPromptString, ttsDelimiter);
+
+    for key,value in pairs(helpPromptList) do
+      local data = {
+        type = "TEXT",
+        text = value .. ttsDelimiter
+      }
+      resetData.timeoutPrompt[key] = data
+      resetData.helpPrompt[key] = data
+    end
+  else
+    resetData.menuTitle = ""
+    resetData.vrHelp = { [1] = { position = 1, text = m.getConfigAppParams(pAppId).appName }}
+    resetData.vrHelpTitle = SDL.INI.get("HelpTitle")
+  end
+  return resetData
+end
+
+--[[ @ isResponseErroneous: define RPC for sending error response
+--! @parameters:
+--! pData - data from received request
+--! pErrorRpc - RPC name for error response
+--! pErrorInterface - interface of RPC for error response
+--! @return: status of error response
+--]]
+local function isResponseErroneous(pData, pErrorRpc, pErrorInterface)
+  local rpc = m.getRpcName(pErrorRpc, pErrorInterface)
+  if pErrorRpc == "createIntrerationChoiceSet" then rpc = "VR.AddCommand" end
+  if rpc == pData.method then
+    if rpc ~= "VR.AddCommand" and pErrorRpc ~= "setGlobalProperties" then
+      return true
+    elseif pErrorRpc == "createIntrerationChoiceSet" and pData.params.type == "Choice" then
+      return true
+    elseif pErrorRpc == "addCommand" and pData.params.type == "Command" then
+      return true
+    elseif pErrorRpc == "setGlobalProperties" then
+      local helpPromptText = "Help prompt1"
+      local vrHelpTitle ="VR help title1"
+      if pData.method == "TTS.SetGlobalProperties" then
+        if pErrorInterface == "TTS" and pData.params.helpPrompt[1].text == helpPromptText then
+          return true
+        end
+      else
+        if pErrorInterface == "UI" and pData.params.vrHelpTitle == vrHelpTitle then
+          return true
+        end
+      end
+    end
+  end
+  return false
+end
+
+--[[ Common Functions ]]
+
+--[[ @waitUntilResumptionDataIsStored: wait some time until SDL saves resumption data
+--! @parameters: none
+--! @return: none
+--]]
+function m.waitUntilResumptionDataIsStored()
+  utils.cprint(color.magenta, "Wait ...")
+  local timeoutToSafe = SDL.INI.get("AppSavePersistentDataTimeout")
+  local fileName = SDL.AppInfo.file()
+  m.wait(timeoutToSafe + 1000)
+  :Do(function()
+      while not utils.isFileExist(fileName) do
+        os.execute("sleep 1")
+      end
+    end)
+end
+
+--[[ @checkResumptionData: checks resumption data and answer with error to defined RPC
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pErrorResponseRpc - RPC for response with errorCode
+--! pErrorResponseInterface - interface of RPC for response with errorCode
+--! @return: none
+--]]
+function m.checkResumptionData(pAppId, pErrorResponseRpc, pErrorResponseInterface)
+  for rpc in pairs(m.resumptionData[pAppId]) do
+    if pErrorResponseRpc == rpc then
+      m[rpc .. "Resumption"](pAppId, pErrorResponseInterface)
+    else
+      m[rpc .. "Resumption"](pAppId)
+    end
+  end
 end
 
 --[[ @resumptionFullHMILevel: checks resumption to full HMI level
@@ -243,37 +307,6 @@ m.removeData = {
   end
 }
 
---[[ @getGlobalPropertiesResetData: construct data for reset SetGlobalProperties
---! @parameters:
---! pAppId - application number (1, 2, etc.)
---! pInterface - name of RPC interface for reseting
---! @return: RPC with interface
---]]
-local function getGlobalPropertiesResetData(pAppId, pInterface)
-  local resetData = {}
-  resetData.appID = m.getHMIAppId(pAppId)
-  if pInterface == "TTS" then
-    resetData.helpPrompt = { }
-    resetData.timeoutPrompt = { }
-    local ttsDelimiter = SDL.INI.get("TTSDelimiter")
-    local helpPromptString = SDL.INI.get("HelpPromt")
-    local helpPromptList = m.splitString(helpPromptString, ttsDelimiter);
-
-    for key,value in pairs(helpPromptList) do
-      local data = {
-        type = "TEXT",
-        text = value .. ttsDelimiter
-      }
-      resetData.timeoutPrompt[key] = data
-      resetData.helpPrompt[key] = data
-    end
-  else
-    resetData.menuTitle = ""
-    resetData.vrHelp = { [1] = { position = 1, text = m.getConfigAppParams(pAppId).appName }}
-    resetData.vrHelpTitle = SDL.INI.get("HelpTitle")
-  end
-  return resetData
-end
 
 m.rpcsRevert = {
   addCommand = {
@@ -1167,40 +1200,6 @@ function m.checkResumptionData2Apps(pErrorRpc, pErrorInterface)
       m.sendResponse2Apps(data, pErrorRpc, pErrorInterface)
     end)
   :Times(2)
-end
-
---[[ @ isResponseErroneous: define RPC for sending error response
---! @parameters:
---! pData - data from received request
---! pErrorRpc - RPC name for error response
---! pErrorInterface - interface of RPC for error response
---! @return: status of error response
---]]
-local function isResponseErroneous(pData, pErrorRpc, pErrorInterface)
-  local rpc = m.getRpcName(pErrorRpc, pErrorInterface)
-  if pErrorRpc == "createIntrerationChoiceSet" then rpc = "VR.AddCommand" end
-  if rpc == pData.method then
-    if rpc ~= "VR.AddCommand" and pErrorRpc ~= "setGlobalProperties" then
-      return true
-    elseif pErrorRpc == "createIntrerationChoiceSet" and pData.params.type == "Choice" then
-      return true
-    elseif pErrorRpc == "addCommand" and pData.params.type == "Command" then
-      return true
-    elseif pErrorRpc == "setGlobalProperties" then
-      local helpPromptText = "Help prompt1"
-      local vrHelpTitle ="VR help title1"
-      if pData.method == "TTS.SetGlobalProperties" then
-        if pErrorInterface == "TTS" and pData.params.helpPrompt[1].text == helpPromptText then
-          return true
-        end
-      else
-        if pErrorInterface == "UI" and pData.params.vrHelpTitle == vrHelpTitle then
-          return true
-        end
-      end
-    end
-  end
-  return false
 end
 
 --[[ @errorResponse: sending error response
