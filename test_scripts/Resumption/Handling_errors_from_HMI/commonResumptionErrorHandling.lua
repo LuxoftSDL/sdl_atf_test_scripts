@@ -124,6 +124,14 @@ function m.checkResumptionData(pAppId, pErrorResponseRpc, pErrorResponseInterfac
   end
 end
 
+--[[ @expOnHMIStatus: check OnHMIStatus notification
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pExpLevel - expected HMI level ('FULL' or 'LIMITED')
+--! pErrorResponseRpc - RPC for response with errorCode
+--! pTimeout - timeout to wait
+--! @return: none
+--]]
 local function expOnHMIStatus(pAppId, pExpLevel, pErrorResponseRpc, pTimeout)
   if not pTimeout then pTimeout = 10000 end
   local exp = {
@@ -142,6 +150,7 @@ end
 --[[ @resumptionFullHMILevel: checks resumption to full HMI level
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
+--! pTimeout - timeout to wait
 --! @return: none
 --]]
 function m.resumptionFullHMILevel(pAppId, pErrorResponseRpc, pTimeout)
@@ -427,6 +436,7 @@ m.rpcsRevert = {
         m.getHMIConnection():ExpectRequest("UI.CreateWindow",m.resumptionData[pAppId].createWindow.UI)
         :Do(function(_, data)
             m.sendResponse(data)
+            m.sendOnSCU(2, pAppId)
             m.removeData.DeleteWindow(pAppId)
           end)
         :Times(pTimes)
@@ -533,9 +543,13 @@ function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel,
       m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered", {
           application = { appName = m.getConfigAppParams(pAppId).appName }
         })
+      :Do(function()
+          m.sendOnSCU(0, pAppId)
+        end)
       mobSession:ExpectResponse(corId, { success = true, resultCode = "RESUME_FAILED" })
       :Do(function()
           mobSession:ExpectNotification("OnPermissionsChange")
+          mobSession:ExpectNotification("OnSystemCapabilityUpdated")
         end)
       :Timeout(pTimeout)
     end)
@@ -1047,12 +1061,14 @@ function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pRAI
         :Do(function()
             m.log("SUCCESS: RAI 2")
             expOnHMIStatus(2, "FULL", pErrorRpc)
+            m.getMobileSession(2):ExpectNotification("OnSystemCapabilityUpdated")
             m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(2) })
             :Do(function(_, data)
                 m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
               end)
           end)
       end
+      m.sendOnSCU(0, exp.occurences)
     end)
   :Times(2)
 
@@ -1062,6 +1078,7 @@ function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pRAI
   :Do(function()
        m.log("RESUME_FAILED: RAI 1")
        expOnHMIStatus(1, "LIMITED", pErrorRpc)
+       m.getMobileSession(1):ExpectNotification("OnSystemCapabilityUpdated")
     end)
   :Timeout(pRAIResponseExp)
 
@@ -1145,7 +1162,8 @@ function m.checkResumptionData2Apps(pErrorRpc, pErrorInterface)
   :Times(2)
 
   m.getHMIConnection():ExpectRequest("UI.CreateWindow")
-  :Do(function(_, data)
+  :Do(function(exp, data)
+      m.sendOnSCU(2, exp.occurences)
       m.sendResponse2Apps(data, pErrorRpc, pErrorInterface)
     end)
   :Times(2)
