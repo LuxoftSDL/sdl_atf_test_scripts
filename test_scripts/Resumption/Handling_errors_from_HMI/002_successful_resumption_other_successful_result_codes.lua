@@ -7,9 +7,9 @@
 -- 2. Unexpected disconnect and reconnect are performed
 -- 3. App reregisters with actual HashId
 -- 4. Rpc_n request is sent from SDL to HMI during resumption
--- 5. HMI responds with WARNINGS resultCode to Rpc_n request
+-- 5. HMI responds with successful resultCode to Rpc_n request
 -- SDL does:
--- 1. process WARNINGS response from HMI
+-- 1. process response from HMI
 -- 2. restore persistent data
 -- 3. respond RegisterAppInterfaceResponse(success=true,result_code=SUCCESS) to mobile application
 ---------------------------------------------------------------------------------------------------
