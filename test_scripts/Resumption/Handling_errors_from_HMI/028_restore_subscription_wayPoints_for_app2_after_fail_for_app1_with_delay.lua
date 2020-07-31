@@ -56,23 +56,6 @@ local function checkResumptionData()
   :Times(0)
 end
 
-local function onWayPointChange()
-  local notificationParams = {
-    wayPoints = {
-      {
-        coordinate = {
-          latitudeDegrees = -90,
-          longitudeDegrees = -180
-        }
-      }
-    }
-  }
-  common.getHMIConnection():SendNotification("Navigation.OnWayPointChange", notificationParams)
-  common.getMobileSession(1):ExpectNotification("OnWayPointChange")
-  :Times(0)
-  common.getMobileSession(2):ExpectNotification("OnWayPointChange", notificationParams)
-end
-
 --[[ Scenario ]]
 runner.Title("Preconditions")
 runner.Step("Clean environment", common.preconditions)
@@ -90,7 +73,7 @@ runner.Step("Connect mobile", common.connectMobile)
 runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
 runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
 runner.Step("Reregister Apps resumption", common.reRegisterApps, { checkResumptionData })
-runner.Step("Check subscriptions for WayPoints", onWayPointChange)
+runner.Step("Check subscriptions for WayPoints", common.sendOnWayPointChange, { false, true })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)

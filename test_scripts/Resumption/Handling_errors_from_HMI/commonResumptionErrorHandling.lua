@@ -1363,7 +1363,7 @@ end
 --[[ @sendOnVehicleData: send OnVehicleData
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
---! pIsExp - true (default) - if it's expected notification on mobile app
+--! pIsExp - true - if it's expected notification on mobile app
 --! @return: none
 --]]
 function m.sendOnVehicleData(pAppId, pIsExp)
@@ -1377,6 +1377,30 @@ function m.sendOnVehicleData(pAppId, pIsExp)
   }
   m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", params)
   m.getMobileSession(pAppId):ExpectNotification("OnVehicleData", params):Times(occurences)
+end
+
+--[[ @sendOnWayPointChange: send OnWayPointChange
+--! @parameters:
+--! pIsExpApp1 - true - if it's expected notification on mobile app1
+--! pIsExpApp2 - true - if it's expected notification on mobile app2
+--! @return: none
+--]]
+function m.sendOnWayPointChange(pIsExpApp1, pIsExpApp2)
+  local occurences1 = pIsExpApp1 == true and 1 or 0
+  local occurences2 = pIsExpApp2 == true and 1 or 0
+  local params = {
+    wayPoints = {
+      {
+        coordinate = {
+          latitudeDegrees = -90,
+          longitudeDegrees = -180
+        }
+      }
+    }
+  }
+  m.getHMIConnection():SendNotification("Navigation.OnWayPointChange", params)
+  m.getMobileSession(1):ExpectNotification("OnWayPointChange", params):Times(occurences1)
+  m.getMobileSession(2):ExpectNotification("OnWayPointChange", params):Times(occurences2)
 end
 
 --[[ @checkResumptionDataSuccess: verify resumption for successful scenario
