@@ -12,14 +12,11 @@
 -- 5. Resumption for App1 and App2 is started:
 --    UI.AddSubMenu is sent from SDL to HMI
 --    Navigation.SubscribeWayPoints is sent from SDL to HMI
--- 6. HMI responds with success for Navigation.SubscribeWayPoints request
--- 7. HMI responds with error resultCode for UI.AddSubMenu request
--- 8. SDL sends Navigation.UnsubscribeWayPoints to HMI
--- 9. SDL respond RegisterAppInterfaceResponse(success=true,result_code=RESUME_FAILED) to mobile application app1
--- 10. SDL continue resumption for App2:
---    Navigation.SubscribeWayPoints is sent from SDL to HMI
--- 11. HMI responds with success to Navigation.SubscribeWayPoints request
--- 12. SDL restores data for app2 and respond RegisterAppInterfaceResponse(success=true,result_code=SUCCESS)to mobile application app2
+-- 6. HMI responds with error resultCode for UI.AddSubMenu request
+-- 7. SDL does not send Navigation.UnsubscribeWayPoints to HMI
+-- 8. SDL respond RegisterAppInterfaceResponse(success=true,result_code=RESUME_FAILED) to mobile application app1
+-- 9. HMI responds with success to Navigation.SubscribeWayPoints request with some delay (2s.)
+-- 10. SDL restores data for app2 and respond RegisterAppInterfaceResponse(success=true,result_code=SUCCESS)to mobile application app2
 ---------------------------------------------------------------------------------------------------
 
 --[[ Required Shared libraries ]]
@@ -41,18 +38,17 @@ local function checkResumptionData()
   common.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints")
   :Do(function(_, data)
       common.log(data.method)
-      common.log("SUCCESS: " .. data.method)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
-    end)
-  :Times(2)
-
-  common.getHMIConnection():ExpectRequest("Navigation.UnsubscribeWayPoints")
-  :Do(function(_, data)
-      common.log(data.method)
-      common.log("SUCCESS: " .. data.method)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      local function sendResponse()
+        common.log("SUCCESS: " .. data.method)
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      end
+      RUN_AFTER(sendResponse, 2000)
     end)
   :Times(1)
+
+  common.getHMIConnection():ExpectRequest("Navigation.UnsubscribeWayPoints")
+  :Do(function(_, data) common.log(data.method) end)
+  :Times(0)
 end
 
 local function onWayPointChange()

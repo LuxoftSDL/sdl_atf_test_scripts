@@ -44,7 +44,7 @@ local function checkResumptionData()
       common.log("SUCCESS: " .. data.method)
       common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
     end)
-  :Times(2)
+  :Times(1)
 
   common.getHMIConnection():ExpectRequest("Navigation.UnsubscribeWayPoints")
   :Do(function(_, data) common.log(data.method) end)
