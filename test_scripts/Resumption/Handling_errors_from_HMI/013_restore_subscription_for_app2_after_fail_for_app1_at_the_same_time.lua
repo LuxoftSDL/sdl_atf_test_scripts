@@ -1,8 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0190-resumption-data-error-handling.md
 --
--- Requirement summary:TBD
---
 -- Description:
 -- In case:
 -- 1. App1 is subscribed to data_1

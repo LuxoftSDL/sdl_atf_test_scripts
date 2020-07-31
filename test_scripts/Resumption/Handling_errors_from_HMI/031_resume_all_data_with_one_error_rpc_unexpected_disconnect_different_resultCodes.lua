@@ -1,8 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0190-resumption-data-error-handling.md
 --
--- Requirement summary:TBD
---
 -- Description:
 -- 1. AddSubMenu for resumption is added by app
 -- 2. Unexpected disconnect and reconnect are performed

@@ -1,8 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0190-resumption-data-error-handling.md
 --
--- Requirement summary:TBD
---
 -- Description:
 -- In case:
 -- 1. AddCommand_1, AddSubMenu_1, CreateInteractionChoiceSet_1, SetGlobalProperties_1, SubscribeButton_1, SubscribeVehicleData_1, SubscribeWayPoints_1 are added by app1
