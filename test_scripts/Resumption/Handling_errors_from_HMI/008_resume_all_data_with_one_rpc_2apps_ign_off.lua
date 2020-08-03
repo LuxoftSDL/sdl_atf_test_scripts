@@ -72,8 +72,8 @@ for k, value in pairs(rpcs) do
     runner.Step("IGNITION ON", common.start)
     runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
     runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
-    runner.Step("Reregister Apps resumption error to " .. interface .. " " .. k,common.reRegisterApps,
-      {common.checkResumptionData2Apps, k, interface})
+    runner.Step("Reregister Apps resumption error to " .. interface .. " " .. k,
+      common.checkResumptionData2Apps, { k, interface })
     runner.Step("Unregister app1", common.unregisterAppInterface, { 1 })
     runner.Step("Unregister app2", common.unregisterAppInterface, { 2 })
   end

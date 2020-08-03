@@ -26,6 +26,7 @@ expectations.Expectation = function(...)
 end
 
 --[[ Common Variables ]]
+local delayRAI2 = 200
 local m = actions
 m.cloneTable = utils.cloneTable
 m.wait = utils.wait
@@ -95,7 +96,7 @@ end
 --! pTimeout - timeout to wait
 --! @return: none
 --]]
-local function expOnHMIStatus(pAppId, pExpLevel, pErrorResponseRpc, pTimeout)
+function m.expOnHMIStatus(pAppId, pExpLevel, pErrorResponseRpc, pTimeout)
   if not pTimeout then pTimeout = 10000 end
   local exp = {
     { hmiLevel = "NONE", windowID = 0 },
@@ -104,6 +105,13 @@ local function expOnHMIStatus(pAppId, pExpLevel, pErrorResponseRpc, pTimeout)
   }
   if m.resumptionData[pAppId].createWindow == nil or (pErrorResponseRpc ~= nil and pAppId == 1) then
     table.remove(exp, 2)
+  end
+  if pExpLevel == "FULL" then
+    m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(pAppId) })
+    :Do(function(_, data)
+        m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
+      end)
+    :Timeout(pTimeout)
   end
   m.getMobileSession(pAppId):ExpectNotification("OnHMIStatus",table.unpack(exp))
   :Times(#exp)
@@ -219,12 +227,7 @@ end
 --]]
 function m.resumptionFullHMILevel(pAppId, pErrorResponseRpc, pTimeout)
   if not pTimeout then pTimeout = 10000 end
-  expOnHMIStatus(pAppId, "FULL", pErrorResponseRpc, pTimeout)
-  m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(pAppId) })
-  :Do(function(_, data)
-      m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
-    end)
-  :Timeout(pTimeout)
+  m.expOnHMIStatus(pAppId, "FULL", pErrorResponseRpc, pTimeout)
 end
 
 --[[ @getRpcName: construct RPC name for HMI messages
@@ -614,7 +617,7 @@ function m.reRegisterAppSuccess(pAppId, pCheckResumptionData, pCheckResumptionHM
       mobSession:ExpectResponse(corId, { success = true, resultCode = "SUCCESS" })
       :Do(function()
           mobSession:ExpectNotification("OnPermissionsChange")
-          mobSession:ExpectNotification("OnSystemCapabilityUpdated")
+          -- mobSession:ExpectNotification("OnSystemCapabilityUpdated") --ToDo: uncomment
         end)
     end)
   pCheckResumptionData(pAppId)
@@ -1062,58 +1065,48 @@ function m.openRPCservice(pAppId)
   m.getMobileSession(pAppId):StartService(7)
 end
 
+function m.registerAppCustom(pAppId, pResultCode, pDelay, pTimeout)
+  local event = m.run.createEvent()
+  if pAppId == nil then pAppId = 1 end
+  if pTimeout == nil then pTimeout = 5000 end
+  local params = m.cloneTable(m.getConfigAppParams(pAppId))
+  params.hashID = m.hashId[pAppId]
+  local function rai()
+    local corId1 = m.getMobileSession(pAppId):SendRPC("RegisterAppInterface", params)
+    m.log("RAI " .. pAppId)
+    m.getMobileSession(pAppId):ExpectResponse(corId1, { success = true, resultCode = pResultCode })
+    :Do(function(_, data)
+         m.log("RAI " .. pAppId .. ": " .. data.payload.resultCode)
+         -- m.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated") --ToDo: uncomment
+         m.hmi.getConnection():RaiseEvent(event, "RAI event")
+      end)
+    :Timeout(pTimeout)
+  end
+  m.run.runAfter(rai, pDelay)
+  return m.hmi.getConnection():ExpectEvent(event, "RAI event")
+end
+
 --[[ @reRegisterApps: re-register 2 apps
 --! @parameters:
 --! pCheckResumptionData - verification function for resumption data
 --! pErrorRpc - RPC name for error response
 --! pErrorInterface - interface of RPC for error response
---! pRAIResponseExp - time for expectation of RAI response
+--! pTimeout - time for expectation of RAI response
 --! @return: none
 --]]
-function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pRAIResponseExp)
-  local requestParams1 = m.cloneTable(m.getConfigAppParams(1))
-  requestParams1.hashID = m.hashId[1]
-
-  local requestParams2 = m.cloneTable(m.getConfigAppParams(2))
-  requestParams2.hashID = m.hashId[2]
-
-  if not pRAIResponseExp then pRAIResponseExp = 5000 end
-
+function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pTimeout)
   m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
-  :Do(function(exp, d1)
+  :Do(function(exp, data)
       m.log("BC.OnAppRegistered " .. exp.occurences)
-      if d1.params.appName == m.getConfigAppParams(1).appName then
-        m.setHMIAppId(d1.params.application.appID, 1)
-      else
-        m.setHMIAppId(d1.params.application.appID, 2)
-      end
-      if exp.occurences == 1 then
-        local corId2 = m.getMobileSession(2):SendRPC("RegisterAppInterface", requestParams2)
-        m.log("RAI 2")
-        m.getMobileSession(2):ExpectResponse(corId2, { success = true, resultCode = "SUCCESS" })
-        :Do(function()
-            m.log("SUCCESS: RAI 2")
-            expOnHMIStatus(2, "FULL", pErrorRpc)
-            m.getMobileSession(2):ExpectNotification("OnSystemCapabilityUpdated")
-            m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(2) })
-            :Do(function(_, data)
-                m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
-              end)
-          end)
-      end
+      m.setHMIAppId(data.params.application.appID, exp.occurences)
       m.sendOnSCU(0, exp.occurences)
     end)
   :Times(2)
+  m.expOnHMIStatus(1, "LIMITED", pErrorRpc, pTimeout)
+  m.expOnHMIStatus(2, "FULL", pErrorRpc)
 
-  local corId1 = m.getMobileSession(1):SendRPC("RegisterAppInterface", requestParams1)
-  m.log("RAI 1")
-  m.getMobileSession(1):ExpectResponse(corId1, { success = true, resultCode = "RESUME_FAILED" })
-  :Do(function()
-       m.log("RESUME_FAILED: RAI 1")
-       expOnHMIStatus(1, "LIMITED", pErrorRpc)
-       m.getMobileSession(1):ExpectNotification("OnSystemCapabilityUpdated")
-    end)
-  :Timeout(pRAIResponseExp)
+  m.registerAppCustom(1, "RESUME_FAILED", 0, pTimeout)
+  m.registerAppCustom(2, "SUCCESS", delayRAI2)
 
   pCheckResumptionData(pErrorRpc, pErrorInterface)
 end
@@ -1124,7 +1117,20 @@ end
 --! pErrorInterface - interface of RPC for error response
 --! @return: none
 --]]
-function m.checkResumptionData2Apps(pErrorRpc, pErrorInterface)
+function m.checkResumptionData2Apps(pErrorRpc, pErrorInterface, pTimeout)
+
+  m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
+  :Do(function(exp, d1)
+      m.log("BC.OnAppRegistered " .. exp.occurences)
+      m.setHMIAppId(d1.params.application.appID, exp.occurences)
+      m.sendOnSCU(0, exp.occurences)
+    end)
+  :Times(2)
+  m.expOnHMIStatus(1, "LIMITED", pErrorRpc, pTimeout)
+  m.expOnHMIStatus(2, "FULL", pErrorRpc)
+  m.registerAppCustom(1, "RESUME_FAILED", 0, pTimeout)
+  m.registerAppCustom(2, "SUCCESS", delayRAI2)
+
   local uiSetGPtimes = 3
   local ttsSetGPtimes = 3
   if pErrorRpc == "setGlobalProperties" then
@@ -1360,25 +1366,6 @@ function m.sendOnButtonPress(pAppId, pIsExp)
     { name = btnName, appID = m.getHMIAppId(pAppId), mode = btnPressMode })
 end
 
---[[ @sendOnVehicleData: send OnVehicleData
---! @parameters:
---! pAppId - application number (1, 2, etc.)
---! pIsExp - true - if it's expected notification on mobile app
---! @return: none
---]]
-function m.sendOnVehicleData(pAppId, pIsExp)
-  if pAppId == nil then pAppId = 1 end
-  local occurences = pIsExp == true and 1 or 0
-  local params = {
-    gps = {
-      longitudeDegrees = 10,
-      latitudeDegrees = 10
-    }
-  }
-  m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", params)
-  m.getMobileSession(pAppId):ExpectNotification("OnVehicleData", params):Times(occurences)
-end
-
 --[[ @sendOnWayPointChange: send OnWayPointChange
 --! @parameters:
 --! pIsExpApp1 - true - if it's expected notification on mobile app1
@@ -1401,6 +1388,35 @@ function m.sendOnWayPointChange(pIsExpApp1, pIsExpApp2)
   m.getHMIConnection():SendNotification("Navigation.OnWayPointChange", params)
   m.getMobileSession(1):ExpectNotification("OnWayPointChange", params):Times(occurences1)
   m.getMobileSession(2):ExpectNotification("OnWayPointChange", params):Times(occurences2)
+end
+
+--[[ @sendOnVehicleData: send OnVehicleData
+--! @parameters:
+--! pVDParam - VD parameter ('gps', 'speed', etc.)
+--! pIsExpApp1 - true - if it's expected notification on mobile app1
+--! pIsExpApp2 - true - if it's expected notification on mobile app2
+--! @return: none
+--]]
+function m.sendOnVehicleData(pVDParam, pIsExpApp1, pIsExpApp2)
+  local occurences1 = pIsExpApp1 == true and 1 or 0
+  local occurences2 = pIsExpApp2 == true and 1 or 0
+  local params = { }
+  if pVDParam == "gps" then
+    params.gps = { longitudeDegrees = 10, latitudeDegrees = 10 }
+  elseif pVDParam == "speed" then
+    params.speed = 5
+  elseif pVDParam == "rpm" then
+    params.rpm = 123
+  elseif pVDParam == "fuelRange" then
+    params.fuelRange = { type = "GASOLINE", range = 11.22 }
+  end
+  m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", params)
+  if pIsExpApp1 ~= nil then
+    m.getMobileSession(1):ExpectNotification("OnVehicleData", params):Times(occurences1)
+  end
+  if pIsExpApp2 ~= nil then
+    m.getMobileSession(2):ExpectNotification("OnVehicleData", params):Times(occurences2)
+  end
 end
 
 --[[ @checkResumptionDataSuccess: verify resumption for successful scenario
@@ -1451,7 +1467,7 @@ end
 --]]
 function m.checkSubscriptions(pIsExp, pAppId)
   m.sendOnButtonPress(pAppId, pIsExp)
-  m.sendOnVehicleData(pAppId, pIsExp)
+  m.sendOnVehicleData("gps", pIsExp)
 end
 
 return m

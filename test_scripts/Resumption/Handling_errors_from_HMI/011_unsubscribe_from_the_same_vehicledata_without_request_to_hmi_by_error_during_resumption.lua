@@ -36,23 +36,25 @@ local vehicleDataRpm = {
   responseParams = { rpm = { resultCode = "SUCCESS", dataType = "VEHICLEDATA_RPM"} }
 }
 
-local onVehicleDataGps = {
-  gps = {
-    longitudeDegrees = 10,
-    latitudeDegrees = 10
-  }
+local vehicleDatafuelRange = {
+  requestParams = { fuelRange = true },
+  responseParams = { fuelRange = { resultCode = "SUCCESS", dataType = "VEHICLEDATA_FUELRANGE"} }
 }
 
 -- [[ Local Function ]]
 local function checkResumptionData()
-  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData")
+  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",
+    { fuelRange = true, gps = true, speed = true }, { gps = true, rpm = true })
   :Do(function(_, data)
+      common.log(data.method)
       if data.params.speed then
         local function sendResponse()
+          common.log(data.method .. ": GENERIC_ERROR")
           common.getHMIConnection():SendError(data.id, data.method, "GENERIC_ERROR", "info message")
         end
         RUN_AFTER(sendResponse, 300)
       else
+        common.log(data.method .. ": SUCCESS")
         common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
           gps = { dataType = "VEHICLEDATA_GPS" , resultCode = "SUCCESS" },
           rpm = vehicleDataRpm.responseParams.rpm
@@ -62,14 +64,8 @@ local function checkResumptionData()
   :Times(2)
 
   common.getHMIConnection():ExpectRequest("VehicleInfo.UnsubscribeVehicleData")
+  :Do(function(_, data) common.log(data.method) end)
   :Times(0)
-end
-
-local function onVehicleData(pParams)
-  common.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", pParams)
-  common.getMobileSession(1):ExpectNotification("OnVehicleData")
-  :Times(0)
-  common.getMobileSession(2):ExpectNotification("OnVehicleData", pParams)
 end
 
 --[[ Scenario ]]
@@ -84,6 +80,7 @@ runner.Step("Activate app1", common.activateApp)
 runner.Step("Activate app2", common.activateApp, { 2 })
 runner.Step("Add for app1 subscribeVehicleData gps", common.subscribeVehicleData)
 runner.Step("Add for app1 subscribeVehicleData speed", common.subscribeVehicleData, { 1, vehicleDataSpeed })
+runner.Step("Add for app1 subscribeVehicleData fuelRange", common.subscribeVehicleData, { 1, vehicleDatafuelRange })
 runner.Step("Add for app2 subscribeVehicleData gps", common.subscribeVehicleData, { 2, nil, 0 })
 runner.Step("Add for app2 subscribeVehicleData rpm", common.subscribeVehicleData, { 2, vehicleDataRpm })
 runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
@@ -91,7 +88,10 @@ runner.Step("Connect mobile", common.connectMobile)
 runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
 runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
 runner.Step("Reregister Apps resumption", common.reRegisterApps, { checkResumptionData })
-runner.Step("Check subscriptions for gps", onVehicleData, { onVehicleDataGps })
+runner.Step("Check subscriptions for speed", common.sendOnVehicleData, { "speed", false, false })
+runner.Step("Check subscriptions for fuelRange", common.sendOnVehicleData, { "fuelRange", false, false })
+runner.Step("Check subscriptions for gps", common.sendOnVehicleData, { "gps", false, true })
+runner.Step("Check subscriptions for rpm", common.sendOnVehicleData, { "rpm", false, true })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)

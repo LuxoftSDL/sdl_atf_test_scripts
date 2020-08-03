@@ -40,15 +40,19 @@ local vehicleDataRpm = {
 -- [[ Local Function ]]
 local function checkResumptionData()
   local isResponseSent = false
-  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData")
+  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",
+    { gps = true, speed = true }, { gps = true, rpm = true })
   :Do(function(exp, data)
+      common.log(data.method)
       if exp.occurences == 1 and data.params.gps then
         local function sendResponse()
+          common.log(data.method .. ": GENERIC_ERROR")
           common.getHMIConnection():SendError(data.id, data.method, "GENERIC_ERROR", "info message")
           isResponseSent = true
         end
         RUN_AFTER(sendResponse, 1000)
       else
+        common.log(data.method .. ": SUCCESS")
         common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
           gps = { dataType = "VEHICLEDATA_GPS" , resultCode = "SUCCESS" },
           rpm = vehicleDataRpm.responseParams.rpm
@@ -63,21 +67,9 @@ local function checkResumptionData()
   end)
   :Times(2)
 
-  common.getHMIConnection():ExpectRequest("VehicleInfo.UnsubscribeVehicleData", vehicleDataSpeed.requestParams)
+  common.getHMIConnection():ExpectRequest("VehicleInfo.UnsubscribeVehicleData")
+  :Do(function(_, data) common.log(data.method) end)
   :Times(0)
-end
-
-local function onVehicleData()
-  local notificationParams = {
-    gps = {
-      longitudeDegrees = 10,
-      latitudeDegrees = 10
-    }
-  }
-  common.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", notificationParams)
-  common.getMobileSession(1):ExpectNotification("OnVehicleData")
-  :Times(0)
-  common.getMobileSession(2):ExpectNotification("OnVehicleData", notificationParams)
 end
 
 --[[ Scenario ]]
@@ -99,7 +91,9 @@ runner.Step("Connect mobile", common.connectMobile)
 runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
 runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
 runner.Step("Reregister Apps resumption ", common.reRegisterApps, { checkResumptionData })
-runner.Step("Check subscriptions for gps", onVehicleData)
+runner.Step("Check subscriptions for speed", common.sendOnVehicleData, { "speed", false, false })
+runner.Step("Check subscriptions for gps", common.sendOnVehicleData, { "gps", false, true })
+runner.Step("Check subscriptions for rpm", common.sendOnVehicleData, { "rpm", false, true })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)
