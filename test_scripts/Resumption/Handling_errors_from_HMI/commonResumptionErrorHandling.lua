@@ -7,6 +7,7 @@ config.application1.registerAppInterfaceParams.appHMIType = { "NAVIGATION" }
 config.application2.registerAppInterfaceParams.appHMIType = { "MEDIA" }
 config.application1.registerAppInterfaceParams.isMediaApplication = false
 config.application2.registerAppInterfaceParams.isMediaApplication = true
+config.checkAllValidations = true
 
 --[[ Required Shared libraries ]]
 local actions = require("user_modules/sequences/actions")
@@ -26,7 +27,7 @@ expectations.Expectation = function(...)
 end
 
 --[[ Common Variables ]]
-local delayRAI2 = 200
+local delayRAI2 = 100
 local m = actions
 m.cloneTable = utils.cloneTable
 m.wait = utils.wait
@@ -47,6 +48,12 @@ m.rpcs = {
   subscribeVehicleData = { "VehicleInfo" },
   subscribeWayPoints = { "Navigation" },
   createWindow = { "UI" }
+}
+
+m.timeToRegApp2 = {
+  BEFORE_REQUEST = 1,
+  BEFORE_ERRONEOUS_RESPONSE = 2,
+  AFTER_ERRONEOUS_RESPONSE = 3,
 }
 
 --[[ Local Functions ]]
@@ -1461,6 +1468,140 @@ end
 function m.checkSubscriptions(pIsExp, pAppId)
   m.sendOnButtonPress(pAppId, pIsExp)
   m.sendOnVehicleData("gps", pIsExp)
+end
+
+function m.reRegisterAppsCustom(pTimeToRegApp2, pRPC)
+  local isRAIResponseSent = {
+    [1] = false,
+    [2] = false
+  }
+  m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
+  :Do(function(exp, data)
+      m.log("BC.OnAppRegistered " .. exp.occurences)
+      m.setHMIAppId(data.params.application.appID, exp.occurences)
+      m.sendOnSCU(0, exp.occurences)
+    end)
+  :Times(2)
+
+  local iface = m.rpcs[pRPC][1]
+  local rpc = pRPC:gsub("^%l", string.upper)
+  local revert_rpc = m.rpcsRevert[pRPC].rpc
+  m.getHMIConnection():ExpectRequest(iface .. "." .. rpc)
+  :Do(function(exp, data)
+      m.log(data.method)
+      if exp.occurences == 1 then
+        if pTimeToRegApp2 == m.timeToRegApp2.BEFORE_ERRONEOUS_RESPONSE then
+          m.registerAppCustom(2, "SUCCESS", 0):Do(function() isRAIResponseSent[2] = true end)
+          m.errorResponse(data, 300)
+        elseif pTimeToRegApp2 == m.timeToRegApp2.AFTER_ERRONEOUS_RESPONSE then
+          m.errorResponse(data, 0)
+          m.registerAppCustom(2, "SUCCESS", 300):Do(function() isRAIResponseSent[2] = true end)
+        else
+          m.errorResponse(data, 0)
+        end
+      else
+        m.log(data.method .. ": SUCCESS")
+        m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      end
+    end)
+  :ValidIf(function(exp)
+      if exp.occurences == 1 and isRAIResponseSent[1] then
+        return false, "Response for RAI1 is sent earlier than " .. rpc .. " request to HMI"
+      end
+      return true
+    end)
+  :ValidIf(function(exp)
+      if exp.occurences == 2 and isRAIResponseSent[2] then
+        return false, "Response for RAI2 is sent earlier than " .. rpc .. " request to HMI"
+      end
+      return true
+    end)
+  :Times(2)
+
+  m.getHMIConnection():ExpectRequest(iface .. "." .. revert_rpc)
+  :Do(function(_, data) m.log(data.method) end)
+  :Times(0)
+
+  m.expOnHMIStatus(1, "LIMITED")
+  m.expOnHMIStatus(2, "FULL")
+
+  m.registerAppCustom(1, "RESUME_FAILED", 0):Do(function() isRAIResponseSent[1] = true end)
+  if pTimeToRegApp2 == m.timeToRegApp2.BEFORE_REQUEST then
+    m.registerAppCustom(2, "SUCCESS", 10):Do(function() isRAIResponseSent[2] = true end)
+  end
+end
+
+function m.reRegisterAppsCustom2(pTimeToRegApp2, pRPC)
+  local isRAIResponseSent = {
+    [1] = false,
+    [2] = false
+  }
+  m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
+  :Do(function(exp, data)
+      m.log("BC.OnAppRegistered " .. exp.occurences)
+      m.setHMIAppId(data.params.application.appID, exp.occurences)
+      m.sendOnSCU(0, exp.occurences)
+    end)
+  :Times(2)
+
+  m.getHMIConnection():ExpectRequest("UI.AddSubMenu")
+  :Do(function(_, data)
+      m.log(data.method)
+      if pTimeToRegApp2 == m.timeToRegApp2.BEFORE_ERRONEOUS_RESPONSE then
+        m.registerAppCustom(2, "SUCCESS", 0):Do(function() isRAIResponseSent[2] = true end)
+        m.errorResponse(data, 300)
+      elseif pTimeToRegApp2 == m.timeToRegApp2.AFTER_ERRONEOUS_RESPONSE then
+        m.errorResponse(data, 0)
+        m.registerAppCustom(2, "SUCCESS", 300):Do(function() isRAIResponseSent[2] = true end)
+      else
+        m.errorResponse(data, 0)
+      end
+    end)
+
+  local iface = m.rpcs[pRPC][1]
+  local rpc = pRPC:gsub("^%l", string.upper)
+  local revert_rpc = m.rpcsRevert[pRPC].rpc
+  local numOfRequests = 1
+  local numOfRevertRequests = 0
+  if pTimeToRegApp2 == m.timeToRegApp2.AFTER_ERRONEOUS_RESPONSE then
+    numOfRequests = 2
+    numOfRevertRequests = 1
+  end
+  m.getHMIConnection():ExpectRequest(iface .. "." .. rpc)
+  :Do(function(_, data)
+      m.log(data.method)
+      m.log(data.method .. ": SUCCESS")
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  :ValidIf(function(exp)
+      if exp.occurences == 1 and isRAIResponseSent[1] then
+        return false, "Response for RAI1 is sent earlier than " .. rpc .. " request to HMI"
+      end
+      return true
+    end)
+  :ValidIf(function(exp)
+      if exp.occurences == numOfRequests and isRAIResponseSent[2] then
+        return false, "Response for RAI2 is sent earlier than " .. rpc .. " request to HMI"
+      end
+      return true
+    end)
+  :Times(numOfRequests)
+
+  m.getHMIConnection():ExpectRequest(iface .. "." .. revert_rpc)
+  :Do(function(_, data)
+      m.log(data.method)
+      m.log(data.method .. ": SUCCESS")
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  :Times(numOfRevertRequests)
+
+  m.expOnHMIStatus(1, "LIMITED")
+  m.expOnHMIStatus(2, "FULL")
+
+  m.registerAppCustom(1, "RESUME_FAILED", 0):Do(function() isRAIResponseSent[1] = true end)
+  if pTimeToRegApp2 == m.timeToRegApp2.BEFORE_REQUEST then
+    m.registerAppCustom(2, "SUCCESS", 10):Do(function() isRAIResponseSent[2] = true end)
+  end
 end
 
 return m
