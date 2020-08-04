@@ -1117,20 +1117,7 @@ end
 --! pErrorInterface - interface of RPC for error response
 --! @return: none
 --]]
-function m.checkResumptionData2Apps(pErrorRpc, pErrorInterface, pTimeout)
-
-  m.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
-  :Do(function(exp, d1)
-      m.log("BC.OnAppRegistered " .. exp.occurences)
-      m.setHMIAppId(d1.params.application.appID, exp.occurences)
-      m.sendOnSCU(0, exp.occurences)
-    end)
-  :Times(2)
-  m.expOnHMIStatus(1, "LIMITED", pErrorRpc, pTimeout)
-  m.expOnHMIStatus(2, "FULL", pErrorRpc)
-  m.registerAppCustom(1, "RESUME_FAILED", 0, pTimeout)
-  m.registerAppCustom(2, "SUCCESS", delayRAI2)
-
+function m.checkResumptionData2Apps(pErrorRpc, pErrorInterface)
   local uiSetGPtimes = 3
   local ttsSetGPtimes = 3
   if pErrorRpc == "setGlobalProperties" then
@@ -1211,10 +1198,16 @@ end
 --[[ @errorResponse: sending error response
 --! @parameters:
 --! pData - data from received request
+--! pDelay - delay for the response
 --! @return: none
 --]]
-function m.errorResponse(pData)
-  m.getHMIConnection():SendError(pData.id, pData.method, "GENERIC_ERROR", "info message")
+function m.errorResponse(pData, pDelay)
+  if pDelay == nil then pDelay = 0 end
+  local function response()
+    m.log(pData.method .. ": GENERIC_ERROR")
+    m.getHMIConnection():SendError(pData.id, pData.method, "GENERIC_ERROR", "info message")
+  end
+  m.run.runAfter(response, pDelay)
 end
 
 --[[ @sendResponse2Apps: sending error response
