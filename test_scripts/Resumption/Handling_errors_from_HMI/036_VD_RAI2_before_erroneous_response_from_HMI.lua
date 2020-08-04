@@ -20,16 +20,7 @@ local isRAIResponseSent = {
 }
 
 -- [[ Local Functions ]]
-local function sendResponse(pData, pDelay)
-  local function response()
-    common.log(pData.method .. ": GENERIC_ERROR")
-    common.getHMIConnection():SendError(pData.id, pData.method, "GENERIC_ERROR", "info message")
-  end
-  common.run.runAfter(response, pDelay)
-end
-
-local function checkResumptionData()
-
+local function reRegisterApps()
   common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
   :Do(function(exp, data)
       common.log("BC.OnAppRegistered " .. exp.occurences)
@@ -38,14 +29,13 @@ local function checkResumptionData()
     end)
   :Times(2)
 
-  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",
-    { gps = true })
+  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData", { gps = true })
   :Do(function(exp, data)
       common.log(data.method)
       if exp.occurences == 1 then
         common.registerAppCustom(2, "RESUME_FAILED", 0)
         :Do(function() isRAIResponseSent[2] = true end)
-        sendResponse(data, 300)
+        common.errorResponse(data, 300)
       end
     end)
   :ValidIf(function()
@@ -71,7 +61,6 @@ local function checkResumptionData()
 
   common.registerAppCustom(1, "RESUME_FAILED", 0)
   :Do(function() isRAIResponseSent[1] = true end)
-
 end
 
 --[[ Scenario ]]
@@ -90,8 +79,8 @@ runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
 runner.Step("Connect mobile", common.connectMobile)
 runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
 runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
-runner.Step("Reregister Apps resumption", checkResumptionData)
-runner.Step("Check subscriptions for gps", common.sendOnVehicleData, { "gps", false, true })
+runner.Step("Reregister Apps resumption", reRegisterApps)
+runner.Step("Check subscriptions for gps", common.sendOnVehicleData, { "gps", false, false })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)

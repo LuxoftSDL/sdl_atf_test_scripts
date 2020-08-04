@@ -2,7 +2,20 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0190-resumption-data-error-handling.md
 --
 -- Description:
--- TBA
+-- In case:
+-- 1. SubscribeWayPoints is added by app1
+-- 2. SubscribeWayPoints is added by app2
+-- 3. Unexpected disconnect and reconnect are performed
+-- 4. App1 and app2 reregister with actual HashId
+-- 5. Resumption for App1 and App2 is started:
+--    Navigation.SubscribeWayPoints related to App1 is sent from SDL to HMI
+-- 6. HMI responds with error resultCode Navigation.SubscribeWayPoints request with some delay (2s.)
+-- 7. SDL doesn't send Navigation.UnsubscribeWayPoints to HMI
+-- 8. SDL respond RegisterAppInterfaceResponse(success=true,result_code=RESUME_FAILED) to mobile application app1
+-- 9. SDL continue resumption for App2:
+--    Navigation.SubscribeWayPoints is sent from SDL to HMI
+-- 10. HMI responds with success to Navigation.SubscribeWayPoints request
+-- 11. SDL restores data for app2 and respond RegisterAppInterfaceResponse(success=true,result_code=SUCCESS)to mobile application app2
 ---------------------------------------------------------------------------------------------------
 
 --[[ Required Shared libraries ]]
@@ -19,17 +32,8 @@ local isRAIResponseSent = {
   [2] = false
 }
 
--- [[ Local Functions ]]
-local function sendResponse(pData, pDelay)
-  local function response()
-    common.log(pData.method .. ": GENERIC_ERROR")
-    common.getHMIConnection():SendError(pData.id, pData.method, "GENERIC_ERROR", "info message")
-  end
-  common.run.runAfter(response, pDelay)
-end
-
-local function checkResumptionData()
-
+-- [[ Local Function ]]
+local function reRegisterApps()
   common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
   :Do(function(exp, data)
       common.log("BC.OnAppRegistered " .. exp.occurences)
@@ -38,29 +42,33 @@ local function checkResumptionData()
     end)
   :Times(2)
 
-  common.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData",
-    { gps = true })
+  common.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints")
   :Do(function(exp, data)
       common.log(data.method)
       if exp.occurences == 1 then
-        sendResponse(data, 300)
+        common.errorResponse(data, 0)
+        common.registerAppCustom(2, "SUCCESS", 300)
+        :Do(function() isRAIResponseSent[2] = true end)
+      else
+        common.log(data.method .. ": SUCCESS")
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
       end
     end)
-  :ValidIf(function()
-      if isRAIResponseSent[1] then
-        return false, "Response for RAI1 is sent earlier than SubscribeVehicleData request to HMI"
+  :ValidIf(function(exp)
+      if exp.occurences == 1 and isRAIResponseSent[1] then
+        return false, "Response for RAI1 is sent earlier than SubscribeWayPoints request to HMI"
       end
       return true
     end)
-  :ValidIf(function()
-      if isRAIResponseSent[2] then
-        return false, "Response for RAI2 is sent earlier than SubscribeVehicleData request to HMI"
+  :ValidIf(function(exp)
+      if exp.occurences == 2 and isRAIResponseSent[2] then
+        return false, "Response for RAI2 is sent earlier than SubscribeWayPoints request to HMI"
       end
       return true
     end)
-  :Times(1)
+  :Times(2)
 
-  common.getHMIConnection():ExpectRequest("VehicleInfo.UnsubscribeVehicleData")
+  common.getHMIConnection():ExpectRequest("Navigation.UnsubscribeWayPoints")
   :Do(function(_, data) common.log(data.method) end)
   :Times(0)
 
@@ -69,9 +77,6 @@ local function checkResumptionData()
 
   common.registerAppCustom(1, "RESUME_FAILED", 0)
   :Do(function() isRAIResponseSent[1] = true end)
-  common.registerAppCustom(2, "RESUME_FAILED", 0)
-  :Do(function() isRAIResponseSent[2] = true end)
-
 end
 
 --[[ Scenario ]]
@@ -84,14 +89,14 @@ runner.Step("Register app1", common.registerAppWOPTU)
 runner.Step("Register app2", common.registerAppWOPTU, { 2 })
 runner.Step("Activate app1", common.activateApp)
 runner.Step("Activate app2", common.activateApp, { 2 })
-runner.Step("Add for app1 subscribeVehicleData gps", common.subscribeVehicleData)
-runner.Step("Add for app2 subscribeVehicleData gps", common.subscribeVehicleData, { 2, nil, 0 })
+runner.Step("Add for app1 subscribeWayPoints", common.subscribeWayPoints)
+runner.Step("Add for app2 subscribeWayPoints", common.subscribeWayPoints, { 2, 0 })
 runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
 runner.Step("Connect mobile", common.connectMobile)
 runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
 runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
-runner.Step("Reregister Apps resumption", checkResumptionData)
-runner.Step("Check subscriptions for gps", common.sendOnVehicleData, { "gps", false, true })
+runner.Step("Reregister Apps resumption", reRegisterApps)
+runner.Step("Check subscriptions for WayPoints", common.sendOnWayPointChange, { false, true })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)

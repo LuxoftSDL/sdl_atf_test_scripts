@@ -24,25 +24,56 @@ local common = require('test_scripts/Resumption/Handling_errors_from_HMI/commonR
 
 --[[ Test Configuration ]]
 runner.testSettings.isSelfIncluded = false
+config.checkAllValidations = true
+
+-- [[ Local Variables ]]
+local isRAIResponseSent = {
+  [1] = false,
+  [2] = false
+}
 
 -- [[ Local Function ]]
-local function checkResumptionData()
+local function reRegisterApps()
+  common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
+  :Do(function(exp, data)
+      common.log("BC.OnAppRegistered " .. exp.occurences)
+      common.setHMIAppId(data.params.application.appID, exp.occurences)
+      common.sendOnSCU(0, exp.occurences)
+    end)
+  :Times(2)
+
   common.getHMIConnection():ExpectRequest("Navigation.SubscribeWayPoints")
   :Do(function(exp, data)
       common.log(data.method)
       if exp.occurences == 1 then
-        common.log("GENERIC_ERROR: " .. data.method)
-        common.getHMIConnection():SendError(data.id, data.method, "GENERIC_ERROR", "info message")
-      else
-        common.log("SUCCESS: " .. data.method)
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+        common.registerAppCustom(2, "RESUME_FAILED", 0)
+        :Do(function() isRAIResponseSent[2] = true end)
+        common.errorResponse(data, 300)
       end
     end)
-  :Times(2)
+  :ValidIf(function()
+      if isRAIResponseSent[1] then
+        return false, "Response for RAI1 is sent earlier than SubscribeWayPoints request to HMI"
+      end
+      return true
+    end)
+  :ValidIf(function()
+      if isRAIResponseSent[2] then
+        return false, "Response for RAI2 is sent earlier than SubscribeWayPoints request to HMI"
+      end
+      return true
+    end)
+  :Times(1)
 
   common.getHMIConnection():ExpectRequest("Navigation.UnsubscribeWayPoints")
   :Do(function(_, data) common.log(data.method) end)
   :Times(0)
+
+  common.expOnHMIStatus(1, "LIMITED")
+  common.expOnHMIStatus(2, "FULL")
+
+  common.registerAppCustom(1, "RESUME_FAILED", 0)
+  :Do(function() isRAIResponseSent[1] = true end)
 end
 
 --[[ Scenario ]]
@@ -61,8 +92,8 @@ runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
 runner.Step("Connect mobile", common.connectMobile)
 runner.Step("openRPCserviceForApp1", common.openRPCservice, { 1 })
 runner.Step("openRPCserviceForApp2", common.openRPCservice, { 2 })
-runner.Step("Reregister Apps resumption", common.reRegisterApps, { checkResumptionData })
-runner.Step("Check subscriptions for WayPoints", common.sendOnWayPointChange, { false, true })
+runner.Step("Reregister Apps resumption", reRegisterApps)
+runner.Step("Check subscriptions for WayPoints", common.sendOnWayPointChange, { false, false })
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)
