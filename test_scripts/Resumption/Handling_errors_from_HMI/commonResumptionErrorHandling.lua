@@ -622,7 +622,7 @@ function m.reRegisterAppSuccess(pAppId, pCheckResumptionData, pCheckResumptionHM
       mobSession:ExpectResponse(corId, { success = true, resultCode = "SUCCESS" })
       :Do(function()
           mobSession:ExpectNotification("OnPermissionsChange")
-          -- mobSession:ExpectNotification("OnSystemCapabilityUpdated") --ToDo: uncomment
+          mobSession:ExpectNotification("OnSystemCapabilityUpdated")
         end)
     end)
   pCheckResumptionData(pAppId)
@@ -1090,7 +1090,7 @@ function m.reRegisterAppCustom(pAppId, pResultCode, pDelay, pTimeout)
     m.getMobileSession(pAppId):ExpectResponse(corId1, { success = true, resultCode = pResultCode })
     :Do(function(_, data)
          m.log("RAI " .. pAppId .. ": " .. data.payload.resultCode)
-         -- m.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated") --ToDo: uncomment
+         m.getMobileSession(pAppId):ExpectNotification("OnSystemCapabilityUpdated")
          m.hmi.getConnection():RaiseEvent(event, "RAI event")
       end)
     :Timeout(pTimeout)
