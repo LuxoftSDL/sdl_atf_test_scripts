@@ -71,7 +71,9 @@ local function checkResumptionData()
   :Do(function(_,data)
     common.log(data.method)
     common.log(data.method .. ": SUCCESS")
-    common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
+      fuelRange = { dataType = "VEHICLEDATA_FUELRANGE" , resultCode = "SUCCESS" }
+    })
   end)
 end
 

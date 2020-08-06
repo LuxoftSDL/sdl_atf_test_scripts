@@ -66,7 +66,9 @@ local function checkResumptionData()
   :Do(function(_,data)
       common.log(data.method)
       common.log(data.method .. ": SUCCESS")
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
+        speed = { dataType = "VEHICLEDATA_SPEED" , resultCode = "SUCCESS" }
+      })
     end)
   :ValidIf(function(_, data)
     if data.params.gps then

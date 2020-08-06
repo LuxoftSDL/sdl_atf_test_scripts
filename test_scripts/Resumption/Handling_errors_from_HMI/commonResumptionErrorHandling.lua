@@ -94,6 +94,27 @@ local function getOnSCUParams(pWinArray)
   return params
 end
 
+--[[ @getSuccessHMIResponseData: return data for HMI successful response
+--! @parameters:
+--! pData - data from request from SDL to HMI
+--! @return: data for the response from HMI to SDL
+--]]
+local function getSuccessHMIResponseData(pData)
+  local dataTypes = {
+    gps = "VEHICLEDATA_GPS",
+    speed = "VEHICLEDATA_SPEED",
+    rpm = "VEHICLEDATA_RPM",
+    fuelRange = "VEHICLEDATA_FUELRANGE"
+  }
+  local out = {}
+  if pData.method == "VehicleInfo.SubscribeVehicleData" or pData.method == "VehicleInfo.UnsubscribeVehicleData"then
+    for param in pairs(pData.params) do
+      out[param] = { resultCode = "SUCCESS", dataType = dataTypes[param] }
+    end
+  end
+  return out
+end
+
 --[[ @expOnHMIStatus: check OnHMIStatus notification
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
@@ -640,7 +661,7 @@ function m.sendResponse(pData, pErrorRespInterface, pCurrentInterface)
   if pErrorRespInterface ~= nil and pErrorRespInterface == pCurrentInterface then
     m.getHMIConnection():SendError(pData.id, pData.method, "GENERIC_ERROR", "info message")
   else
-    m.getHMIConnection():SendResponse(pData.id, pData.method, "SUCCESS", {})
+    m.getHMIConnection():SendResponse(pData.id, pData.method, "SUCCESS", getSuccessHMIResponseData(pData))
   end
 end
 
@@ -800,7 +821,7 @@ function m.subscribeVehicleData(pAppId, pParams, pHMIrequest)
   local cid = m.getMobileSession(pAppId):SendRPC("SubscribeVehicleData", pParams.requestParams)
   m.getHMIConnection():ExpectRequest("VehicleInfo.SubscribeVehicleData")
   :Do(function(_, data)
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pParams.responseParams)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSuccessHMIResponseData(data))
       m.resumptionData[pAppId].subscribeVehicleData = { VehicleInfo = data.params }
     end)
   :Times(pHMIrequest)
@@ -1238,7 +1259,7 @@ function m.sendResponse2Apps(pData, pErrorRpc, pErrorInterface)
   elseif pData.params.appID == m.getHMIAppId(1) and isErrorResponse == true then
     m.errorResponse(pData)
   else
-    m.getHMIConnection():SendResponse(pData.id, pData.method, "SUCCESS", {})
+    m.getHMIConnection():SendResponse(pData.id, pData.method, "SUCCESS", getSuccessHMIResponseData(pData))
   end
 end
 
@@ -1515,11 +1536,7 @@ function m.reRegisterAppsCustom_SameRPC(pTimeToRegApp2, pRPC)
         end
       else
         m.log(data.method .. ": SUCCESS")
-        local responseParams = {}
-        if pRPC == "subscribeVehicleData" then
-          responseParams = { gps = { resultCode = "SUCCESS", dataType = "VEHICLEDATA_GPS" } }
-        end
-        m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", responseParams)
+        m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSuccessHMIResponseData(data))
       end
     end)
   :ValidIf(function(exp)
@@ -1596,11 +1613,7 @@ function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
   :Do(function(_, data)
       m.log(data.method)
       m.log(data.method .. ": SUCCESS")
-      local responseParams = {}
-      if pRPC == "subscribeVehicleData" then
-        responseParams = { gps = { resultCode = "SUCCESS", dataType = "VEHICLEDATA_GPS" } }
-      end
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", responseParams)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSuccessHMIResponseData(data))
     end)
   :ValidIf(function(exp)
       if exp.occurences == 1 and isRAIResponseSent[1] then
@@ -1620,7 +1633,7 @@ function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
   :Do(function(_, data)
       m.log(data.method)
       m.log(data.method .. ": SUCCESS")
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSuccessHMIResponseData(data))
     end)
   :Times(numOfRevertRequests)
 

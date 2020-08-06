@@ -63,6 +63,11 @@ local function reRegisterApp(pAppId, pErrorCode)
     end)
 
   common.getHMIConnection():ExpectRequest("VehicleInfo.UnsubscribeVehicleData", vehicleDataSpeed.requestParams)
+  :Do(function(_,data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
+        speed = { dataType = "VEHICLEDATA_SPEED" , resultCode = "SUCCESS" }
+      })
+    end)
 
   common.resumptionFullHMILevel(pAppId)
 end
