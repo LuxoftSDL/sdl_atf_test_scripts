@@ -804,7 +804,7 @@ function m.subscribeVehicleData(pAppId, pParams, pHMIrequest)
       m.resumptionData[pAppId].subscribeVehicleData = { VehicleInfo = data.params }
     end)
   :Times(pHMIrequest)
-  local MobResp = pParams.responseParams
+  local MobResp = m.cloneTable(pParams.responseParams)
   MobResp.success = true
   MobResp.resultCode = "SUCCESS"
   m.getMobileSession(pAppId):ExpectResponse(cid, MobResp)
@@ -1515,7 +1515,11 @@ function m.reRegisterAppsCustom_SameRPC(pTimeToRegApp2, pRPC)
         end
       else
         m.log(data.method .. ": SUCCESS")
-        m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+        local responseParams = {}
+        if pRPC == "subscribeVehicleData" then
+          responseParams = { gps = { resultCode = "SUCCESS", dataType = "VEHICLEDATA_GPS" } }
+        end
+        m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", responseParams)
       end
     end)
   :ValidIf(function(exp)
@@ -1592,7 +1596,11 @@ function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
   :Do(function(_, data)
       m.log(data.method)
       m.log(data.method .. ": SUCCESS")
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+      local responseParams = {}
+      if pRPC == "subscribeVehicleData" then
+        responseParams = { gps = { resultCode = "SUCCESS", dataType = "VEHICLEDATA_GPS" } }
+      end
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", responseParams)
     end)
   :ValidIf(function(exp)
       if exp.occurences == 1 and isRAIResponseSent[1] then
