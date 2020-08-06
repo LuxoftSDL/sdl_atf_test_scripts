@@ -9,7 +9,7 @@
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
 -- 3. App is subscribed to module_1 with modueId_1
 -- 4. App is subscribed to module_1 with modueId_2
-
+--
 -- Sequence:
 -- 1. Transport disconnect and reconnect are performed
 -- 2. App starts registration with actual hashId after unexpected disconnect
@@ -31,23 +31,22 @@ local appId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
+  local subscriptionsNumber  = 2
   local actualModules = { }
   local expectedModules = {
-    { moduleType = moduleType, moduleId = common.getModuleIdNumber(moduleType, moduleId1) },
-    { moduleType = moduleType, moduleId = common.getModuleIdNumber(moduleType, moduleId2) }
-  }
+    { moduleType = moduleType, moduleId = moduleId1 }, { moduleType = moduleType, moduleId = moduleId2 }}
 
-  EXPECT_HMICALL("RC.GetInteriorVehicleData")
+  common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData")
   :Do(function(_, data)
       common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",
-        { moduleData = common.getModuleControlData(moduleType, common.getModuleIdNumber(moduleType, data.params.moduleId))})
+        { moduleData = common.getActualModuleIVData(moduleType, data.params.moduleId)})
     end)
   :ValidIf(function(exp, data)
     actualModules[exp.occurences] = {
       moduleType = data.params.moduleType,
       moduleId = data.params.moduleId
     }
-    if exp.occurences == #common.modules then
+    if exp.occurences == subscriptionsNumber then
       if common.isTableEqual(actualModules, expectedModules) == false then
         local errorMessage = "Not all modules are resumed.\n" ..
           "Actual result:" .. common.tableToString(actualModules) .. "\n" ..
@@ -57,7 +56,7 @@ local function checkResumptionData()
     end
     return true
   end)
-  :Times(2)
+  :Times(subscriptionsNumber)
 end
 
 --[[ Scenario ]]
@@ -66,17 +65,19 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("App registration", common.registerAppWOPTU)
 common.Step("App activation", common.activateApp)
-common.Step("Add interiorVD subscription", common.GetInteriorVehicleData, { moduleType, moduleId1, isSubscribed })
-common.Step("Add interiorVD subscription", common.GetInteriorVehicleData, { moduleType, moduleId2, isSubscribed })
+common.Step("Add interiorVD subscription " .. moduleType .. " " .. moduleId1, common.GetInteriorVehicleData,
+  { moduleType, moduleId1, isSubscribed })
+common.Step("Add interiorVD subscription " .. moduleType .. " " .. moduleId2, common.GetInteriorVehicleData,
+  { moduleType, moduleId2, isSubscribed })
 
 common.Title("Test")
 common.Step("Unexpected disconnect", common.mobileDisconnect)
 common.Step("Connect mobile", common.mobileConnect)
 common.Step("Re-register App resumption data", common.reRegisterApp,
   { appId, checkResumptionData, common.resumptionFullHMILevel })
-common.Step("Check subscription with OnInteriorVD for module " .. moduleId1, common.onInteriorVD,
+common.Step("Check subscription with OnInteriorVD for " .. moduleType .. " " .. moduleId1, common.onInteriorVD,
   { moduleType, moduleId1 })
-common.Step("Check subscription with OnInteriorVD for module " .. moduleId2, common.onInteriorVD,
+common.Step("Check subscription with OnInteriorVD for " .. moduleType .. " " .. moduleId2, common.onInteriorVD,
   { moduleType, moduleId2 })
 
 common.Title("Postconditions")
