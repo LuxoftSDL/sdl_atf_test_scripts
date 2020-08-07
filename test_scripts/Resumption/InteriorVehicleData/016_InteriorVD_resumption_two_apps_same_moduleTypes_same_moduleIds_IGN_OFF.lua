@@ -9,7 +9,7 @@
 -- 2. Mobile app1 and app2 with REMOTE_CONTROL hmi type are registered and activated
 -- 3. App1 is subscribed to module_1
 -- 4. App2 is subscribed to module_1
-
+--
 -- Sequence:
 -- 1. IGN_OFF and IGN_ON are performed
 -- 2. Apps start registration with actual hashIds after SDL restart
@@ -25,8 +25,8 @@ local common = require('test_scripts/Resumption/InteriorVehicleData/commonResump
 local moduleType = common.modules[1]
 local isSubscribe = true
 local default = nil
-local appIdFirstApp = 1
-local appIdsecondApp = 2
+local appSessionId1 = 1
+local appSessionId2 = 2
 local expected = 1
 local isNotCashed = false
 local isCashed = true
@@ -42,20 +42,20 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-common.Step("App1 registration", common.registerAppWOPTU, { appIdFirstApp })
-common.Step("App2 registration", common.registerAppWOPTU, { appIdsecondApp })
-common.Step("App1 activation", common.activateApp, { appIdFirstApp })
-common.Step("App2 activation", common.activateApp, { appIdsecondApp })
+common.Step("App1 registration", common.registerAppWOPTU, { appSessionId1 })
+common.Step("App2 registration", common.registerAppWOPTU, { appSessionId2 })
+common.Step("App1 activation", common.activateApp, { appSessionId1 })
+common.Step("App2 activation", common.activateApp, { appSessionId2 })
 common.Step("App1 interiorVD subscription for " .. moduleType,
-  common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isNotCashed, default, appIdFirstApp })
+  common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isNotCashed, default, appSessionId1 })
 common.Step("App2 interiorVD subscription for " .. moduleType,
-  common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isCashed, default, appIdsecondApp  })
+  common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isCashed, default, appSessionId2  })
 
 common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-common.Step("Open service for app1", common.sessionCreationOpenRPCservice, { appIdFirstApp })
-common.Step("Open service for app2", common.sessionCreationOpenRPCservice, { appIdsecondApp })
+common.Step("Open service for app1", common.sessionCreationOpenRPCservice, { appSessionId1 })
+common.Step("Open service for app2", common.sessionCreationOpenRPCservice, { appSessionId2 })
 common.Step("Reregister Apps resumption data", common.reRegisterApps,
   { checkResumptionData })
 common.Step("Check subscription with OnInteriorVD " .. moduleType, common.onInteriorVD2Apps,
