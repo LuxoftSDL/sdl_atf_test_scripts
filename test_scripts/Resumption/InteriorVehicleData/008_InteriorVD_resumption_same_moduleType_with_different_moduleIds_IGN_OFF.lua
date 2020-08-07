@@ -9,7 +9,7 @@
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
 -- 3. App is subscribed to module_1 with modueId_1
 -- 4. App is subscribed to module_1 with modueId_2
-
+--
 -- Sequence:
 -- 1. IGN_OFF and IGN_ON are performed
 -- 2. App starts registration with actual hashId after SDL restart
@@ -65,17 +65,19 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("App registration", common.registerAppWOPTU)
 common.Step("App activation", common.activateApp)
-common.Step("Add interiorVD subscription", common.GetInteriorVehicleData, { moduleType, moduleId1, isSubscribed })
-common.Step("Add interiorVD subscription", common.GetInteriorVehicleData, { moduleType, moduleId2, isSubscribed })
+common.Step("Add interiorVD subscription  " .. moduleType .. " " .. moduleId1, common.GetInteriorVehicleData,
+  { moduleType, moduleId1, isSubscribed })
+common.Step("Add interiorVD subscription  " .. moduleType .. " " .. moduleId2, common.GetInteriorVehicleData,
+  { moduleType, moduleId2, isSubscribed })
 
 common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterApp,
   { appId, checkResumptionData, common.resumptionFullHMILevel })
-common.Step("Check subscription with OnInteriorVD for module " .. moduleId1, common.onInteriorVD,
+common.Step("Check subscription with OnInteriorVD for " .. moduleType .. " " .. moduleId1, common.onInteriorVD,
   { moduleType, moduleId1 })
-common.Step("Check subscription with OnInteriorVD for module " .. moduleId2, common.onInteriorVD,
+common.Step("Check subscription with OnInteriorVD for " .. moduleType .. " " .. moduleId2, common.onInteriorVD,
   { moduleType, moduleId2 })
 
 common.Title("Postconditions")

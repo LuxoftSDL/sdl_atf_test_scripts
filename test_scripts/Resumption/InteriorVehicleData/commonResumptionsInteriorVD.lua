@@ -84,7 +84,7 @@ function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDat
   if pIsIVDataCached == nil then pIsIVDataCached = false end
 
   local moduleId = pModuleId or m.getModuleId(pModuleType,  1)
-  local mobileRequestParams = m.cloneTable(rc.rpc.getAppRequestParams(rpc, pModuleType, moduleId, isSubscribe))
+  local mobileRequestParams = m.cloneTable(rc.rpc.getAppRequestParams(rpc, pModuleType, pModuleId, isSubscribe))
 
   local hmiRequestParams = rc.rpc.getHMIRequestParams(rpc, pModuleType, moduleId, pAppId, isSubscribe)
   if hashChangeExpectTimes == 0 then hmiRequestParams.subscribe = nil end

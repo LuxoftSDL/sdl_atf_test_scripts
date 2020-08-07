@@ -8,7 +8,7 @@
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
 -- 3. App is subscribed to module_1 via GetInteriorVehicleData(module_1)
-
+--
 -- Sequence:
 -- 1. Transport disconnect and reconnect are performed
 -- 2. App starts registration with actual hashId after unexpected disconnect
