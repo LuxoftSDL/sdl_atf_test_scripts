@@ -34,7 +34,7 @@ runner.Step("Clean environment", common.preconditions)
 runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 
 runner.Title("Test")
-for k, value in pairs({ createWindow = { "UI" } }) do
+for k, value in pairs(common.rpcs) do
   for _, interface in pairs(value) do
     runner.Title("Rpc " .. k .. " error resultCode to interface " .. interface)
     runner.Step("Register app", common.registerAppWOPTU)
