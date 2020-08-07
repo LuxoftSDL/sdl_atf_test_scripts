@@ -1117,7 +1117,7 @@ function m.reRegisterAppCustom(pAppId, pResultCode, pDelay, pTimeout)
     :Timeout(pTimeout)
   end
   m.run.runAfter(rai, pDelay)
-  return m.hmi.getConnection():ExpectEvent(event, "RAI event")
+  return m.hmi.getConnection():ExpectEvent(event, "RAI event"):Timeout(pTimeout)
 end
 
 --[[ @reRegisterApps: re-register 2 apps
@@ -1134,6 +1134,7 @@ function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pTim
       m.log("BC.OnAppRegistered " .. exp.occurences)
       m.setHMIAppId(data.params.application.appID, exp.occurences)
       m.sendOnSCU(0, exp.occurences)
+      if exp.occurences == 1 then m.reRegisterAppCustom(2, "SUCCESS", 0) end
     end)
   :Times(2)
 
@@ -1141,7 +1142,6 @@ function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pTim
   m.expOnHMIStatus(2, "FULL", pErrorRpc)
 
   m.reRegisterAppCustom(1, "RESUME_FAILED", 0, pTimeout)
-  m.reRegisterAppCustom(2, "SUCCESS", 100)
 
   pCheckResumptionData(pErrorRpc, pErrorInterface)
 end
@@ -1255,9 +1255,9 @@ end
 function m.sendResponse2Apps(pData, pErrorRpc, pErrorInterface)
   local isErrorResponse = isResponseErroneous(pData, pErrorRpc, pErrorInterface)
   if pData.method == "VehicleInfo.SubscribeVehicleData" and pErrorRpc == "subscribeVehicleData" and pData.params.gps then
-    m.errorResponse(pData)
+    m.errorResponse(pData, 300)
   elseif pData.params.appID == m.getHMIAppId(1) and isErrorResponse == true then
-    m.errorResponse(pData)
+    m.errorResponse(pData, 300)
   else
     m.getHMIConnection():SendResponse(pData.id, pData.method, "SUCCESS", getSuccessHMIResponseData(pData))
   end
