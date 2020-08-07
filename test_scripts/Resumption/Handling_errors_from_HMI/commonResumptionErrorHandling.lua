@@ -1139,7 +1139,7 @@ function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pTim
   :Times(2)
 
   m.expOnHMIStatus(1, "LIMITED", pErrorRpc, pTimeout)
-  m.expOnHMIStatus(2, "FULL", pErrorRpc)
+  m.expOnHMIStatus(2, "FULL", pErrorRpc, pTimeout)
 
   m.reRegisterAppCustom(1, "RESUME_FAILED", 0, pTimeout)
 
