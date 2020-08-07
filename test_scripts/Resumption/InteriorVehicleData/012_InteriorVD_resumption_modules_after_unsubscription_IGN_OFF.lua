@@ -27,7 +27,7 @@ local isSubscribed = true
 local withoutModuleId = nil
 local seatModuleId = common.getModuleId("SEAT", 2)
 local isUnsubscribed = false
-local appId = 1
+local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
@@ -54,7 +54,7 @@ common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Reregister App resumption data", common.reRegisterApp,
-  { appId, checkResumptionData, common.resumptionFullHMILevel})
+  { appSessionId, checkResumptionData, common.resumptionFullHMILevel})
 common.Step("Check subscription with OnInteriorVD for RADIO", common.onInteriorVD,
   { "RADIO", withoutModuleId, isSubscribed })
 common.Step("Check subscription with OnInteriorVD for CLIMATE", common.onInteriorVD,

@@ -27,7 +27,7 @@ local isSubscribed = true
 local moduleType = "SEAT"
 local moduleId1 = common.getModuleId(moduleType, 1)
 local moduleId2 = common.getModuleId(moduleType, 2)
-local appId = 1
+local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
@@ -74,7 +74,7 @@ common.Title("Test")
 common.Step("Unexpected disconnect", common.mobileDisconnect)
 common.Step("Connect mobile", common.mobileConnect)
 common.Step("Re-register App resumption data", common.reRegisterApp,
-  { appId, checkResumptionData, common.resumptionFullHMILevel })
+  { appSessionId, checkResumptionData, common.resumptionFullHMILevel })
 common.Step("Check subscription with OnInteriorVD for " .. moduleType .. " " .. moduleId1, common.onInteriorVD,
   { moduleType, moduleId1 })
 common.Step("Check subscription with OnInteriorVD for " .. moduleType .. " " .. moduleId2, common.onInteriorVD,

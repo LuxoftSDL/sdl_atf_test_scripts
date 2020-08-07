@@ -23,7 +23,7 @@ local common = require('test_scripts/Resumption/InteriorVehicleData/commonResump
 --[[ Local Variables ]]
 local isSubscribed = true
 local withoutModuleId = nil
-local appId = 1
+local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
@@ -76,7 +76,7 @@ common.Title("Test")
 common.Step("Unexpected disconnect", common.mobileDisconnect)
 common.Step("Connect mobile", common.mobileConnect)
 common.Step("Re-register App resumption data", common.reRegisterApp,
-  { appId, checkResumptionData, common.resumptionFullHMILevel })
+  { appSessionId, checkResumptionData, common.resumptionFullHMILevel })
 for _, moduleType in pairs(common.modules) do
   common.Step("Check subscription with OnInteriorVD " .. moduleType, common.onInteriorVD, { moduleType })
 end
