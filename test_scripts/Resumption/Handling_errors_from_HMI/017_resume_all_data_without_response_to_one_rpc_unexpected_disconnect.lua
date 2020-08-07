@@ -4,7 +4,7 @@
 -- Description:
 -- In case:
 -- 1. AddCommand, AddSubMenu, CreateInteractionChoiceSet, SetGlobalProperties, SubscribeButton, SubscribeVehicleData,
---  SubscribeWayPoints, CreateWindow are added by app
+--  SubscribeWayPoints, CreateWindow, GetInteriorVehicleData are added by app
 -- 2. Unexpected disconnect and reconnect are performed
 -- 3. App reregisters with actual HashId
 -- 4. Rpc_n request is sent from SDL to HMI during resumption
