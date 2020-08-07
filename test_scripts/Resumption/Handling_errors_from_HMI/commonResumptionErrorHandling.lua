@@ -1134,7 +1134,7 @@ function m.reRegisterApps(pCheckResumptionData, pErrorRpc, pErrorInterface, pTim
       m.log("BC.OnAppRegistered " .. exp.occurences)
       m.setHMIAppId(data.params.application.appID, exp.occurences)
       m.sendOnSCU(0, exp.occurences)
-      if exp.occurences == 1 then m.reRegisterAppCustom(2, "SUCCESS", 0) end
+      if exp.occurences == 1 then m.reRegisterAppCustom(2, "SUCCESS", 0, pTimeout) end
     end)
   :Times(2)
 
