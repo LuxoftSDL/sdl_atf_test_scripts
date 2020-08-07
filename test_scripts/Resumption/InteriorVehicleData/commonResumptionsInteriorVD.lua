@@ -48,6 +48,7 @@ local function boolToTimes(isTrue)
 end
 
 function  m.GetInteriorVehicleData(pModuleType, pModuleIdNumber, isSubscribe, pIsIVDataCached, hashChangeExpectTimes, pAppId)
+  pAppId = pAppId or 1
   local rpc = "GetInteriorVehicleData"
 
   local moduleId = m.getModuleId(pModuleType, pModuleIdNumber or 1)
