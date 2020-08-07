@@ -24,7 +24,7 @@ local common = require('test_scripts/Resumption/InteriorVehicleData/commonResump
 local isSubscribed = true
 local moduleType = common.modules[1]
 local withoutModuleId = nil
-local appId = 1
+local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
@@ -44,7 +44,7 @@ common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterApp,
-  { appId, checkResumptionData, common.resumptionFullHMILevel })
+  { appSessionId, checkResumptionData, common.resumptionFullHMILevel })
 common.Step("Check subscription with OnInteriorVD", common.onInteriorVD, { moduleType })
 
 common.Title("Postconditions")
