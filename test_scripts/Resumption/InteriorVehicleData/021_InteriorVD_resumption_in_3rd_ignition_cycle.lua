@@ -7,7 +7,7 @@
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
 -- 3. App is subscribed to module_1 via GetInteriorVehicleData(module_1)
-
+--
 -- Sequence:
 -- 1. IGN_OFF and IGN_ON are performed
 -- 2. IGN_OFF and IGN_ON are performed
@@ -24,7 +24,7 @@ local common = require('test_scripts/Resumption/InteriorVehicleData/commonResump
 local isSubscribed = true
 local moduleType = common.modules[1]
 local default = nil
-local appId = 1
+local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
@@ -33,7 +33,7 @@ local function checkResumptionData()
 end
 
 local function absenceHMIlevelResumption()
-  common.getMobileSession(appId):ExpectNotification("OnHMIStatus",
+  common.getMobileSession(appSessionId):ExpectNotification("OnHMIStatus",
     { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
 end
 
@@ -51,7 +51,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterApp,
-  { appId, checkResumptionData, absenceHMIlevelResumption })
+  { appSessionId, checkResumptionData, absenceHMIlevelResumption })
 common.Step("Check subscription with OnInteriorVD", common.onInteriorVD, { moduleType })
 
 common.Title("Postconditions")
