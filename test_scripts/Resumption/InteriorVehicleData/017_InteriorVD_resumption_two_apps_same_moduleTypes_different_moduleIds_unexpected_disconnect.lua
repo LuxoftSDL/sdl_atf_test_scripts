@@ -35,7 +35,7 @@ local notExpected = 0
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  common.getHMIConnection()("RC.GetInteriorVehicleData",
+  common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData",
     {
       moduleType = moduleType,
       subscribe = true,

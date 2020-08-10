@@ -67,14 +67,21 @@ local function setSubscriptionModuleStatus(pModuleType, pModuleId, isSubscribed)
     moduleId = pModuleId
   }
 
-  if m.isTableContains(modulesWithSubscription, newValue) == true and isSubscribed == false then
-    for key, value in pairs(modulesWithSubscription) do
-      if m.isTableEqual(value, newValue) then
-        table.remove(modulesWithSubscription, key)
-      end
-    end
-  elseif m.isTableContains(modulesWithSubscription, newValue) == false and isSubscribed == true then
+  if #modulesWithSubscription == 0 and isSubscribed == true then
     table.insert(modulesWithSubscription, newValue)
+    return
+  end
+
+  for key, value in pairs(modulesWithSubscription) do
+    if m.isTableEqual(value, newValue) and isSubscribed == false then
+      table.remove(modulesWithSubscription, key)
+      return
+    elseif m.isTableEqual(value, newValue) and isSubscribed == true then
+      return
+    elseif key == #modulesWithSubscription and isSubscribed == true then
+      table.insert(modulesWithSubscription, newValue)
+      return
+    end
   end
 end
 
@@ -218,7 +225,7 @@ function m.checkModuleResumptionData(pModuleType, pModuleId)
   m.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData", requestParams)
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",
-        { moduleData = m.getActualModuleIVData(pModuleType, pModuleId)})
+        { moduleData = m.getActualModuleIVData(pModuleType, pModuleId), isSubscribe = data.params.subscribe})
     end)
 end
 
@@ -276,7 +283,7 @@ function m.ignitionOff()
   end)
   m.wait(3000)
   :Do(function()
-    if isOnSDLCloseSent == false then m.cprint(color.magenta, "BC.OnSDLClose was not sent") end
+    if isOnSDLCloseSent == false then utils.cprint(color.magenta, "BC.OnSDLClose was not sent") end
     for i = 1, actions.mobile.getAppsCount() do
       actions.mobile.deleteSession(i)
     end

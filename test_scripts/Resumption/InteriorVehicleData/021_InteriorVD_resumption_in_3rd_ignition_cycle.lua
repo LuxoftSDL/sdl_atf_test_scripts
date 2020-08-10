@@ -32,11 +32,6 @@ local function checkResumptionData()
   common.checkModuleResumptionData(moduleType, common.getModuleId(moduleType, defaultModuleId))
 end
 
-local function absenceHMIlevelResumption()
-  common.getMobileSession(appSessionId):ExpectNotification("OnHMIStatus",
-    { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
-end
-
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
@@ -51,7 +46,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterApp,
-  { appSessionId, checkResumptionData, absenceHMIlevelResumption })
+  { appSessionId, checkResumptionData, common.resumptionFullHMILevel })
 common.Step("Check subscription with OnInteriorVD", common.onInteriorVD, { moduleType })
 
 common.Title("Postconditions")
