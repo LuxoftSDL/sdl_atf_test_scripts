@@ -218,7 +218,7 @@ function m.checkModuleResumptionData(pModuleType, pModuleId)
   m.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData", requestParams)
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",
-        { moduleData = m.getActualModuleIVData(pModuleType, pModuleId)})
+        { moduleData = m.getActualModuleIVData(pModuleType, pModuleId), isSubscribe = data.params.subscribe})
     end)
 end
 
