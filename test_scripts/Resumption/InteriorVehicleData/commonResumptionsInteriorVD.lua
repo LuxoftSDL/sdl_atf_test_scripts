@@ -85,7 +85,7 @@ local function setSubscriptionModuleStatus(pModuleType, pModuleId, isSubscribed)
   end
 end
 
-function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDataCached, hashChangeExpectTimes, pAppId)
+function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDataCached, hashChangeExpectTimes, pAppId, pResultCode)
   pAppId = pAppId or 1
   local rpc = "GetInteriorVehicleData"
   if pIsIVDataCached == nil then pIsIVDataCached = false end
@@ -103,8 +103,10 @@ function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDat
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",
         rc.rpc.getHMIResponseParams(rpc, pModuleType, moduleId, isSubscribe))
     end)
+
+  local resultCode = pResultCode or "SUCCESS"
   m.getMobileSession(pAppId):ExpectResponse(cid,
-    rc.rpc.getAppResponseParams(rpc, true, "SUCCESS", pModuleType, moduleId, isSubscribe))
+    rc.rpc.getAppResponseParams(rpc, true, resultCode, pModuleType, moduleId, isSubscribe))
   :Do(function()
       setSubscriptionModuleStatus(pModuleType, moduleId, isSubscribe)
     end)
