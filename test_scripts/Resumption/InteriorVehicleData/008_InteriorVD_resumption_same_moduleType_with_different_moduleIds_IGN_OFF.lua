@@ -36,7 +36,7 @@ local function checkResumptionData()
   local expectedModules = {
     { moduleType = moduleType, moduleId = moduleId1 }, { moduleType = moduleType, moduleId = moduleId2 } }
 
-  common.getHMIConnection()("RC.GetInteriorVehicleData")
+  common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData")
   :Do(function(_, data)
       common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
         moduleData = common.getActualModuleIVData(data.params.moduleType, data.params.moduleId), isSubscribed = true })
