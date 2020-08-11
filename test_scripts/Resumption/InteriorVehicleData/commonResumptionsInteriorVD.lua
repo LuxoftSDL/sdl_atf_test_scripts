@@ -224,6 +224,7 @@ end
 
 function m.mobileDisconnect()
   local actualModules = { }
+  print_table(modulesWithSubscription)
   m.getHMIConnection():ExpectRequest(rc.rpc.getHMIEventName("GetInteriorVehicleData", { subscribe = false }))
   :Do(function(exp,data)
       actualModules[exp.occurences] = {
@@ -276,7 +277,7 @@ function m.ignitionOff()
   end)
   m.wait(3000)
   :Do(function()
-    if isOnSDLCloseSent == false then m.cprint(color.magenta, "BC.OnSDLClose was not sent") end
+    if isOnSDLCloseSent == false then utils.cprint(color.magenta, "BC.OnSDLClose was not sent") end
     for i = 1, actions.mobile.getAppsCount() do
       actions.mobile.deleteSession(i)
     end
