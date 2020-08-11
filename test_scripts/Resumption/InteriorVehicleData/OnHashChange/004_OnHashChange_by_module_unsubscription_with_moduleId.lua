@@ -20,7 +20,6 @@
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')
 
 --[[ Local Variables ]]
-local testModuleNumber = 2
 local expectNotif = 1
 local isSubscribed = true
 local isNotSubscribed = false
@@ -35,7 +34,7 @@ common.Step("App activation", common.activateApp)
 
 common.Title("Test")
 for _, moduleName in pairs(common.modules)do
-  local moduleId = common.getModuleId(moduleName, testModuleNumber)
+  local moduleId = common.getModuleId(moduleName, 2)
   common.Step("Subscription to " .. moduleName, common.GetInteriorVehicleData,
     { moduleName, moduleId, isSubscribed, isNotCached, expectNotif })
   common.Step("OnHashChange after removing subscription for " .. moduleName, common.GetInteriorVehicleData,
