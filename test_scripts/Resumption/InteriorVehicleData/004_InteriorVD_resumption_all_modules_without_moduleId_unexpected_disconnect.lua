@@ -2,18 +2,19 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0188-get-interior-data-resumption.md
 --
 -- Description: Successful resuming of interior vehicle data after transport disconnect
---  in case GetInteriorVehicleData was requested for all modules and without moduleId
+--  in case app was subscribed on all default modules (without moduleId)
 --
 -- Precondition:
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
--- 3. App is subscribed to all modules via GetInteriorVehicleData(moduleType)
+-- 3. App is subscribed to all default modules via GetInteriorVehicleData(moduleType)
 --
 -- Sequence:
 -- 1. Transport disconnect and reconnect are performed
 -- 2. App starts registration with actual hashId after unexpected disconnect
 -- SDL does:
--- - a. send RC.GetInteriorVD(subscribe=true, moduleType, default moduleId) to HMI during resumption data for each module
+-- - a. send RC.GetInteriorVehicleData(subscribe=true, moduleType, default_moduleId) to HMI during resumption data
+--    for each default module
 -- - b. respond RAI(SUCCESS) to mobile app
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------

@@ -14,7 +14,7 @@
 -- 1. IGN_OFF and IGN_ON are performed
 -- 2. Apps start registration with actual hashIds after SDL restart
 -- SDL does:
--- - a. send RC.GetInteriorVD(module_1) and RC.GetInteriorVD(module_2) to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(module_1) and RC.GetInteriorVehicleData(module_2) to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to both mobile apps
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ local function checkResumptionData()
       moduleId = common.getModuleId(moduleTypeForApp2, defaultModuleNumber)
     })
   :Do(function(_, data)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",{
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
         moduleData = common.getActualModuleIVData(data.params.moduleType, data.params.moduleId), isSubscribed = true })
     end)
   :Times(2)

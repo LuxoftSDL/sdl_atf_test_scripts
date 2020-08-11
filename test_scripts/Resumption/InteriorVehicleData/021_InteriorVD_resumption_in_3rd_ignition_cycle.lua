@@ -9,11 +9,10 @@
 -- 3. App is subscribed to module_1 via GetInteriorVehicleData(module_1)
 --
 -- Sequence:
--- 1. IGN_OFF and IGN_ON are performed
--- 2. IGN_OFF and IGN_ON are performed
--- 3. App starts registration with actual hashId after IGN_ON in 3rd ignition cycle
+-- 1. Two IGN_OFF and IGN_ON cycles are performed
+-- 2. App starts registration with actual hashId after IGN_ON in 3rd ignition cycle
 -- SDL does:
--- - a. send RC.GetInteriorVD(subscribe=true, module_1, default moduleId) to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(subscribe=true, module_1, default moduleId) to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to mobile app
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
