@@ -2,19 +2,19 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0188-get-interior-data-resumption.md
 --
 -- Description: SDL sends OnHashChange notification after successful unsubscription from interior vehicle data
---  with custom moduleId
+--  with specified moduleId
 --
 -- Precondition:
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
--- 3. App is subscribed to modules
+-- 3. App is subscribed to module_1
 --
 -- Sequence:
--- 1. GetInteriorVD(subscribe = false, module_1, moduleId) is requested
+-- 1. GetInteriorVehicleData(subscribe = false, module_1, moduleId) is requested
 -- SDL does:
--- - a. send GetInteriorVD(subscribe = false, module_1, moduleId) request to HMI
+-- - a. send RC.GetInteriorVehicleData(subscribe = false, module_1, moduleId) request to HMI
 -- - b. process successful responses from HMI
--- - c. send OnHashChange notification to mobile app by receiving GetInteriorVD(subscribe = false, module_1, moduleId)
+-- - c. send OnHashChange notification to mobile app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')

@@ -7,7 +7,7 @@
 -- Precondition:
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
--- 3. App is subscribed to module_1, module_2, module_3
+-- 3. App is subscribed to module_1, module_2 and module_3
 -- 4. App is unsubscribed from module_2 and module_3
 -- 5. App receives updated hashId after unsubscription
 --
@@ -15,7 +15,7 @@
 -- 1. Transport disconnect and reconnect are performed
 -- 2. App starts registration with actual hashId after unexpected disconnect
 -- SDL does:
--- - a. send RC.GetInteriorVD(subscribe=true, module_1) to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(subscribe=true, module_1) to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to mobile app
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
@@ -49,22 +49,20 @@ common.Step("Add interiorVD subscription for CLIMATE", common.GetInteriorVehicle
   { "CLIMATE", withoutModuleId, isSubscribed })
 common.Step("Add interiorVD subscription for SEAT", common.GetInteriorVehicleData,
   { "SEAT", seatModuleId, isSubscribed })
-common.Step("Unsubscribe from CLIMATE", common.GetInteriorVehicleData,
-  { "CLIMATE", withoutModuleId, isUnsubscribed })
-common.Step("Unsubscribe from SEAT", common.GetInteriorVehicleData,
-  { "SEAT", seatModuleId, isUnsubscribed })
+common.Step("Unsubscribe from CLIMATE", common.GetInteriorVehicleData, { "CLIMATE", withoutModuleId, isUnsubscribed })
+common.Step("Unsubscribe from SEAT", common.GetInteriorVehicleData, { "SEAT", seatModuleId, isUnsubscribed })
 
 common.Title("Test")
 common.Step("Unexpected disconnect", common.mobileDisconnect)
 common.Step("Connect mobile", common.mobileConnect)
 common.Step("Reregister App resumption data", common.reRegisterApp,
-  { appSessionId, checkResumptionData, common.resumptionFullHMILevel})
+  { appSessionId, checkResumptionData, common.resumptionFullHMILevel })
 common.Step("Check subscription with OnInteriorVD for RADIO", common.onInteriorVD,
   { "RADIO", withoutModuleId, isSubscribed })
 common.Step("Check subscription with OnInteriorVD for CLIMATE", common.onInteriorVD,
-  { "CLIMATE", withoutModuleId, isUnsubscribed})
+  { "CLIMATE", withoutModuleId, isUnsubscribed })
 common.Step("Check subscription with OnInteriorVD for SEAT", common.onInteriorVD,
-  { "SEAT", seatModuleId, isUnsubscribed})
+  { "SEAT", seatModuleId, isUnsubscribed })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

@@ -7,15 +7,14 @@
 -- Precondition:
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
--- 3. App is subscribed to module_1 with modueId_1
--- 4. App is subscribed to module_1 with modueId_2
+-- 3. App is subscribed to module_1 with modueId_1 and module_1 with modueId_2
 --
 -- Sequence:
 -- 1. Transport disconnect and reconnect are performed
 -- 2. App starts registration with actual hashId after unexpected disconnect
 -- SDL does:
--- - a. send RC.GetInteriorVD(subscribe=true, module_1, moduleId_1) and
---     RC.GetInteriorVD(subscribe=true, module_1, moduleId_2) to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(subscribe=true, module_1, moduleId_1) and
+--    RC.GetInteriorVehicleData(subscribe=true, module_1, moduleId_2) to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to mobile app
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------

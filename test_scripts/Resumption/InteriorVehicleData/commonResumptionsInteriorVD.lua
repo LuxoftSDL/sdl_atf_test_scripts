@@ -85,7 +85,8 @@ local function setSubscriptionModuleStatus(pModuleType, pModuleId, isSubscribed)
   end
 end
 
-function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDataCached, hashChangeExpectTimes, pAppId, pResultCode)
+function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDataCached,
+    hashChangeExpectTimes, pAppId, pResultCode)
   pAppId = pAppId or 1
   local rpc = "GetInteriorVehicleData"
   if pIsIVDataCached == nil then pIsIVDataCached = false end

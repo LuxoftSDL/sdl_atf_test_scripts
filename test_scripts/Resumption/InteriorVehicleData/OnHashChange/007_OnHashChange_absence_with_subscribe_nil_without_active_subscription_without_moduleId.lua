@@ -2,19 +2,19 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0188-get-interior-data-resumption.md
 --
 -- Description: SDL does not send OnHashChange notification to mobile app in case processing of GetInteriorVehicleData
---  without subscribe parameter with default moduleId
+--  without subscribe parameter without moduleId
 --
 -- Precondition:
 -- 1. HMI and SDL are started
 -- 2. Mobile app with REMOTE_CONTROL hmi type is registered and activated
--- 3. App is not subscribed to modules
+-- 3. App is not subscribed to module_1
 --
 -- Sequence:
--- 1. GetInteriorVD(module_1) is requested
+-- 1. GetInteriorVehicleData(module_1) is requested (without subscribe parameter)
 -- SDL does:
--- - a. send GetInteriorVD(module_1, default moduleId) request to HMI
+-- - a. send RC.GetInteriorVehicleData(module_1, default moduleId) request to HMI
 -- - b. process successful responses from HMI
--- - c. not send OnHashChange notification to mobile app by receiving GetInteriorVD(module_1, default moduleId)
+-- - c. not send OnHashChange notification to mobile app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')

@@ -14,7 +14,7 @@
 -- 1. Transport disconnect and reconnect are performed
 -- 2. Apps start registration with actual hashIds after unexpected disconnect
 -- SDL does:
--- - a. send RC.GetInteriorVD(module_1) to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(module_1) to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to both mobile apps
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
@@ -49,15 +49,14 @@ common.Step("App2 activation", common.activateApp, { appSessionId2 })
 common.Step("App1 interiorVD subscription for " .. moduleType,
   common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isNotCashed, default, appSessionId1 })
 common.Step("App2 interiorVD subscription for " .. moduleType,
-  common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isCashed, default, appSessionId2  })
+  common.GetInteriorVehicleData, { moduleType, default, isSubscribe, isCashed, default, appSessionId2 })
 
 common.Title("Test")
 common.Step("Unexpected disconnect", common.mobileDisconnect)
 common.Step("Connect mobile", common.mobileConnect)
 common.Step("Open service for app1", common.sessionCreationOpenRPCservice, { appSessionId1 })
 common.Step("Open service for app2", common.sessionCreationOpenRPCservice, { appSessionId2 })
-common.Step("Reregister Apps resumption data", common.reRegisterApps,
-  { checkResumptionData })
+common.Step("Reregister Apps resumption data", common.reRegisterApps, { checkResumptionData })
 common.Step("Check subscription with OnInteriorVD " .. moduleType, common.onInteriorVD2Apps,
   { moduleType, expected, expected })
 
