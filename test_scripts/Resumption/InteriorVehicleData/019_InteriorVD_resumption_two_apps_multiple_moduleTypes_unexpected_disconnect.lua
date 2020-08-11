@@ -35,11 +35,11 @@ local isCashed = true
 --[[ Local Functions ]]
 local function checkResumptionData()
   local defaultModuleNumber = 1
-  local modulesNumber = 3
+  local modulesCount = 3
   local actualModules = { }
   local expectedModules = { }
 
-  for i = 1, modulesNumber do
+  for i = 1, modulesCount do
     expectedModules[i] = {
       moduleType = common.modules[i],
       moduleId = common.getModuleId(common.modules[i], defaultModuleNumber)
@@ -56,7 +56,7 @@ local function checkResumptionData()
       moduleType = data.params.moduleType,
       moduleId = data.params.moduleId
     }
-    if exp.occurences == modulesNumber then
+    if exp.occurences == modulesCount then
       if common.isTableEqual(actualModules, expectedModules) == false then
         local errorMessage = "Not all modules are resumed.\n" ..
           "Actual result:" .. common.tableToString(actualModules) .. "\n" ..
@@ -66,7 +66,7 @@ local function checkResumptionData()
     end
     return true
   end)
-  :Times(modulesNumber)
+  :Times(modulesCount)
   common.wait(1000)
 end
 
