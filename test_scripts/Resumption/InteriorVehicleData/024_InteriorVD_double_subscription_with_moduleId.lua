@@ -20,7 +20,6 @@
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')
 
 --[[ Local Variables ]]
-local moduleIdNumber = 2
 local notExpectNotif = 0
 local expectNotif = 1
 local isSubscribed = true
@@ -37,13 +36,13 @@ common.Step("App registration", common.registerAppWOPTU)
 common.Step("App activation", common.activateApp)
 for _, moduleType in pairs(common.modules)do
   common.Step("Subscription to " .. moduleType, common.GetInteriorVehicleData,
-    { moduleType, common.getModuleId(moduleType, moduleIdNumber), isSubscribed, isNotCached, expectNotif })
+    { moduleType, common.getModuleId(moduleType, 2), isSubscribed, isNotCached, expectNotif })
 end
 
 common.Title("Test")
 for _, moduleType in pairs(common.modules)do
   common.Step("Second subscription to " .. moduleType , common.GetInteriorVehicleData,
-    { moduleType, common.getModuleId(moduleType, moduleIdNumber), isSubscribed, isCached, notExpectNotif, appSessionId, resultCode })
+    { moduleType, common.getModuleId(moduleType, 2), isSubscribed, isCached, notExpectNotif, appSessionId, resultCode })
 end
 
 common.Title("Postconditions")
