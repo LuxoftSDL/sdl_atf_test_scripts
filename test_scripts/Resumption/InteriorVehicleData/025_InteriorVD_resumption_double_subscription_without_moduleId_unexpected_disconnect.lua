@@ -30,7 +30,7 @@ local isSubscribed = true
 local isCached = true
 local isNotCached = false
 local appSessionId = 1
-local resultCode = "WARNING"
+local resultCode = "WARNINGS"
 
 --[[ Local Functions ]]
 local function checkResumptionData()
@@ -85,7 +85,7 @@ common.Step("Re-register App resumption data", common.reRegisterApp,
 
 common.Title("Test")
 for _, moduleType in pairs(common.modules)do
-  common.Step("2nd subscription to " .. moduleType , common.GetInteriorVehicleData,
+  common.Step("Second subscription to " .. moduleType , common.GetInteriorVehicleData,
     { moduleType, withoutModuleId, isSubscribed, isCached, notExpectNotif, appSessionId, resultCode })
 end
 
