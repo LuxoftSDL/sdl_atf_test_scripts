@@ -33,8 +33,8 @@ local isCashed = true
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleId = 1
-  common.checkModuleResumptionData(moduleType, common.getModuleId(moduleType, defaultModuleId))
+  local defaultModuleNumber = 1
+  common.checkModuleResumptionData(moduleType, common.getModuleId(moduleType, defaultModuleNumber))
   common.wait(1000)
 end
 

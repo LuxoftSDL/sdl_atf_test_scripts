@@ -27,14 +27,14 @@ local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleId = 1
+  local defaultModuleNumber = 1
   local actualModules = { }
   local expectedModules = { }
 
   for key, moduleType in pairs(common.modules) do
     expectedModules[key] = {
       moduleType = moduleType,
-      moduleId = common.getModuleId(moduleType, defaultModuleId)
+      moduleId = common.getModuleId(moduleType, defaultModuleNumber)
     }
   end
 

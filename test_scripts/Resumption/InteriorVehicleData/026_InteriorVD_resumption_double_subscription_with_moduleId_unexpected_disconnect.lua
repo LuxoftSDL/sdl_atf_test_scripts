@@ -23,7 +23,7 @@
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')
 
 --[[ Local Variables ]]
-local moduleIdNumber = 2
+local testModuleNumber = 2
 local notExpectNotif = 0
 local expectNotif = 1
 local isSubscribed = true
@@ -41,7 +41,7 @@ local function checkResumptionData()
   for key, moduleType in pairs(common.modules) do
     expectedModules[key] = {
       moduleType = moduleType,
-      moduleId = common.getModuleId(moduleType, moduleIdNumber)
+      moduleId = common.getModuleId(moduleType, testModuleNumber)
     }
   end
 
@@ -76,7 +76,7 @@ common.Step("App registration", common.registerAppWOPTU)
 common.Step("App activation", common.activateApp)
 for _, moduleType in pairs(common.modules)do
   common.Step("Subscription to " .. moduleType, common.GetInteriorVehicleData,
-    { moduleType, common.getModuleId(moduleType, moduleIdNumber), isSubscribed, isNotCached, expectNotif })
+    { moduleType, common.getModuleId(moduleType, testModuleNumber), isSubscribed, isNotCached, expectNotif })
 end
 common.Step("Unexpected disconnect", common.mobileDisconnect)
 common.Step("Connect mobile", common.mobileConnect)
@@ -86,7 +86,7 @@ common.Step("Re-register App resumption data", common.reRegisterApp,
 common.Title("Test")
 for _, moduleType in pairs(common.modules)do
   common.Step("Second subscription to " .. moduleType , common.GetInteriorVehicleData,
-    { moduleType, moduleIdNumber, isSubscribed, isCached, notExpectNotif, appSessionId, resultCode })
+    { moduleType, testModuleNumber, isSubscribed, isCached, notExpectNotif, appSessionId, resultCode })
 end
 
 common.Title("Postconditions")
