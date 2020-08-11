@@ -34,7 +34,7 @@ local isCashed = true
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleId = 1
+  local defaultModuleNumber = 1
   local modulesNumber = 3
   local actualModules = { }
   local expectedModules = { }
@@ -42,7 +42,7 @@ local function checkResumptionData()
   for i = 1, modulesNumber do
     expectedModules[i] = {
       moduleType = common.modules[i],
-      moduleId = common.getModuleId(common.modules[i], defaultModuleId)
+      moduleId = common.getModuleId(common.modules[i], defaultModuleNumber)
     }
   end
 

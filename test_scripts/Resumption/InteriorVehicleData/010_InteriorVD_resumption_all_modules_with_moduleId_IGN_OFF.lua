@@ -22,7 +22,7 @@ local common = require('test_scripts/Resumption/InteriorVehicleData/commonResump
 
 --[[ Local Variables ]]
 local isSubscribed = true
-local moduleIdNumber = 2
+local testModuleNumber = 2
 local appSessionId = 1
 
 --[[ Local Functions ]]
@@ -33,7 +33,7 @@ local function checkResumptionData()
   for key, moduleType in pairs(common.modules) do
     expectedModules[key] = {
       moduleType = moduleType,
-      moduleId = common.getModuleId(moduleType, moduleIdNumber)
+      moduleId = common.getModuleId(moduleType, testModuleNumber)
     }
   end
 
@@ -68,7 +68,7 @@ common.Step("App registration", common.registerAppWOPTU)
 common.Step("App activation", common.activateApp)
 for _, moduleType in pairs(common.modules) do
   common.Step("Add interiorVD subscription for " .. moduleType, common.GetInteriorVehicleData,
-    { moduleType, common.getModuleId(moduleType, moduleIdNumber), isSubscribed })
+    { moduleType, common.getModuleId(moduleType, testModuleNumber), isSubscribed })
 end
 
 common.Title("Test")
@@ -78,7 +78,7 @@ common.Step("Re-register App resumption data", common.reRegisterApp,
   { appSessionId, checkResumptionData, common.resumptionFullHMILevel })
 for _, moduleType in pairs(common.modules) do
   common.Step("Check subscription with OnInteriorVD " .. moduleType, common.onInteriorVD,
-    { moduleType, common.getModuleId(moduleType, moduleIdNumber) })
+    { moduleType, common.getModuleId(moduleType, testModuleNumber) })
 end
 
 common.Title("Postconditions")
