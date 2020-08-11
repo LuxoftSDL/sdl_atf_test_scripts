@@ -31,7 +31,7 @@ local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local subscriptionsNumber  = 2
+  local subscriptionsCount  = 2
   local actualModules = { }
   local expectedModules = {
     { moduleType = moduleType, moduleId = moduleId1 }, { moduleType = moduleType, moduleId = moduleId2 } }
@@ -46,7 +46,7 @@ local function checkResumptionData()
       moduleType = data.params.moduleType,
       moduleId = data.params.moduleId
     }
-    if exp.occurences == subscriptionsNumber then
+    if exp.occurences == subscriptionsCount then
       if common.isTableEqual(actualModules, expectedModules) == false then
         local errorMessage = "Not all modules are resumed.\n" ..
           "Actual result:" .. common.tableToString(actualModules) .. "\n" ..
@@ -56,7 +56,7 @@ local function checkResumptionData()
     end
     return true
   end)
-  :Times(subscriptionsNumber)
+  :Times(subscriptionsCount)
 end
 
 --[[ Scenario ]]
