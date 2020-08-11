@@ -21,7 +21,7 @@
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')
 
 --[[ Local Variables ]]
-local moduleIdNumber = 2
+local testModuleNumber = 2
 local notExpectNotif = 0
 local isNotSubscribed = false
 local isNotCached = false
@@ -36,7 +36,7 @@ common.Step("App activation", common.activateApp)
 common.Title("Test")
 for _, moduleName in pairs(common.modules)do
   common.Step("Absence OnHashChange after GetInteriorVD(subscribe=false) to " .. moduleName, common.GetInteriorVehicleData,
-    { moduleName, common.getModuleId(moduleName, moduleIdNumber), isNotSubscribed, isNotCached, notExpectNotif })
+    { moduleName, common.getModuleId(moduleName, testModuleNumber), isNotSubscribed, isNotCached, notExpectNotif })
 end
 
 common.Title("Postconditions")

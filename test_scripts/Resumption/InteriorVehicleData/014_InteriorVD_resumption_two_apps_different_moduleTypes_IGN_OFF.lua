@@ -33,17 +33,17 @@ local notExpected = 0
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleId = 1
+  local defaultModuleNumber = 1
   common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData",
     {
       moduleType = moduleTypeForApp1,
       subscribe = true,
-      moduleId = common.getModuleId(moduleTypeForApp1, defaultModuleId)
+      moduleId = common.getModuleId(moduleTypeForApp1, defaultModuleNumber)
     },
     {
       moduleType = moduleTypeForApp2,
       subscribe = true,
-      moduleId = common.getModuleId(moduleTypeForApp2, defaultModuleId)
+      moduleId = common.getModuleId(moduleTypeForApp2, defaultModuleNumber)
     })
   :Do(function(_, data)
       common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",{

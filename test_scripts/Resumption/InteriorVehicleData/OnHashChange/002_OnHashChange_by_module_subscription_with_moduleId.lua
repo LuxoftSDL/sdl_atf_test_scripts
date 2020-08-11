@@ -20,7 +20,7 @@
 local common = require('test_scripts/Resumption/InteriorVehicleData/commonResumptionsInteriorVD')
 
 --[[ Local Variables ]]
-local moduleIdNumber = 2
+local testModuleNumber = 2
 local expectNotif = 1
 local isSubscribed = true
 local isNotCached = false
@@ -35,7 +35,7 @@ common.Step("App activation", common.activateApp)
 common.Title("Test")
 for _, moduleName in pairs(common.modules)do
   common.Step("OnHashChange after adding subscription to " .. moduleName, common.GetInteriorVehicleData,
-    { moduleName, common.getModuleId(moduleName, moduleIdNumber), isSubscribed, isNotCached, expectNotif })
+    { moduleName, common.getModuleId(moduleName, testModuleNumber), isSubscribed, isNotCached, expectNotif })
 end
 
 common.Title("Postconditions")
