@@ -67,14 +67,21 @@ local function setSubscriptionModuleStatus(pModuleType, pModuleId, isSubscribed)
     moduleId = pModuleId
   }
 
-  if m.isTableContains(modulesWithSubscription, newValue) == true and isSubscribed == false then
-    for key, value in pairs(modulesWithSubscription) do
-      if m.isTableEqual(value, newValue) then
-        table.remove(modulesWithSubscription, key)
-      end
-    end
-  elseif m.isTableContains(modulesWithSubscription, newValue) == false and isSubscribed == true then
+  if #modulesWithSubscription == 0 and isSubscribed == true then
     table.insert(modulesWithSubscription, newValue)
+    return
+  end
+
+  for key, value in pairs(modulesWithSubscription) do
+    if m.isTableEqual(value, newValue) and isSubscribed == false then
+      table.remove(modulesWithSubscription, key)
+      return
+    elseif m.isTableEqual(value, newValue) and isSubscribed == true then
+      return
+    elseif key == #modulesWithSubscription and isSubscribed == true then
+      table.insert(modulesWithSubscription, newValue)
+      return
+    end
   end
 end
 
@@ -224,7 +231,6 @@ end
 
 function m.mobileDisconnect()
   local actualModules = { }
-  print_table(modulesWithSubscription)
   m.getHMIConnection():ExpectRequest(rc.rpc.getHMIEventName("GetInteriorVehicleData", { subscribe = false }))
   :Do(function(exp,data)
       actualModules[exp.occurences] = {
