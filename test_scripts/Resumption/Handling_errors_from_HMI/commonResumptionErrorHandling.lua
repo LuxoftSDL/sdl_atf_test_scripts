@@ -151,7 +151,7 @@ end
 --! pInterface - name of RPC interface for reseting
 --! @return: RPC with interface
 --]]
-local function getGlobalPropertiesResetData(pAppId, pInterface)
+function m.getGlobalPropertiesResetData(pAppId, pInterface)
   local resetData = {}
   resetData.appID = m.getHMIAppId(pAppId)
   if pInterface == "TTS" then
@@ -420,7 +420,7 @@ m.rpcsRevert = {
                 "Expected result:" .. m.tableToString(m.resumptionData[pAppId].setGlobalProperties.TTS) .."\n"
               end
             else
-              local resetData = getGlobalPropertiesResetData(pAppId, "TTS")
+              local resetData = m.getGlobalPropertiesResetData(pAppId, "TTS")
               if utils.isTableEqual(data.params, resetData) == true then
                 return true
               else
@@ -448,7 +448,7 @@ m.rpcsRevert = {
                 "Expected result:" .. m.tableToString(m.resumptionData[pAppId].setGlobalProperties.UI) .."\n"
               end
             else
-              local resetData = getGlobalPropertiesResetData(pAppId, "UI")
+              local resetData = m.getGlobalPropertiesResetData(pAppId, "UI")
               if utils.isTableEqual(data.params, resetData) == true then
                 return true
               else
@@ -934,10 +934,10 @@ function m.setGlobalPropertiesResumption(pAppId, pErrorResponseInterface)
   local restoreData = {}
   if pErrorResponseInterface == "TTS" then
     timesUI  = 2
-    restoreData = getGlobalPropertiesResetData(pAppId, "UI")
+    restoreData = m.getGlobalPropertiesResetData(pAppId, "UI")
   elseif pErrorResponseInterface == "UI" then
     timesTTS = 2
-    restoreData = getGlobalPropertiesResetData(pAppId, "TTS")
+    restoreData = m.getGlobalPropertiesResetData(pAppId, "TTS")
   end
   m.getHMIConnection():ExpectRequest("UI.SetGlobalProperties",
     m.resumptionData[pAppId].setGlobalProperties.UI,
@@ -1088,7 +1088,7 @@ end
 --! @return: none
 --]]
 function m.openRPCservice(pAppId)
-  m.getMobileSession(pAppId):StartService(7)
+  return m.getMobileSession(pAppId):StartService(7)
 end
 
 --[[ @registerAppCustom: re-register app
