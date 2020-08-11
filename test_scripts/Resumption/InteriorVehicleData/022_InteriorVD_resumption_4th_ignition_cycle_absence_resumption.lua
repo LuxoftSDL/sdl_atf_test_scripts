@@ -9,12 +9,10 @@
 -- 3. App is subscribed to module_1 via GetInteriorVehicleData(module_1)
 --
 -- Sequence:
--- 1. IGN_OFF and IGN_ON are performed
--- 2. IGN_OFF and IGN_ON are performed
--- 3. IGN_OFF and IGN_ON are performed
--- 4. App starts registration with actual hashId after IGN_ON in 4th ignition cycle
+-- 1. Three IGN_OFF and IGN_ON cycles are performed
+-- 2. App starts registration with actual hashId after IGN_ON in 4th ignition cycle
 -- SDL does:
--- - a. not resume persistent data - not send RC.GetInteriorVD(subscribe=true, module_1)
+-- - a. not resume persistent data - not send RC.GetInteriorVehicleData(subscribe=true, module_1) request to HMI
 -- - b. respond RAI(RESUME_FAILED) to mobile app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
@@ -55,7 +53,7 @@ common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterApp,
   { appSessionId, checkResumptionData, absenceHMIlevelResumption, "RESUME_FAILED" })
-common.Step("Check subscription with OnInteriorVD", common.onInteriorVD, { moduleType, default, isUnsubscribed})
+common.Step("Check subscription with OnInteriorVD", common.onInteriorVD, { moduleType, default, isUnsubscribed })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

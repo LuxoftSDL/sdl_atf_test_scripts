@@ -14,8 +14,8 @@
 -- 1. IGN_OFF and IGN_ON are performed
 -- 2. Apps start registration with actual hashIds after SDL restart
 -- SDL does:
--- - a. send RC.GetInteriorVD(module_1, moduleId_1) and RC.GetInteriorVD(module_1, moduleId_2)
---   to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(module_1, moduleId_1) and RC.GetInteriorVehicleData(module_1, moduleId_2)
+--    to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to both mobile apps
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
@@ -64,15 +64,14 @@ common.Step("App2 activation", common.activateApp, { appSessionId2 })
 common.Step("App1 interiorVD subscription for " .. moduleType .. " " .. moduleId1,
   common.GetInteriorVehicleData, { moduleType, moduleId1, isSubscribe, default, default, appSessionId1 })
 common.Step("App2 interiorVD subscription for " .. moduleType .. " " .. moduleId2,
-  common.GetInteriorVehicleData, { moduleType, moduleId2, isSubscribe, default, default, appSessionId2  })
+  common.GetInteriorVehicleData, { moduleType, moduleId2, isSubscribe, default, default, appSessionId2 })
 
 common.Title("Test")
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Open service for app1", common.sessionCreationOpenRPCservice, { appSessionId1 })
 common.Step("Open service for app2", common.sessionCreationOpenRPCservice, { appSessionId2 })
-common.Step("Reregister Apps resumption data", common.reRegisterApps,
-  { checkResumptionData })
+common.Step("Reregister Apps resumption data", common.reRegisterApps, { checkResumptionData })
 common.Step("Check subscription with OnInteriorVD " .. moduleType .. " " .. moduleId1, common.onInteriorVD2Apps,
   { moduleType, expected, notExpected, moduleId1 })
 common.Step("Check subscription with OnInteriorVD " .. moduleType .. " " .. moduleId2, common.onInteriorVD2Apps,

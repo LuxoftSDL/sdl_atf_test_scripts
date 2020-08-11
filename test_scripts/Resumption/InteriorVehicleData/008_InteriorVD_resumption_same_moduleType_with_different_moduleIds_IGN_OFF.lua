@@ -14,8 +14,8 @@
 -- 1. IGN_OFF and IGN_ON are performed
 -- 2. App starts registration with actual hashId after SDL restart
 -- SDL does:
--- - a. send RC.GetInteriorVD(subscribe=true, module_1, moduleId_1) and
---     RC.GetInteriorVD(subscribe=true, module_1, moduleId_2) to HMI during resumption data
+-- - a. send RC.GetInteriorVehicleData(subscribe=true, module_1, moduleId_1) and
+--    RC.GetInteriorVehicleData(subscribe=true, module_1, moduleId_2) to HMI during resumption data
 -- - b. respond RAI(SUCCESS) to mobile app
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
