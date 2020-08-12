@@ -106,8 +106,11 @@ function  m.GetInteriorVehicleData(pModuleType, pModuleId, isSubscribe, pIsIVDat
     end)
 
   local resultCode = pResultCode or "SUCCESS"
-  m.getMobileSession(pAppId):ExpectResponse(cid,
-    rc.rpc.getAppResponseParams(rpc, true, resultCode, pModuleType, moduleId, isSubscribe))
+  local responseParams = rc.rpc.getAppResponseParams(rpc, true, resultCode, pModuleType, moduleId, isSubscribe)
+  if pResultCode == "WARNINGS" then
+    responseParams["info"] = "App is already subscribed to the provided module"
+  end
+  m.getMobileSession(pAppId):ExpectResponse(cid, responseParams)
   :Do(function()
       setSubscriptionModuleStatus(pModuleType, moduleId, isSubscribe)
     end)

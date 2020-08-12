@@ -31,7 +31,6 @@ local isCached = true
 local isNotCached = false
 local appSessionId = 1
 
-
 --[[ Local Functions ]]
 local function checkResumptionData()
   local actualModules = { }
