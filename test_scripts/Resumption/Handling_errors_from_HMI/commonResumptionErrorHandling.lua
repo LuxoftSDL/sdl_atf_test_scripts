@@ -115,6 +115,42 @@ local function getSuccessHMIResponseData(pData)
   return out
 end
 
+--[[ @isResponseErroneous: define RPC for sending error response
+--! @parameters:
+--! pData - data from received request
+--! pErrorRpc - RPC name for error response
+--! pErrorInterface - interface of RPC for error response
+--! @return: status of error response
+--]]
+local function isResponseErroneous(pData, pErrorRpc, pErrorInterface)
+  local rpc = m.getRpcName(pErrorRpc, pErrorInterface)
+  if pErrorRpc == "createIntrerationChoiceSet" then rpc = "VR.AddCommand" end
+  if rpc == pData.method then
+    if rpc ~= "VR.AddCommand" and pErrorRpc ~= "setGlobalProperties" then
+      return true
+    elseif pErrorRpc == "createIntrerationChoiceSet" and pData.params.type == "Choice" then
+      return true
+    elseif pErrorRpc == "addCommand" and pData.params.type == "Command" then
+      return true
+    elseif pErrorRpc == "setGlobalProperties" then
+      local helpPromptText = "Help prompt1"
+      local vrHelpTitle ="VR help title1"
+      if pData.method == "TTS.SetGlobalProperties" then
+        if pErrorInterface == "TTS" and pData.params.helpPrompt[1].text == helpPromptText then
+          return true
+        end
+      else
+        if pErrorInterface == "UI" and pData.params.vrHelpTitle == vrHelpTitle then
+          return true
+        end
+      end
+    end
+  end
+  return false
+end
+
+--[[ Common Functions ]]
+
 --[[ @expOnHMIStatus: check OnHMIStatus notification
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
@@ -176,42 +212,6 @@ function m.getGlobalPropertiesResetData(pAppId, pInterface)
   end
   return resetData
 end
-
---[[ @ isResponseErroneous: define RPC for sending error response
---! @parameters:
---! pData - data from received request
---! pErrorRpc - RPC name for error response
---! pErrorInterface - interface of RPC for error response
---! @return: status of error response
---]]
-local function isResponseErroneous(pData, pErrorRpc, pErrorInterface)
-  local rpc = m.getRpcName(pErrorRpc, pErrorInterface)
-  if pErrorRpc == "createIntrerationChoiceSet" then rpc = "VR.AddCommand" end
-  if rpc == pData.method then
-    if rpc ~= "VR.AddCommand" and pErrorRpc ~= "setGlobalProperties" then
-      return true
-    elseif pErrorRpc == "createIntrerationChoiceSet" and pData.params.type == "Choice" then
-      return true
-    elseif pErrorRpc == "addCommand" and pData.params.type == "Command" then
-      return true
-    elseif pErrorRpc == "setGlobalProperties" then
-      local helpPromptText = "Help prompt1"
-      local vrHelpTitle ="VR help title1"
-      if pData.method == "TTS.SetGlobalProperties" then
-        if pErrorInterface == "TTS" and pData.params.helpPrompt[1].text == helpPromptText then
-          return true
-        end
-      else
-        if pErrorInterface == "UI" and pData.params.vrHelpTitle == vrHelpTitle then
-          return true
-        end
-      end
-    end
-  end
-  return false
-end
-
---[[ Common Functions ]]
 
 --[[ @waitUntilResumptionDataIsStored: wait some time until SDL saves resumption data
 --! @parameters: none
@@ -507,7 +507,7 @@ m.rpcsRevert = {
   }
 }
 
---[[ @checkResumptionDataWithErrorResponse: check resumption data for with error response to defined rpc and
+--[[ @checkResumptionDataWithErrorResponse: check resumption data with error response to defined rpc and
 --! checking reverting already added data
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
@@ -590,7 +590,7 @@ end
 --! pCheckResumptionHMILevel - verification function for resumption HMI level
 --! pErrorResponseRpc - RPC name for error response
 --! pErrorResponseInterface - interface of RPC for error response
---! pRAIResponseExp - time for expectation of RAI response
+--! pTimeout - time for expectation of RAI response and OnHMIStatus notifications
 --! @return: none
 --]]
 function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel, pErrorResponseRpc, pErrorResponseInterface, pTimeout)
@@ -890,7 +890,7 @@ function m.addCommandResumption(pAppId, pErrorResponseInterface)
   :Do(function(_, data)
       m.sendResponse(data, pErrorResponseInterface, "VR")
     end)
-  m.getHMIConnection():ExpectRequest("UI.AddCommand",m.resumptionData[pAppId].addCommand.UI)
+  m.getHMIConnection():ExpectRequest("UI.AddCommand", m.resumptionData[pAppId].addCommand.UI)
   :Do(function(_, data)
       m.sendResponse(data, pErrorResponseInterface, "UI")
     end)
@@ -903,7 +903,7 @@ end
 --! @return: none
 --]]
 function m.addSubMenuResumption(pAppId, pErrorResponseInterface)
-  m.getHMIConnection():ExpectRequest("UI.AddSubMenu",m.resumptionData[pAppId].addSubMenu.UI)
+  m.getHMIConnection():ExpectRequest("UI.AddSubMenu", m.resumptionData[pAppId].addSubMenu.UI)
   :Do(function(_, data)
       m.sendResponse(data, pErrorResponseInterface, "UI")
     end)

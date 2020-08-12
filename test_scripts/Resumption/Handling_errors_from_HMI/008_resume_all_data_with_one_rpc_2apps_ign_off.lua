@@ -3,8 +3,10 @@
 --
 -- Description:
 -- In case:
--- 1. AddCommand_1, AddSubMenu_1, CreateInteractionChoiceSet_1, SetGlobalProperties_1, SubscribeButton_1, SubscribeVehicleData_1, SubscribeWayPoints_1 are added by app1
--- 2. AddCommand_2, AddSubMenu_2, CreateInteractionChoiceSet_2, SetGlobalProperties_2, SubscribeButton_2, SubscribeVehicleData_2, SubscribeWayPoints_2 are added by app2
+-- 1. AddCommand_1, AddSubMenu_1, CreateInteractionChoiceSet_1, SetGlobalProperties_1, SubscribeButton_1,
+--  SubscribeVehicleData_1, SubscribeWayPoints_1, CreateWindow_1 are added by app1
+-- 2. AddCommand_2, AddSubMenu_2, CreateInteractionChoiceSet_2, SetGlobalProperties_2, SubscribeButton_2,
+--  SubscribeVehicleData_2, SubscribeWayPoints_2, CreateWindow_2 are added by app2
 -- 3. IGN_OFF and IGN_ON are performed
 -- 4. App1 and app2 reregister with actual HashId
 -- 5. Rpc_n related to app1 is sent from SDL to HMI during resumption
@@ -14,7 +16,8 @@
 -- 1. process unsuccess response from HMI
 -- 2. remove already restored data from app1
 -- 3. respond RegisterAppInterfaceResponse(success=true,result_code=RESUME_FAILED) to mobile application app1
--- 4. restore all data for app2 and respond RegisterAppInterfaceResponse(success=true,result_code=SUCCESS)to mobile application app2
+-- 4. restore all data for app2 and respond RegisterAppInterfaceResponse(success=true,result_code=SUCCESS)
+--  to mobile application app2
 ---------------------------------------------------------------------------------------------------
 
 --[[ Required Shared libraries ]]

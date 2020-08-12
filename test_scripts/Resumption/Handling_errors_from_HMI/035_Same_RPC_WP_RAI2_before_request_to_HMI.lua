@@ -11,7 +11,7 @@
 -- 5. HMI responds with error resultCode
 -- 6. SDL doesn't send revert <RPC> request to HMI
 -- 7. SDL doesn't restore subscription to <RPC> and responds RAI_Response(success=true,resultCode=RESUME_FAILED) to App1
--- 8. SDL continue resumption for App2:
+-- 8. SDL continues resumption for App2:
 --    <RPC> related to App2 is sent from SDL to HMI
 -- 9. HMI responds with success
 -- 10. SDL restores subscription for App2 and responds RAI_Response(success=true,resultCode=SUCCESS) to App2
