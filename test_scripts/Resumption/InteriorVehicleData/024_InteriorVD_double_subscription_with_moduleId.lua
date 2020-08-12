@@ -26,7 +26,6 @@ local isSubscribed = true
 local isCached = true
 local isNotCached = false
 local appSessionId = 1
-local resultCode = "WARNINGS"
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -42,7 +41,7 @@ end
 common.Title("Test")
 for _, moduleType in pairs(common.modules)do
   common.Step("Second subscription to " .. moduleType , common.GetInteriorVehicleData,
-    { moduleType, common.getModuleId(moduleType, 2), isSubscribed, isCached, notExpectNotif, appSessionId, resultCode })
+    { moduleType, common.getModuleId(moduleType, 2), isSubscribed, isCached, notExpectNotif, appSessionId, "WARNINGS" })
 end
 
 common.Title("Postconditions")
