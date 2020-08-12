@@ -10,7 +10,7 @@
 -- 3. App is subscribed to the module_1
 --
 -- Sequence:
--- 1. GetInteriorVD(subscribe = true, module_1, moduleId) is requested
+-- 1. GetInteriorVehicleData(subscribe = true, module_1, moduleId) is requested
 -- SDL does:
 -- - a. not send RC.GetInteriorVehicleData request to HMI
 -- - b. send GetInteriorVehicleData ("WARNINGS") response to mobile App

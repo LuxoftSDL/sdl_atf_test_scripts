@@ -2,7 +2,7 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0188-get-interior-data-resumption.md
 --
 -- Description: Successful resuming of interior vehicle data after transport disconnect
---  in case app was subscribed on all default modules (without moduleId)
+--  in case app was subscribed to all default modules (without moduleId)
 --
 -- Precondition:
 -- 1. HMI and SDL are started

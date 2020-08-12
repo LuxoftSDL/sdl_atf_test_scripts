@@ -14,7 +14,7 @@
 -- 2. App starts registration with actual hashId after SDL restart
 -- SDL does:
 -- - a. send RC.GetInteriorVehicleData(subscribe=true, moduleType,moduleId) to HMI
---    during resumption data for each previously subscribed on module
+--    during resumption data for each previously subscribed module
 -- - b. respond RAI(SUCCESS) to mobile app
 -- - c. update hashId after successful resumption
 ---------------------------------------------------------------------------------------------------
