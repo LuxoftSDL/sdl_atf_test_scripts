@@ -204,6 +204,7 @@ function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel,
         end)
       mobSession:ExpectResponse(corId, { success = true, resultCode = pResultCode })
     end)
+  m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   pCheckResumptionData()
   pCheckResumptionHMILevel(pAppId)
 end
@@ -320,6 +321,9 @@ function m.reRegisterApps(pCheckResumptionData, pResultCode1stApp, pResultCode2n
 
   local corId1 = m.getMobileSession(1):SendRPC("RegisterAppInterface", requestParams1)
   m.getMobileSession(1):ExpectResponse(corId1, { success = true, resultCode = pResultCode1stApp })
+
+  m.getMobileSession(1):ExpectNotification("OnHashChange")
+  m.getMobileSession(2):ExpectNotification("OnHashChange")
 
   m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(2) })
   :Do(function(_, data)
