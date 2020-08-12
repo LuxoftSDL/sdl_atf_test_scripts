@@ -27,8 +27,8 @@ local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleId = 1
-  common.checkModuleResumptionData(moduleType, common.getModuleId(moduleType, defaultModuleId))
+  local defaultModuleNumber = 1
+  common.checkModuleResumptionData(moduleType, common.getModuleId(moduleType, defaultModuleNumber))
 end
 
 --[[ Scenario ]]
