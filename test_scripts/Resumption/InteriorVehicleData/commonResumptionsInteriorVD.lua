@@ -208,6 +208,7 @@ function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel,
       mobSession:ExpectResponse(corId, { success = true, resultCode = pResultCode })
     end)
   m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
+  :Times(pResultCode == "SUCCESS" and 1 or 0)
   pCheckResumptionData()
   pCheckResumptionHMILevel(pAppId)
 end
