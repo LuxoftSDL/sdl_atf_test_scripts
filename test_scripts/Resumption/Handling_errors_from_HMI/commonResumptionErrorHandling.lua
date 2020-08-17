@@ -1575,11 +1575,22 @@ function m.checkSubscriptions(pIsExp, pAppId)
   m.isSubscribed(pIsExp)
 end
 
+--[[ @isRevertRpc: checks - is the RC.GetInteriorVehicleData request for reverting or not
+--! @parameters:
+--! pData - data received in request
+--! @return: result - is revert request or not
+--]]
+local function isRevertRpc(pData)
+  if pData.method == "RC.GetInteriorVehicleData" then
+    return not pData.params.subscribe
+  end
+end
+
 --[[ @reRegisterAppsCustom_SameRPC: re-register 2 apps and check data resumption
 -- in case erroneous response is sent by HMI to the same RPC
 --! @parameters:
 --! pTimeToRegApp2 - option defines when 2nd app will be re-registered, see 'm.timeToRegApp2' enum
---! pRPC - name of other RPC: either 'subscribeVehicleData' or 'subscribeWayPoints'
+--! pRPC - name of other RPC: 'subscribeVehicleData' or 'subscribeWayPoints' or "getInteriorVehicleData"
 --! @return: none
 --]]
 function m.reRegisterAppsCustom_SameRPC(pTimeToRegApp2, pRPC)
@@ -1609,7 +1620,7 @@ function m.reRegisterAppsCustom_SameRPC(pTimeToRegApp2, pRPC)
           m.errorResponse(data, 0)
           m.reRegisterAppCustom(2, "SUCCESS", 300):Do(function() isRAIResponseSent[2] = true end)
         else
-          m.errorResponse(data, 300)
+          m.errorResponse(data, 0)
         end
       else
         m.log(data.method .. ": SUCCESS")
@@ -1628,11 +1639,21 @@ function m.reRegisterAppsCustom_SameRPC(pTimeToRegApp2, pRPC)
       end
       return true
     end)
+  :ValidIf(function(_, data)
+      if revert_rpc == rpc then
+        if isRevertRpc(data) then
+          return false, "Received revert RPC on HMI for " .. rpc .. " RPC"
+        end
+      end
+      return true
+    end)
   :Times(2)
 
-  m.getHMIConnection():ExpectRequest(iface .. "." .. revert_rpc)
-  :Do(function(_, data) m.log(data.method) end)
-  :Times(0)
+  if rpc ~= revert_rpc then
+    m.getHMIConnection():ExpectRequest(iface .. "." .. revert_rpc)
+    :Do(function(_, data) m.log(data.method) end)
+    :Times(0)
+  end
 
   m.expOnHMIStatus(1, "LIMITED")
   m.expOnHMIStatus(2, "FULL")
@@ -1647,7 +1668,7 @@ end
 -- in case erroneous response is sent by HMI to another RPC
 --! @parameters:
 --! pTimeToRegApp2 - option defines when 2nd app will be re-registered, see 'm.timeToRegApp2' enum
---! pRPC - name of other RPC: either 'subscribeVehicleData' or 'subscribeWayPoints'
+--! pRPC - name of other RPC: 'subscribeVehicleData' or 'subscribeWayPoints' or "getInteriorVehicleData"
 --! @return: none
 --]]
 function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
@@ -1673,7 +1694,7 @@ function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
         m.errorResponse(data, 0)
         m.reRegisterAppCustom(2, "SUCCESS", 300):Do(function() isRAIResponseSent[2] = true end)
       else
-        m.errorResponse(data, 300)
+        m.errorResponse(data, 0)
       end
     end)
 
@@ -1683,8 +1704,12 @@ function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
   local numOfRequests = 1
   local numOfRevertRequests = 0
   if pTimeToRegApp2 == m.timeToRegApp2.AFTER_ERRONEOUS_RESPONSE then
-    numOfRequests = 2
-    numOfRevertRequests = 1
+    if rpc ~= revert_rpc then
+      numOfRequests = 2
+      numOfRevertRequests = 1
+    else
+      numOfRequests = 3
+    end
   end
   m.getHMIConnection():ExpectRequest(iface .. "." .. rpc)
   :Do(function(_, data)
@@ -1704,15 +1729,27 @@ function m.reRegisterAppsCustom_AnotherRPC(pTimeToRegApp2, pRPC)
       end
       return true
     end)
+    :ValidIf(function(exp, data)
+      if revert_rpc == rpc then
+        if isRevertRpc(data) and exp.occurences ~= 3 then
+          return false, "Revert RPC on HMI for " .. rpc .. " RPC is received earlier than expected"
+        elseif not isRevertRpc(data) and exp.occurences == 3 then
+          return false, "Revert RPC on HMI for " .. rpc .. " RPC is not received"
+        end
+      end
+      return true
+    end)
   :Times(numOfRequests)
 
-  m.getHMIConnection():ExpectRequest(iface .. "." .. revert_rpc)
-  :Do(function(_, data)
-      m.log(data.method)
-      m.log(data.method .. ": SUCCESS")
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSuccessHMIResponseData(data))
-    end)
-  :Times(numOfRevertRequests)
+  if rpc ~= revert_rpc then
+    m.getHMIConnection():ExpectRequest(iface .. "." .. revert_rpc)
+    :Do(function(_, data)
+        m.log(data.method)
+        m.log(data.method .. ": SUCCESS")
+        m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSuccessHMIResponseData(data))
+      end)
+    :Times(numOfRevertRequests)
+  end
 
   m.expOnHMIStatus(1, "LIMITED")
   m.expOnHMIStatus(2, "FULL")
@@ -1742,6 +1779,38 @@ function m.isSubscribed(pIsExpApp1, pIsExpApp2, pModuleType, pModuleId)
     local params = m.getActualModuleIVData(pModuleType, pModuleId)
     m.getMobileSession(2):ExpectNotification("OnInteriorVehicleData", { moduleData = params }):Times(occurences2)
   end
+end
+
+--[[ @geInteriorVDvalue: get value for interior vehicle data with moduleType, moduleId, subscribe parameters
+--! @parameters:
+--! pModuleType - module type value to define in structure
+--! pSubscribe - subscribe value to define in structure
+--! pModuleId - module id value to define in structure
+--! @return: built structure
+--]]
+function m.geInteriorVDvalue(pModuleType, pSubscribe, pModuleId)
+  pModuleId = pModuleId or m.getModuleControlData(pModuleType, 1).moduleId
+  return { moduleType = pModuleType, moduleId = pModuleId, subscribe = pSubscribe }
+end
+
+--[[ @interiorVDvalidation: validation function for GetInteriorVehicleData request
+--! @parameters:
+--! pOccurences - actual occurrence of GetInteriorVehicleData requests
+--! pExpectedNumber - expected number of GetInteriorVehicleData requests
+--! pActualData - actual data to compare
+--! pExpectedData - expected data to compare
+--! @return: validation result
+--]]
+function m.interiorVDvalidation(pOccurences, pExpectedNumber, pActualData, pExpectedData)
+  if pOccurences == pExpectedNumber then
+    if m.isTableEqual(pExpectedData, pActualData) == false then
+      local errorMessage = "Wrong expected requests are received\n" ..
+      "Actual result:" .. m.tableToString(pActualData) .. "\n" ..
+      "Expected result:" .. m.tableToString(pExpectedData) .."\n"
+    return false, errorMessage
+    end
+  end
+  return true
 end
 
 return m
