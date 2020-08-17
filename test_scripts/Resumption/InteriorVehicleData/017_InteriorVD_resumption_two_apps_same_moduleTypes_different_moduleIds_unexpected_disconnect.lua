@@ -35,22 +35,13 @@ local notExpected = 0
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData",
-    {
-      moduleType = moduleType,
-      subscribe = true,
-      moduleId = moduleId1
-    },
-    {
-      moduleType = moduleType,
-      subscribe = true,
-      moduleId = moduleId2
-    })
-  :Do(function(_, data)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
-        moduleData = common.getActualModuleIVData(data.params.moduleType, data.params.moduleId), isSubscribed = true })
-    end)
-  :Times(2)
+  local modulesCount = 2
+  local expectedModules = {
+    { moduleType = moduleType, subscribe = true, moduleId = moduleId1 },
+    { moduleType = moduleType, subscribe = true, moduleId = moduleId2 }
+  }
+
+  common.checkResumptionData(modulesCount, expectedModules, true)
 end
 
 --[[ Scenario ]]

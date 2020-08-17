@@ -28,7 +28,15 @@ local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  common.checkModuleResumptionData(moduleType, moduleId)
+  local modulesCount = 1
+  local expectedModules = {
+    {
+      moduleType = moduleType,
+      subscribe = true,
+      moduleId = moduleId
+    }
+  }
+  common.checkResumptionData(modulesCount, expectedModules, true)
 end
 
 --[[ Scenario ]]

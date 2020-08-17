@@ -35,39 +35,9 @@ local isCashed = true
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleNumber = 1
   local modulesCount = 3
-  local actualModules = { }
-  local expectedModules = { }
-
-  for i = 1, modulesCount do
-    expectedModules[i] = {
-      moduleType = common.modules[i],
-      moduleId = common.getModuleId(common.modules[i], defaultModuleNumber)
-    }
-  end
-
-  common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData")
-  :Do(function(_, data)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
-        moduleData = common.getActualModuleIVData(data.params.moduleType, data.params.moduleId), isSubscribed = true })
-    end)
-  :ValidIf(function(exp, data)
-    actualModules[exp.occurences] = {
-      moduleType = data.params.moduleType,
-      moduleId = data.params.moduleId
-    }
-    if exp.occurences == modulesCount then
-      if common.isTableEqual(actualModules, expectedModules) == false then
-        local errorMessage = "Not all modules are resumed.\n" ..
-          "Actual result:" .. common.tableToString(actualModules) .. "\n" ..
-          "Expected result:" .. common.tableToString(expectedModules) .."\n"
-        return false, errorMessage
-      end
-    end
-    return true
-  end)
-  :Times(modulesCount)
+  local expectedModules = common.getExpectedDataSomeModules(modulesCount)
+  common.checkResumptionData(modulesCount, expectedModules, true)
   common.wait(1000)
 end
 

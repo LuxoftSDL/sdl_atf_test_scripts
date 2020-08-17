@@ -34,7 +34,15 @@ local isCashed = true
 --[[ Local Functions ]]
 local function checkResumptionData()
   local defaultModuleNumber = 1
-  common.checkModuleResumptionData(moduleType, common.getModuleId(moduleType, defaultModuleNumber))
+  local modulesCount = 1
+  local expectedModules = {
+    {
+      moduleType = moduleType,
+      subscribe = true,
+      moduleId = common.getModuleId(moduleType, defaultModuleNumber)
+    }
+  }
+  common.checkResumptionData(modulesCount, expectedModules, true)
   common.wait(1000)
 end
 
