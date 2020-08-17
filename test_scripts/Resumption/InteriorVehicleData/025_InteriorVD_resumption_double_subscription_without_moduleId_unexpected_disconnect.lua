@@ -33,38 +33,8 @@ local appSessionId = 1
 
 --[[ Local Functions ]]
 local function checkResumptionData()
-  local defaultModuleNumber = 1
-  local actualModules = { }
-  local expectedModules = { }
-
-  for key, moduleType in pairs(common.modules) do
-    expectedModules[key] = {
-      moduleType = moduleType,
-      moduleId = common.getModuleId(moduleType, defaultModuleNumber)
-    }
-  end
-
-  common.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData")
-  :Do(function(_, data)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
-        moduleData = common.getActualModuleIVData(data.params.moduleType, data.params.moduleId), isSubscribed = true })
-    end)
-  :ValidIf(function(exp, data)
-    actualModules[exp.occurences] = {
-      moduleType = data.params.moduleType,
-      moduleId = data.params.moduleId
-    }
-    if exp.occurences == #common.modules then
-      if common.isTableEqual(actualModules, expectedModules) == false then
-        local errorMessage = "Not all modules are resumed.\n" ..
-          "Actual result:" .. common.tableToString(actualModules) .. "\n" ..
-          "Expected result:" .. common.tableToString(expectedModules) .."\n"
-        return false, errorMessage
-      end
-    end
-    return true
-  end)
-  :Times(#common.modules)
+  local expectedModules = common.getExpectedDataAllModules()
+  common.checkResumptionData(#common.modules, expectedModules, true)
 end
 
 --[[ Scenario ]]

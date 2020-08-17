@@ -190,6 +190,54 @@ function m.preconditions(isPreloadedUpdate, pCountOfRCApps)
   end
 end
 
+function m.getExpectedDataAllModules(pTestModuleNumber)
+  return m.getExpectedDataSomeModules(#m.modules, pTestModuleNumber)
+end
+
+function m.getExpectedDataSomeModules(pModulesCount, pTestModuleNumber)
+  if not pTestModuleNumber then pTestModuleNumber = 1 end
+  local expectedModules = { }
+
+  for i = 1, pModulesCount do
+    expectedModules[i] = {
+      moduleType = m.modules[i],
+      moduleId = m.getModuleId(m.modules[i], pTestModuleNumber),
+      subscribe = true
+    }
+  end
+
+  return expectedModules
+end
+
+function m.checkResumptionData(pRequestsCount, pExpectedModules, pIsSubscribed)
+  local actualModules = { }
+
+  m.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData")
+  :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {
+        moduleData = m.getActualModuleIVData(data.params.moduleType, data.params.moduleId),
+        isSubscribed = pIsSubscribed
+      })
+    end)
+  :ValidIf(function(exp, data)
+    actualModules[exp.occurences] = {
+      moduleType = data.params.moduleType,
+      moduleId = data.params.moduleId,
+      subscribe = data.params.subscribe
+    }
+    if exp.occurences == pRequestsCount then
+      if m.isTableEqual(actualModules, pExpectedModules) == false then
+        local errorMessage = "Wrong count of modules are resumed.\n" ..
+          "Actual result:" .. m.tableToString(actualModules) .. "\n" ..
+          "Expected result:" .. m.tableToString(pExpectedModules) .."\n"
+        return false, errorMessage
+      end
+    end
+    return true
+  end)
+  :Times(pRequestsCount)
+end
+
 function m.reRegisterApp(pAppId, pCheckResumptionData, pCheckResumptionHMILevel, pResultCode)
   if not pAppId then pAppId = 1 end
   if not pResultCode then pResultCode = "SUCCESS" end
@@ -222,19 +270,6 @@ function m.resumptionFullHMILevel(pAppId)
     { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" },
     { hmiLevel = "FULL", systemContext = "MAIN", audioStreamingState = "AUDIBLE" })
   :Times(2)
-end
-
-function m.checkModuleResumptionData(pModuleType, pModuleId)
-  local requestParams = {
-    moduleType = pModuleType,
-    subscribe = true,
-    moduleId = pModuleId
-  }
-  m.getHMIConnection():ExpectRequest("RC.GetInteriorVehicleData", requestParams)
-  :Do(function(_, data)
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS",
-        { moduleData = m.getActualModuleIVData(pModuleType, pModuleId), isSubscribe = data.params.subscribe})
-    end)
 end
 
 function m.mobileDisconnect()

@@ -32,8 +32,16 @@ local appSessionId = 1
 --[[ Local Functions ]]
 local function checkResumptionData()
   local defaultModuleNumber = 1
-  local modueType = "RADIO"
-  common.checkModuleResumptionData(modueType,  common.getModuleId(modueType, defaultModuleNumber))
+  local moduleType = "RADIO"
+  local modulesCount = 1
+  local expectedModules = {
+    {
+      moduleType = moduleType,
+      subscribe = true,
+      moduleId = common.getModuleId(moduleType, defaultModuleNumber)
+    }
+  }
+  common.checkResumptionData(modulesCount, expectedModules, true)
   common.wait(1000)
 end
 
