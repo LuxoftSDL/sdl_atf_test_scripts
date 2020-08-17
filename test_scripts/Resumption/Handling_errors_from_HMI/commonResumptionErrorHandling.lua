@@ -49,7 +49,7 @@ m.resumptionData = {
 }
 
 m.rcModuleTypes = rc.data.getRcModuleTypes()
-local defaultModuleType = m.rcModuleTypes[1]
+m.defaultModuleType = m.rcModuleTypes[1]
 
 m.rpcs = {
   addCommand = { "UI", "VR" },
@@ -125,7 +125,7 @@ local function getSuccessHMIResponseData(pData)
       out[param] = { resultCode = "SUCCESS", dataType = dataTypes[param] }
     end
   elseif pData.method == "RC.GetInteriorVehicleData" then
-    out.moduleData = m.getActualModuleIVData(defaultModuleType, m.getModuleControlData(defaultModuleType, 1).moduleId)
+    out.moduleData = m.getActualModuleIVData(m.defaultModuleType, m.getModuleControlData(m.defaultModuleType, 1).moduleId)
     out.isSubscribed = pData.params.subscribe
   end
   return out
@@ -916,7 +916,7 @@ end
 --]]
 function m.getInteriorVehicleData(pAppId, isIVDCashed, pModuleType, pModuleId)
   if not pAppId then pAppId = 1 end
-  pModuleType = pModuleType or defaultModuleType
+  pModuleType = pModuleType or m.defaultModuleType
   pModuleId = pModuleId or m.getModuleControlData(pModuleType, 1).moduleId
   isIVDCashed = isIVDCashed or false
   rc.rc.subscribeToModule(pModuleType, pModuleId, pAppId, isIVDCashed)
@@ -1771,7 +1771,7 @@ end
 --]]
 function m.isSubscribed(pIsExpApp1, pIsExpApp2, pModuleType, pModuleId)
   if pIsExpApp1 == nil then pIsExpApp1 = true end
-  pModuleType = pModuleType or defaultModuleType
+  pModuleType = pModuleType or m.defaultModuleType
   pModuleId = pModuleId or m.getModuleControlData(pModuleType,1).moduleId
   rc.rc.isSubscribed(pModuleType, pModuleId, 1, pIsExpApp1)
   if pIsExpApp2 ~= nil then
