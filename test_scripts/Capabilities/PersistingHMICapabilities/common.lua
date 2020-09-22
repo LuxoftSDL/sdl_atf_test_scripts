@@ -577,95 +577,6 @@ local function registerAppOnEvent(pEvent, pParams, pHmiOnReadyData)
   end)
 end
 
-local function initHmiOnReady(hmi_table)
-  local commonFunctions = require('user_modules/shared_testcases/commonFunctions')
-
-  local exp_waiter = commonFunctions:createMultipleExpectationsWaiter(test, "HMI on ready")
-
-  local hmi = actions.hmi.getConnection()
-
-  local function ExpectRequest(name, hmi_table_element)
-    if hmi_table_element.occurrence == 0 then
-      hmi:ExpectRequest(name, hmi_table_element.params)
-      :Times(0)
-      return
-    end
-    local event = events.Event()
-    event.level = 1
-    event.matches = function(_, data)
-      return data.method == name
-    end
-
-    local delay = hmi_table_element.delay or 0
-    local occurrence = hmi_table_element.occurrence
-    if occurrence == nil then
-      occurrence = hmi_table_element.mandatory and 1 or AnyNumber()
-    end
-    local exp = hmi:ExpectEvent(event, name)
-    :Times(occurrence)
-    :Do(function(_, data)
-        local function sendHMIResponse()
-          hmi:SendResponse(data.id, data.method, "SUCCESS", hmi_table_element.params)
-        end
-        actions.run.runAfter(sendHMIResponse, delay)
-      end)
-    if hmi_table_element.mandatory then
-      exp_waiter:AddExpectation(exp)
-    end
-    if hmi_table_element.pinned then
-      exp:Pin()
-    end
-    return exp
-  end
-
-  local hmi_table_internal
-  if type(hmi_table) == "table" then
-    hmi_table_internal = utils.cloneTable(hmi_table)
-  else
-    hmi_table_internal = hmi_values.getDefaultHMITable()
-  end
-
-  local bc_update_app_list
-  if hmi_table_internal.BasicCommunication then
-    bc_update_app_list = hmi_table_internal.BasicCommunication.UpdateAppList
-    hmi_table_internal.BasicCommunication.UpdateAppList = nil
-    local bc_update_device_list = hmi_table_internal.BasicCommunication.UpdateDeviceList
-    if SDL.buildOptions.webSocketServerSupport == "ON" and bc_update_device_list then
-      bc_update_device_list.mandatory = true
-      if not bc_update_device_list.occurrence then bc_update_device_list.occurrence = AtLeast(1) end
-    end
-  end
-
-  local additionalExp = nil
-  local additionalExpName = "BasicCommunication.UpdateDeviceList"
-  for k_module, v_module in pairs(hmi_table_internal) do
-    if type(v_module) ~= "table" then
-      break
-    end
-    for k_request, v_request in pairs(v_module) do
-      local request_name = k_module .. "." .. k_request
-      local exp = ExpectRequest(request_name, v_request)
-      if request_name == additionalExpName then
-        additionalExp = exp
-      end
-    end
-  end
-
-  if type(bc_update_app_list) == "table" then
-    ExpectRequest("BasicCommunication.UpdateAppList", bc_update_app_list)
-    :Do(function(_, data)
-      hmi:SendResponse(data.id, data.method, "SUCCESS", {})
-    end)
-  end
-
-  exp_waiter.expectation:Do(function()
-    utils.cprint(35, "HMI is ready")
-  end)
-
-  hmi:SendNotification("BasicCommunication.OnReady")
-  return exp_waiter.expectation, additionalExp
-end
-
 function m.connectMobileAndRegisterAppSuspend(pAppId, pCapResponse, pHMIParams, pDelayRaiResponse, pMobConnId, hasPTU)
   if not pCapResponse then pCapResponse = {} end
   if not pAppId then pAppId = 1 end
@@ -683,21 +594,22 @@ function m.connectMobileAndRegisterAppSuspend(pAppId, pCapResponse, pHMIParams, 
 
   local function hmiOnReady()
     if not pDelayRaiResponse then pDelayRaiResponse = 0 end
-    local exp, additionalExp = initHmiOnReady(pHMIParams)
-    exp:Do(function()
+    test:initHMI_onReady(pHMIParams)
+    :Do(function()
         actions.run.wait(pDelayRaiResponse)
         :Do(function()
             hmiOnReadyData.time = timestamp()
             hmiOnReadyData.isReceived = true
           end)
       end)
-      additionalExp:DoOnce(function()
+    actions.run.wait(3000)
+    :DoOnce(function()
         actions.init.connectMobile()
         :Do(function()
             actions.init.allowSDL()
             :Do(function()
-                actions.hmi.getConnection():RaiseEvent(event, "Event")
-              end)
+              actions.hmi.getConnection():RaiseEvent(event, "Event")
+            end)
           end)
       end)
   end
