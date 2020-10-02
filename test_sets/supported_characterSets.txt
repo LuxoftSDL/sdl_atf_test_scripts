@@ -1,0 +1,3 @@
+./test_scripts/Capabilities/SupportedCharacterSets/001_CharacterSet_values_in_RAI_response.lua
+./test_scripts/Capabilities/SupportedCharacterSets/002_CharacterSet_values_in_GetSystemCapability_response.lua
+./test_scripts/Capabilities/SupportedCharacterSets/003_CharacterSet_values_from_cache_file.lua
