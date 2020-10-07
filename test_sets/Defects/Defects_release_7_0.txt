@@ -27,3 +27,5 @@
 ./test_scripts/Defects/7_0/2888_ButtonNotificationsToLimitedApps.lua
 ./test_scripts/Defects/7_0/2888_ButtonNotificationToLimitedAppsWithAppId.lua
 ./test_scripts/Defects/7_0/3517_GetIVD_various_successful_result_codes_HMI_response.lua
+./test_scripts/Defects/7_0/3532_OnSCU_after_Show_widget_IGN_OFF_ON_Cycle.lua
+./test_scripts/Defects/7_0/3532_OnSCU_after_Show_main_IGN_OFF_ON_Cycle.lua
