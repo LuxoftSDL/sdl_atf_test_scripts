@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 -- Issue: https://github.com/smartdevicelink/sdl_core/issues/3532
 --
--- Description: Check that SDL transfer `OnSystemCapabilitiesUpdated` notification from HMI to an App
--- after IGN_OFF/IGN_ON cycle in case App sent Show RPC with templateConfiguration parameter for widget window
+-- Description: Check that SDL transfers `OnSystemCapabilitiesUpdated` notification from HMI to an App
+-- in next ignition cycle in case App sent Show RPC with templateConfiguration parameter for widget window
 -- after Show response
 --
 -- Preconditions:
@@ -26,6 +26,7 @@
 local common = require('test_scripts/WidgetSupport/common')
 
 --[[ Local Variables ]]
+local appSessionId = 1
 local createWindowParams = {
   windowID = 2,
   windowName = "Name",
@@ -58,13 +59,12 @@ local function sendOnSCU()
   common.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated", common.getOnSystemCapabilityParams())
 end
 
-local function createWindow(pParams, pAppId)
-  if not pAppId then pAppId = 1 end
-  common.getMobileSession(pAppId):ExpectNotification("OnHashChange")
+local function createWindow(pParams)
+  common.getMobileSession(appSessionId):ExpectNotification("OnHashChange")
   :Do(function(_, data)
-      common.setHashId(data.payload.hashID, pAppId)
+      common.setHashId(data.payload.hashID, appSessionId)
     end)
-  common.createWindow(pParams, pAppId)
+  common.createWindow(pParams, appSessionId)
 end
 
 --[[ Scenario ]]
@@ -78,7 +78,7 @@ common.Step("Activate widget", common.activateWidgetFromNoneToFULL, { createWind
 common.Step("Ignition_off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterAppSuccess,
-  { createWindowParams, 1, common.checkResumption_FULL })
+  { createWindowParams, appSessionId, common.checkResumption_FULL })
 common.Step("Widget is activated after restore", common.activateWidgetFromNoneToFULL, { createWindowParams.windowID })
 
 common.Title("Test")

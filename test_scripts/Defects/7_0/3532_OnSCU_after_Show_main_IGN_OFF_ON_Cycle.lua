@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 -- Issue: https://github.com/smartdevicelink/sdl_core/issues/3532
 --
--- Description: Check that SDL transfer `OnSystemCapabilitiesUpdated` notification from HMI to an App
--- after IGN_OFF/IGN_ON cycle in case App sent Show RPC with templateConfiguration parameter for main window
+-- Description: Check that SDL transfers `OnSystemCapabilitiesUpdated` notification from HMI to an App
+-- in next ignition cycle in case App sent Show RPC with templateConfiguration parameter for main window
 -- after `Show` response
 --
 -- Preconditions:
@@ -21,6 +21,10 @@
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/WidgetSupport/common')
+
+--[[ Local Variables ]]
+local appSessionId = 1
+local widgetParams = nil
 
 --[[ Local Functions ]]
 local function sendShow()
@@ -77,7 +81,7 @@ common.Step("App activation", common.activateApp)
 common.Step("Ignition off", common.ignitionOff)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Re-register App resumption data", common.reRegisterAppSuccess,
-  { nil, 1, checkResumption_FULL })
+  { widgetParams, appSessionId, checkResumption_FULL })
 
 common.Title("Test")
 common.Step("App sends Show RPC no OnSCU notification", sendShow)
