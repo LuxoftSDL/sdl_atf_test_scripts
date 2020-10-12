@@ -45,10 +45,10 @@ local function sendShow()
 end
 
 local function sendOnSCU()
-  local paramsToSDL = common.getOnSystemCapabilityParams()
+  local paramsToSDL = common.getOnSCUParams({ 0 })
   paramsToSDL.appID = common.getHMIAppId()
   common.getHMIConnection():SendNotification("BasicCommunication.OnSystemCapabilityUpdated", paramsToSDL)
-  common.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated", common.getOnSystemCapabilityParams())
+  common.getMobileSession():ExpectNotification("OnSystemCapabilityUpdated",  common.getOnSCUParams({ 0 }))
 end
 
 local function checkResumption()
