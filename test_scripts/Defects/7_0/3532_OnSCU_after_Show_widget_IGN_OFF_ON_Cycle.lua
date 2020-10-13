@@ -28,7 +28,7 @@ local common = require('test_scripts/WidgetSupport/common')
 --[[ Local Variables ]]
 local appSessionId = 1
 local createWindowParams = {
-  windowID = 2,
+  windowID = 1,
   windowName = "Name",
   type = "WIDGET"
 }
