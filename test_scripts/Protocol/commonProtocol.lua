@@ -82,6 +82,66 @@ function common.startServiceProtectedNACK(pAppId, pServiceId, pRequestPayload, p
     end)
 end
 
+function common.registerAppUpdatedProtocolVersion(hasPTU)
+    local appId = 1
+    local session = common.getMobileSession()
+    local msg = {
+        serviceType = common.serviceType.RPC,
+        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
+        frameInfo = constants.FRAME_INFO.START_SERVICE,
+        sessionId = session.sessionId,
+        encryption = false,
+        binaryData = bson.to_bytes({ protocolVersion = { type = common.bsonType.STRING, value = "5.3.0" }})
+    }
+    session:Send(msg)
+
+    session:ExpectControlMessage(common.serviceType.RPC, {
+        frameInfo = common.frameInfo.START_SERVICE_ACK,
+        encryption = false
+    })
+    :Do(function()
+        session.sessionId = appId
+        local corId = session:SendRPC("RegisterAppInterface", common.app.getParams(appId))
+
+        common.hmi.getConnection():ExpectNotification("BasicCommunication.OnAppRegistered",
+            { application = { appName = common.app.getParams(appId).appName } })
+        :Do(function(_, d1)
+            common.app.setHMIId(d1.params.application.appID, appId)
+            if hasPTU then
+                common.ptu.expectStart()
+            end
+        end)
+
+        session:ExpectResponse(corId, { success = true, resultCode = "SUCCESS" })
+        :Do(function()
+            session:ExpectNotification("OnHMIStatus",
+                { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
+        end)
+    end)
+end
+
+function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtentionFunc)
+    if pExtentionFunc then pExtentionFunc() end
+    local mobSession = common.getMobileSession(pAppId)
+    local msg = {
+        serviceType = pServiceId,
+        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
+        frameInfo = constants.FRAME_INFO.START_SERVICE,
+        sessionId = mobSession,
+        encryption = false,
+        binaryData = bson.to_bytes(pRequestPayload)
+    }
+    mobSession:Send(msg)
+    mobSession:ExpectControlMessage(pServiceId, {
+        frameInfo = common.frameInfo.START_SERVICE_ACK,
+        encryption = false
+    })
+    :ValidIf(function(_, data)
+        local actPayload = bson.to_table(data.binaryData)
+        return compareValues(pResponsePayload, actPayload, "binaryData")
+    end)
+end
+
 function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     local msg = {
