@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0308-protocol-nak-reason.md
-
--- Description: SDL provides reason information in NAck message
--- in case NAck received because of force unprotected settings for Video and Audio services
-
+--
+-- Description: SDL provides reason information in NACK message
+-- in case NACK received because of force unprotected settings for Video and Audio services
+--
 -- Precondition:
 -- 1. SDL and HMI are started
 -- 2. Mobile app is registered with 'NAVIGATION' HMI type and with 5 protocol
@@ -12,8 +12,8 @@
 -- Steps:
 -- 1. Mobile app requests the opening of protected Video/Audio service
 -- SDL does:
--- - respond with NAck to StartService request because protected service is requested
--- - provide reason information in NAck message
+-- - respond with NACK to StartService request because protected service is requested
+-- - provide reason information in NACK message
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
@@ -53,7 +53,7 @@ common.Step("Init SDL certificates", common.initSDLCertificates, { "./files/Secu
 common.Step("ForceProtectedService = 0x0A, 0x0B", common.sdl.setSDLIniParameter,
   { "ForceUnprotectedService", "0x0A, 0x0B" })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-common.Step("Register App", common.registerApp)
+common.Step("Register App", common.registerAppUpdatedProtocolVersion)
 common.Step("Activate App", common.activateApp)
 
 common.Title("Test")

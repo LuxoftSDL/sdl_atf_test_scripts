@@ -2,23 +2,29 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0308-protocol-nak-reason.md
 --
 -- Description: SDL provides reason information in NACK message
--- in case NACK received because of force protected settings for Video and Audio services
+-- in case NACK received because of second opening of unprotected Video and Audio services
 --
 -- Precondition:
 -- 1. SDL and HMI are started
 -- 2. Mobile app is registered with 'NAVIGATION' HMI type and with 5 protocol
 -- 3. Mobile app is activated
+-- 4. Unprotected Video and Audio services are opened
 --
 -- Steps:
 -- 1. Mobile app requests the opening of unprotected Video/Audio service
 -- SDL does:
--- - respond with NACK to StartService request because unprotected service is requested
+-- - respond with NACK to StartService request because unprotected service is opened
 -- - provide reason information in NACK message
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local function reasonMessage(pService)
+  return "Cannot start a protected service of type " .. pService ..
+    ". Session 1 already has a protected service of type " .. pService
+end
+
 local videoServiceParams = {
   reqParams = {
     height          = { type = common.bsonType.INT32,  value = 350 },
@@ -29,7 +35,7 @@ local videoServiceParams = {
   nackParams = {
     reason = {
       type = common.bsonType.STRING,
-      value = "Service type: 11 disallowed by settings. Allowed only in protected mode"
+      value = reasonMessage(common.serviceType.VIDEO)
     }
   }
 }
@@ -41,25 +47,49 @@ local audioServiceParams = {
   nackParams = {
     reason = {
       type = common.bsonType.STRING,
-      value = "Service type: 10 disallowed by settings. Allowed only in protected mode"
+      value =  reasonMessage(common.serviceType.PCM)
     }
   }
 }
 
+local rpcServiceParams = {
+  reqParams = {
+    protocolVersion = { type = common.bsonType.STRING, value = "7.0.0" }
+  },
+  nackParams = {
+    reason = {
+      type = common.bsonType.STRING,
+      value = reasonMessage(common.serviceType.RPC)
+    }
+  }
+}
+
+--[[ Local Functions ]]
+local function setVideoConfig()
+  common.getHMIConnection():ExpectRequest("Navigation.SetVideoConfig")
+  :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+end
+
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Init SDL certificates", common.initSDLCertificates, { "./files/Security/client_credential.pem"})
-common.Step("Set ForceProtectedService = 0x0A, 0x0B", common.setProtectedServicesInIni)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppUpdatedProtocolVersion)
 common.Step("Activate App", common.activateApp)
+common.Step("Start unprotected Video Service, ACK", common.startServiceUnprotectedACK,
+  { 1, common.serviceType.VIDEO, videoServiceParams.reqParams, videoServiceParams.reqParams, setVideoConfig })
+common.Step("Start unprotected Audio Service, ACK", common.startServiceUnprotectedACK,
+  { 1, common.serviceType.PCM, audioServiceParams.reqParams, audioServiceParams.reqParams })
 
 common.Title("Test")
 common.Step("Start unprotected Video Service, NACK", common.startServiceUnprotectedNACK,
   { 1, common.serviceType.VIDEO, videoServiceParams.reqParams, videoServiceParams.nackParams })
 common.Step("Start unprotected Audio Service, NACK", common.startServiceUnprotectedNACK,
   { 1, common.serviceType.PCM, audioServiceParams.reqParams, audioServiceParams.nackParams })
+common.Step("Start unprotected RPC Service, NACK", common.startServiceUnprotectedNACK,
+  { 1, common.serviceType.RPC, rpcServiceParams.reqParams, rpcServiceParams.nackParams })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

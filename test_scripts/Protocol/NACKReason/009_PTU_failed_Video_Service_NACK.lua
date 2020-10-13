@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0308-protocol-nak-reason.md
-
--- Description: SDL provides reason information in NAck message
--- in case NAck received because PTU is failed during service starting
-
+--
+-- Description: SDL provides reason information in NACK message
+-- in case NACK received because PTU is failed during service starting
+--
 -- Precondition:
 -- 1. SDL and HMI are started
 -- 2. Mobile app is registered with 'NAVIGATION' HMI type and with 5 protocol
@@ -14,13 +14,14 @@
 -- 2. PTU is triggered to get actual certificated
 -- 3. Mobile app provides invalid update in SystemRequest
 -- SDL does:
--- - respond with NAck to StartService request because PTU is failed
--- - provide reason information in NAck message
+-- - respond with NACK to StartService request because PTU is failed
+-- - provide reason information in NACK message
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local isPTUtriggered = true
 local videoServiceParams = {
   reqParams = {
     height        = { type = common.bsonType.INT32,  value = 350 },
@@ -46,7 +47,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set ForceProtectedService = 0x0A, 0x0B", common.setProtectedServicesInIni)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-common.Step("Register App", common.registerApp)
+common.Step("Register App", common.registerAppUpdatedProtocolVersion, { isPTUtriggered })
 common.Step("PTU", common.policyTableUpdate)
 common.Step("Activate App", common.activateApp)
 

@@ -12,3 +12,4 @@
 ./test_scripts/Protocol/NACKReason/012_Invalid_time_Video_Service_NACK.lua
 ./test_scripts/Protocol/NACKReason/013_Invalid_time_Audio_Service_NACK.lua
 ./test_scripts/Protocol/NACKReason/014_Invalid_time_RPC_Service_NACK.lua
+./test_scripts/Protocol/NACKReason/015_Second_unprotected_Video_Audio_RPC_Services_NACK.lua

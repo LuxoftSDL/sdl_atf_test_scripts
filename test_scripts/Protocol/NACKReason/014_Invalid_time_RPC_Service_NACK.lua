@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0308-protocol-nak-reason.md
-
--- Description: SDL provides reason information in NAck message
--- in case NAck received because system time is not provided during service starting
-
+--
+-- Description: SDL provides reason information in NACK message
+-- in case NACK received because system time is not provided during service starting
+--
 -- Precondition:
 -- 1. SDL and HMI are started
 -- 2. Mobile app is registered with 'NAVIGATION' HMI type and with 5 protocol
@@ -14,13 +14,14 @@
 -- 2. SDL requests system time via BC.GetSystemTime request
 -- 3. HMI responds with DATA_NOT_AVAILABLE resultCode
 -- SDL does:
--- - respond with NAck to StartService request because system time is not provided
--- - provide reason information in NAck message
+-- - respond with NACK to StartService request because system time is not provided
+-- - provide reason information in NACK message
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local isPTUtriggered = true
 local rpcServiceParams = {
   reqParams = {
     protocolVersion = { type = common.bsonType.STRING, value = "7.0.0" }
@@ -35,7 +36,7 @@ common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Set ForceProtectedService = 0x0A, 0x0B", common.setProtectedServicesInIni)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-common.Step("Register App", common.registerApp)
+common.Step("Register App", common.registerAppUpdatedProtocolVersion, { isPTUtriggered })
 common.Step("PTU", common.policyTableUpdate)
 common.Step("Activate App", common.activateApp)
 
