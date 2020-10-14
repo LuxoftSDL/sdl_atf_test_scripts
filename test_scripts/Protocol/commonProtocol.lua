@@ -40,11 +40,6 @@ common.bsonType = {
 
 --[[ Tests Configuration ]]
 runner.testSettings.isSelfIncluded = false
-if not common.isFileExist("lib/bson4lua.so") then
-  runner.skipTest("'bson4lua' library is not available in ATF")
-  runner.Step("Skipping test")
-  return
-end
 
 --[[ Functions ]]
 function common.startServiceProtectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
@@ -72,6 +67,49 @@ end
 function common.startServiceProtectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     mobSession:StartSecureService(pServiceId, bson.to_bytes(pRequestPayload))
+    mobSession:ExpectControlMessage(pServiceId, {
+        frameInfo = common.frameInfo.START_SERVICE_NACK,
+        encryption = false
+    })
+    :ValidIf(function(_, data)
+        local actPayload = bson.to_table(data.binaryData)
+        return compareValues(pResponsePayload, actPayload, "binaryData")
+    end)
+end
+
+function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtentionFunc)
+    if pExtentionFunc then pExtentionFunc() end
+    local mobSession = common.getMobileSession(pAppId)
+    local msg = {
+        serviceType = pServiceId,
+        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
+        frameInfo = constants.FRAME_INFO.START_SERVICE,
+        sessionId = mobSession,
+        encryption = false,
+        binaryData = bson.to_bytes(pRequestPayload)
+    }
+    mobSession:Send(msg)
+    mobSession:ExpectControlMessage(pServiceId, {
+        frameInfo = common.frameInfo.START_SERVICE_ACK,
+        encryption = false
+    })
+    :ValidIf(function(_, data)
+        local actPayload = bson.to_table(data.binaryData)
+        return compareValues(pResponsePayload, actPayload, "binaryData")
+    end)
+end
+
+function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
+    local mobSession = common.getMobileSession(pAppId)
+    local msg = {
+        serviceType = pServiceId,
+        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
+        frameInfo = constants.FRAME_INFO.START_SERVICE,
+        sessionId = mobSession,
+        encryption = false,
+        binaryData = bson.to_bytes(pRequestPayload)
+    }
+    mobSession:Send(msg)
     mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_NACK,
         encryption = false
@@ -120,55 +158,13 @@ function common.registerAppUpdatedProtocolVersion(hasPTU)
     end)
 end
 
-function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtentionFunc)
-    if pExtentionFunc then pExtentionFunc() end
-    local mobSession = common.getMobileSession(pAppId)
-    local msg = {
-        serviceType = pServiceId,
-        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
-        frameInfo = constants.FRAME_INFO.START_SERVICE,
-        sessionId = mobSession,
-        encryption = false,
-        binaryData = bson.to_bytes(pRequestPayload)
-    }
-    mobSession:Send(msg)
-    mobSession:ExpectControlMessage(pServiceId, {
-        frameInfo = common.frameInfo.START_SERVICE_ACK,
-        encryption = false
-    })
-    :ValidIf(function(_, data)
-        local actPayload = bson.to_table(data.binaryData)
-        return compareValues(pResponsePayload, actPayload, "binaryData")
-    end)
-end
-
-function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
-    local mobSession = common.getMobileSession(pAppId)
-    local msg = {
-        serviceType = pServiceId,
-        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
-        frameInfo = constants.FRAME_INFO.START_SERVICE,
-        sessionId = mobSession,
-        encryption = false,
-        binaryData = bson.to_bytes(pRequestPayload)
-    }
-    mobSession:Send(msg)
-    mobSession:ExpectControlMessage(pServiceId, {
-        frameInfo = common.frameInfo.START_SERVICE_NACK,
-        encryption = false
-    })
-    :ValidIf(function(_, data)
-        local actPayload = bson.to_table(data.binaryData)
-        return compareValues(pResponsePayload, actPayload, "binaryData")
-    end)
-end
-
 function common.ptuFailedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtentionFunc)
     if pExtentionFunc then pExtentionFunc() end
     common.startServiceProtectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     common.getMobileSession():ExpectHandshakeMessage()
     :Times(0)
     local function ptUpdate(pTbl)
+        -- notifications_per_minute_by_priority parameter is mandatory and PTU would fail if it's removed
         pTbl.policy_table.module_config.notifications_per_minute_by_priority = nil
     end
     local expNotificationFunc = function()
@@ -179,7 +175,7 @@ function common.ptuFailedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayl
     :Do(function()
         common.policyTableUpdate(ptUpdate, expNotificationFunc)
     end)
-  end
+end
 
 function common.startSecureServiceTimeNotProvided(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtentionFunc)
     if pExtentionFunc then pExtentionFunc() end
@@ -195,10 +191,6 @@ function common.startSecureServiceTimeNotProvided(pAppId, pServiceId, pRequestPa
     end)
 
     common.startServiceProtectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
-end
-
-function common.setProtectedServicesInIni()
-  common.sdl.setSDLIniParameter("ForceProtectedService", "0x0A, 0x0B")
 end
 
 return common
