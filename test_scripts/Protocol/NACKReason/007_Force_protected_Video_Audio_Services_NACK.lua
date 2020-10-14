@@ -21,10 +21,10 @@ local common = require("test_scripts/Protocol/commonProtocol")
 --[[ Local Variables ]]
 local videoServiceParams = {
   reqParams = {
-    height          = { type = common.bsonType.INT32,  value = 350 },
-    width           = { type = common.bsonType.INT32,  value = 800 },
-    videoProtocol   = { type = common.bsonType.STRING, value = "RAW" },
-    videoCodec      = { type = common.bsonType.STRING, value = "H264" },
+    height        = { type = common.bsonType.INT32,  value = 350 },
+    width         = { type = common.bsonType.INT32,  value = 800 },
+    videoProtocol = { type = common.bsonType.STRING, value = "RAW" },
+    videoCodec    = { type = common.bsonType.STRING, value = "H264" },
   },
   nackParams = {
     reason = {
@@ -50,7 +50,8 @@ local audioServiceParams = {
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Init SDL certificates", common.initSDLCertificates, { "./files/Security/client_credential.pem"})
-common.Step("Set ForceProtectedService = 0x0A, 0x0B", common.setProtectedServicesInIni)
+common.Step("ForceProtectedService = 0x0A, 0x0B", common.sdl.setSDLIniParameter,
+  { "ForceProtectedService", "0x0A, 0x0B" })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppUpdatedProtocolVersion)
 common.Step("Activate App", common.activateApp)

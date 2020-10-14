@@ -11,7 +11,7 @@
 --
 -- Steps:
 -- 1. Mobile app requests the opening of protected Video service
--- 2. PTU is triggered to get actual certificated
+-- 2. PTU is triggered to get actual certificate
 -- 3. Mobile app provides invalid update in SystemRequest
 -- SDL does:
 -- - respond with NACK to StartService request because PTU is failed
@@ -45,7 +45,8 @@ end
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set ForceProtectedService = 0x0A, 0x0B", common.setProtectedServicesInIni)
+common.Step("ForceProtectedService = 0x0A, 0x0B", common.sdl.setSDLIniParameter,
+  { "ForceProtectedService", "0x0A, 0x0B" })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppUpdatedProtocolVersion, { isPTUtriggered })
 common.Step("PTU", common.policyTableUpdate)

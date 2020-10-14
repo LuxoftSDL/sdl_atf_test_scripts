@@ -50,7 +50,7 @@ local audioServiceParams = {
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Init SDL certificates", common.initSDLCertificates, { "./files/Security/client_credential.pem"})
-common.Step("ForceProtectedService = 0x0A, 0x0B", common.sdl.setSDLIniParameter,
+common.Step("ForceUnprotectedService = 0x0A, 0x0B", common.sdl.setSDLIniParameter,
   { "ForceUnprotectedService", "0x0A, 0x0B" })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppUpdatedProtocolVersion)

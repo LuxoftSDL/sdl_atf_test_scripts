@@ -11,7 +11,7 @@
 --
 -- Steps:
 -- 1. Mobile app requests the opening of protected RPC service
--- 2. PTU is triggered to get actual certificated
+-- 2. PTU is triggered to get actual certificate
 -- 3. Mobile app provides invalid update in SystemRequest
 -- SDL does:
 -- - respond with NACK to StartService request because PTU is failed
@@ -24,7 +24,7 @@ local common = require("test_scripts/Protocol/commonProtocol")
 local isPTUtriggered = true
 local rpcServiceParams = {
   reqParams = {
-    protocolVersion = { type = common.bsonType.STRING, value = "7.0.0" }
+    protocolVersion = { type = common.bsonType.STRING, value = "5.3.0" }
   },
   nackParams = {
     reason = { type = common.bsonType.STRING, value = "Policy Table Update failed" }
@@ -34,7 +34,8 @@ local rpcServiceParams = {
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Set ForceProtectedService = 0x0A, 0x0B", common.setProtectedServicesInIni)
+common.Step("ForceProtectedService = 0x0A, 0x0B", common.sdl.setSDLIniParameter,
+  { "ForceProtectedService", "0x0A, 0x0B" })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
 common.Step("Register App", common.registerAppUpdatedProtocolVersion, { isPTUtriggered })
 common.Step("PTU", common.policyTableUpdate)

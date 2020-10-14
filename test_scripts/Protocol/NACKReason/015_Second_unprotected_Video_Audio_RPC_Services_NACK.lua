@@ -8,10 +8,10 @@
 -- 1. SDL and HMI are started
 -- 2. Mobile app is registered with 'NAVIGATION' HMI type and with 5 protocol
 -- 3. Mobile app is activated
--- 4. Unprotected Video and Audio services are opened
+-- 4. Unprotected RPC, Video and Audio services are opened
 --
 -- Steps:
--- 1. Mobile app requests the opening of unprotected Video/Audio service
+-- 1. Mobile app requests the opening of unprotected Video/Audio/RPC service
 -- SDL does:
 -- - respond with NACK to StartService request because unprotected service is opened
 -- - provide reason information in NACK message
@@ -21,16 +21,16 @@ local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
 local function reasonMessage(pService)
-  return "Cannot start a protected service of type " .. pService ..
-    ". Session 1 already has a protected service of type " .. pService
+  return "Cannot start an unprotected service of type " .. pService ..
+    ". Session 1 already has an unprotected service of type " .. pService
 end
 
 local videoServiceParams = {
   reqParams = {
-    height          = { type = common.bsonType.INT32,  value = 350 },
-    width           = { type = common.bsonType.INT32,  value = 800 },
-    videoProtocol   = { type = common.bsonType.STRING, value = "RAW" },
-    videoCodec      = { type = common.bsonType.STRING, value = "H264" },
+    height        = { type = common.bsonType.INT32,  value = 350 },
+    width         = { type = common.bsonType.INT32,  value = 800 },
+    videoProtocol = { type = common.bsonType.STRING, value = "RAW" },
+    videoCodec    = { type = common.bsonType.STRING, value = "H264" },
   },
   nackParams = {
     reason = {
@@ -54,7 +54,7 @@ local audioServiceParams = {
 
 local rpcServiceParams = {
   reqParams = {
-    protocolVersion = { type = common.bsonType.STRING, value = "7.0.0" }
+    protocolVersion = { type = common.bsonType.STRING, value = "5.3.0" }
   },
   nackParams = {
     reason = {
