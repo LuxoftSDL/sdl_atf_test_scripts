@@ -88,7 +88,8 @@ m.vd = {
   handsOffSteering = "VEHICLEDATA_HANDSOFFSTEERING",
   stabilityControlsStatus = "VEHICLEDATA_STABILITYCONTROLSSTATUS",
   gearStatus = "VEHICLEDATA_GEARSTATUS",
-  windowStatus = "VEHICLEDATA_WINDOWSTATUS"
+  windowStatus = "VEHICLEDATA_WINDOWSTATUS",
+  climateData = "VEHICLEDATA_CLIMATEDATA"
 }
 
 m.operator = {
@@ -200,6 +201,9 @@ function m.getParamValues(pParams, pCmnSchema)
       out[k] = getTypeValue(v)
     else
       out[k] = getArrayTypeValue(v)
+    end
+    if out[k] == nil then
+      m.cprint(color.magenta, "Please pay attention value for VD parameter `" .. k .. "` is nil.")
     end
   end
   return out
