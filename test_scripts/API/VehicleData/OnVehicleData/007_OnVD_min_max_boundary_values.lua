@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------------------------------------
 -- Description: Check that SDL processes OnVehicleData notification with <vd_param> parameter
+-- Positive/Negative cases for boundary values for all VD parameters and sub-parameters
 --
 -- Preconditions:
 -- 1) SDL and HMI are started

@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------------------------------------
 -- Description: Check that SDL processes GetVehicleData RPC with <vd_param> parameter
+-- Positive cases for all possible values for Enum and Boolean VD parameters and sub-parameters
 --
 -- Preconditions:
 -- 1) SDL and HMI are started

@@ -111,18 +111,30 @@ m.isExpectedSubscription = true
 m.isNotExpectedSubscription = false
 
 m.testType = {
-  VALID_RANDOM_ALL = 1,
-  VALID_RANDOM = 2,
-  UPPER_IN_BOUND = 3,
-  LOWER_IN_BOUND = 4,
-  UPPER_OUT_OF_BOUND = 5,
-  LOWER_OUT_OF_BOUND = 6,
-  INVALID_TYPE = 7,
-  ENUM_ITEMS = 8,
-  BOOL_ITEMS = 9,
-  PARAM_VERSION = 10,
-  MANDATORY_ONLY = 11,
-  MANDATORY_MISSING = 12
+  VALID_RANDOM_ALL = 1,   -- Positive: cases for VD parameters where all possible sub-parameters of hierarchy
+                          -- are defined with valid random values
+  VALID_RANDOM_SUB = 2,   -- Positive: cases for struct VD parameters and sub-parameters where only one sub-parameter
+                          -- of hierarchy is defined with valid random value (mandatory also included)
+  LOWER_IN_BOUND = 3,     -- Positive: cases for VD parameters and sub-parameters where only one sub-parameter
+                          -- of hierarchy is defined with min valid value (mandatory also included)
+  UPPER_IN_BOUND = 4,     -- Positive: cases for VD parameters and sub-parameters where only one sub-parameter
+                          -- of hierarchy is defined with max valid value (mandatory also included)
+  LOWER_OUT_OF_BOUND = 5, -- Negative: cases for VD parameters and sub-parameters where only one sub-parameter
+                          -- of hierarchy is defined with nearest invalid min value
+  UPPER_OUT_OF_BOUND = 6, -- Negative: cases for VD parameters and sub-parameters where only one sub-parameter
+                          -- of hierarchy is defined with nearest invalid max value
+  INVALID_TYPE = 7,       -- Negative: cases for VD parameters and sub-parameters with invalid type value defined
+                          -- for one of them
+  ENUM_ITEMS = 8,         -- Positive: cases for enum VD parameters and sub-parameters with all possible enum values
+                          -- defined
+  BOOL_ITEMS = 9,         -- Positive: cases for boolean VD parameters and sub-parameters with 'true' and 'false'
+                          -- values defined
+  PARAM_VERSION = 10,     -- Positive/Negative: cases for VD parameters with version defined
+                          --
+  MANDATORY_ONLY = 11,    -- Positive: cases for struct VD parameters and sub-parameters
+                          -- where only mandatory sub-parameters are defined with valid random values
+  MANDATORY_MISSING = 12  -- Negative: cases for struct VD parameters and sub-parameters
+                          -- where only mandatory sub-parameters are defined and one of them is missing
 }
 
 m.isMandatory = {
@@ -716,7 +728,7 @@ end
 
 --[[ Tests Generator Functions ]]-------------------------------------------------------------------
 
---[[ @getValidRandomTests: Generate tests for VALID_RANDOM test type
+--[[ @getValidRandomTests: Generate tests for VALID_RANDOM_SUB test type
 --! @parameters: none
 --! @return: table with tests
 --]]
@@ -1021,7 +1033,7 @@ end
 --[[ @getTests: Provide tests for defined test type and VD parameter
 --! @parameters:
 --! pRPC: name of RPC, e.g. 'GetVehicleData'
---! pTestType: test type, e.g. 'm.testType.VALID_RANDOM'
+--! pTestType: test type, e.g. 'm.testType.VALID_RANDOM_ALL'
 --! pParamName: name of the VD parameter
 --! @return: table with tests
 --]]
@@ -1036,18 +1048,19 @@ function m.getTests(pRPC, pTestType, pParamName)
   paramName = pParamName
 
   local testTypeMap = {
-    [m.testType.VALID_RANDOM] = getValidRandomTests,
-    [m.testType.MANDATORY_ONLY] = getOnlyMandatoryTests,
+    [m.testType.VALID_RANDOM_ALL] = getValidRandomAllTests,
+    [m.testType.VALID_RANDOM_SUB] = getValidRandomTests,
     [m.testType.LOWER_IN_BOUND] = getInBoundTests,
     [m.testType.UPPER_IN_BOUND] = getInBoundTests,
     [m.testType.LOWER_OUT_OF_BOUND] = getOutOfBoundTests,
     [m.testType.UPPER_OUT_OF_BOUND] = getOutOfBoundTests,
+    [m.testType.INVALID_TYPE] = getInvalidTypeTests,
     [m.testType.ENUM_ITEMS] = getEnumItemsTests,
     [m.testType.BOOL_ITEMS] = getBoolItemsTests,
     [m.testType.PARAM_VERSION] = getVersionTests,
-    [m.testType.VALID_RANDOM_ALL] = getValidRandomAllTests,
+    [m.testType.MANDATORY_ONLY] = getOnlyMandatoryTests,
     [m.testType.MANDATORY_MISSING] = getMandatoryMissingTests,
-    [m.testType.INVALID_TYPE] = getInvalidTypeTests
+
   }
   if testTypeMap[testType] then return testTypeMap[testType]() end
   return {}
@@ -1070,7 +1083,7 @@ end
 --[[ @processNotification: Processing sequence for 'OnVehicleData' notification
 --! @parameters:
 --! pParams: all parameters for the sequence
---! pTestType: test type, e.g. 'm.testType.VALID_RANDOM'
+--! pTestType: test type, e.g. 'm.testType.VALID_RANDOM_ALL'
 --! pParamName: name of the VD parameter
 --! @return: none
 --]]

@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Description: Check that SDL processes GetVehicleData RPC with <vd_param> parameter
+-- Positive cases for all VD parameters and sub-parameters
 --
 -- Preconditions:
 -- 1) SDL and HMI are started
@@ -21,7 +22,7 @@ local common = require('test_scripts/API/VehicleData/common')
 --[[ Local Constants ]]
 local testTypes = {
   common.testType.VALID_RANDOM_ALL,
-  common.testType.VALID_RANDOM,
+  common.testType.VALID_RANDOM_SUB
 }
 
 --[[ Scenario ]]
