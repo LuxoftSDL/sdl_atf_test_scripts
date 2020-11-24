@@ -21,7 +21,7 @@
 -- 4) HMI sends VI.GetVehicleData response with invalid data for <vd_param> to SDL
 -- (closest lower/upper values to the defined boundary)
 -- SDL does:
--- - a) send GetVehicleData response with (success = false, resultCode = "GENERIC_ERROR"
+-- - a) send GetVehicleData response with (success = false, resultCode = "GENERIC_ERROR")
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/VehicleData/common')

@@ -21,7 +21,7 @@ m.eventType = {
 }
 
 m.dataType = {
-  INTEGER = { type = "Integer", min = -2147483647, max = 2147483647 }, -- min: 2147483648
+  INTEGER = { type = "Integer", min = -2147483647, max = 2147483647 },
   FLOAT = { type = "Float", min = -1000000, max = 1000000 },
   DOUBLE = { type = "Double", min = -1000000000, max = 1000000000 },
   STRING = { type = "String", min = 1, max = 100 },
@@ -62,7 +62,7 @@ end
 --! pFuncName: name of the API function, e.g. 'GetVehicleData'
 --! @return: structure with hierarchy of parameters
 --]]
-local function getParamsData(pAPI, pEventType, pFunctionName)
+local function getParamsData(pAPI, pEventType, pFuncName)
 
   local function buildParams(pTbl, pParams)
     for k, v in pairs(pParams) do
@@ -83,10 +83,10 @@ local function getParamsData(pAPI, pEventType, pFunctionName)
 
   local function getAPIParams()
     if pAPI == m.apiType.MOBILE then
-      return schema.mobile.type[pEventType].functions[pFunctionName].param
+      return schema.mobile.type[pEventType].functions[pFuncName].param
     elseif pAPI == m.apiType.HMI then
-      local iName = utils.splitString(pFunctionName, ".")[1]
-      local fName = utils.splitString(pFunctionName, ".")[2]
+      local iName = utils.splitString(pFuncName, ".")[1]
+      local fName = utils.splitString(pFuncName, ".")[2]
       return api.hmi.interface[iName].type[pEventType].functions[fName].param
     end
   end

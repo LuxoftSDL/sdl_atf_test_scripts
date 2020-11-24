@@ -248,14 +248,14 @@ local function getNumOfItems(pTypeData)
       if not numOfItems or numOfItems == 0 then numOfItems = 1 end
     elseif arrayValueType == m.valueType.UPPER_IN_BOUND then
       numOfItems = pTypeData.maxsize
-      if not numOfItems or numOfItems == 0 then numOfItems = 1 end
+      if not numOfItems or numOfItems == 0 then numOfItems = 100 end
     elseif arrayValueType == m.valueType.LOWER_OUT_OF_BOUND then
       numOfItems = pTypeData.minsize
       if not numOfItems or numOfItems == 0 then numOfItems = 1 end
       numOfItems = numOfItems - 1
     elseif arrayValueType == m.valueType.UPPER_OUT_OF_BOUND then
       numOfItems = pTypeData.maxsize
-      if not numOfItems or numOfItems == 0 then numOfItems = 1 end
+      if not numOfItems or numOfItems == 0 then numOfItems = 100 end
       numOfItems = numOfItems + 1
     elseif arrayValueType == m.valueType.VALID_RANDOM then
       local min = 1

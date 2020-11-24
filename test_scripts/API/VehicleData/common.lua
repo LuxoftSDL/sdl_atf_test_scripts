@@ -159,9 +159,9 @@ local boundValueTypeMap = {
 
 --[[ Common Functions ]]
 
---[[ @getAvailableVDParams: Return available for processing VD parameters
+--[[ @getAvailableVDParams: Return VD parameters available for processing
 --! @parameters: none
---! @return: none
+--! @return: table with VD parameters
 --]]
 local function getAvailableVDParams()
   local graph = ah.getGraph(ah.apiType.MOBILE, ah.eventType.REQUEST, m.rpc.get)
@@ -685,13 +685,6 @@ local function createTestCases(pAPIType, pEventType, pFuncName, pIsMandatory, pI
       if (pName == paramName) or (string.find(pName .. ".", paramName .. "%.") == 1) then return true end
       return false
     end
-    local function getNumOfKeys(pTbl)
-      local out = 0
-      for _ in pairs(pTbl) do
-        out = out + 1
-      end
-      return out
-    end
     local tcs = {}
     for k, v in pairs(pGraph) do
       local paramFullName = ah.getFullParamName(graph, k)
@@ -706,13 +699,11 @@ local function createTestCases(pAPIType, pEventType, pFuncName, pIsMandatory, pI
           getMandatoryChildren(graph, id, neighborsChildrenIds)
         end
         local tcParamIds = getTCParamsIds(k, parentIds, neighborsIds, childrenIds, neighborsChildrenIds)
-        if not (v.type == ah.dataType.STRUCT.type and getNumOfKeys(childrenIds) == 0) then
-          local tc = {
-            paramId = k,
-            graph = getUpdatedParams(utils.cloneTable(graph), tcParamIds)
-          }
-          table.insert(tcs, tc)
-        end
+        local tc = {
+          paramId = k,
+          graph = getUpdatedParams(utils.cloneTable(graph), tcParamIds)
+        }
+        table.insert(tcs, tc)
       end
     end
     return tcs
@@ -734,10 +725,13 @@ local function getValidRandomTests()
     m.isMandatory.ALL, m.isArray.ALL, m.isVersion.ALL, {})
   local tests = {}
   for _, tc in pairs(tcs) do
-    table.insert(tests, {
-        name = "Param_" .. ah.getFullParamName(tc.graph, tc.paramId),
-        params = getParamsFuncMap.VALID[rpcType](tc.graph),
-      })
+    local paramData = tc.graph[tc.paramId]
+    if paramData.type ~= ah.dataType.STRUCT.type and paramData.parentId ~= nil then
+      table.insert(tests, {
+          name = "Param_" .. ah.getFullParamName(tc.graph, tc.paramId),
+          params = getParamsFuncMap.VALID[rpcType](tc.graph),
+        })
+    end
   end
   return tests
 end
@@ -919,7 +913,7 @@ local function getBoolItemsTests()
   local tcs = createTestCases(ah.apiType.HMI, rpcType, m.rpcHMIMap[rpc],
     m.isMandatory.ALL, m.isArray.ALL, m.isVersion.ALL, dataTypes)
   for _, tc in pairs(tcs) do
-    for _, item in pairs({true, false}) do
+    for _, item in pairs({ true, false }) do
       local tcUpd = utils.cloneTable(tc)
       tcUpd.graph[tc.paramId].data = { item }
       table.insert(tests, {
@@ -1008,7 +1002,7 @@ end
 --]]
 local function getInvalidTypeTests()
   local dataTypes = { ah.dataType.INTEGER.type, ah.dataType.FLOAT.type, ah.dataType.DOUBLE.type,
-    ah.dataType.STRING.type, ah.dataType.ENUM.type }
+    ah.dataType.STRING.type, ah.dataType.ENUM.type, ah.dataType.BOOLEAN.type }
   local tcs = createTestCases(ah.apiType.HMI, rpcType, m.rpcHMIMap[rpc],
     m.isMandatory.ALL, m.isArray.ALL, m.isVersion.ALL, dataTypes)
   local tests = {}
@@ -1123,7 +1117,7 @@ function m.getTestsForGetVD(pTestTypes)
   end
 end
 
---[[ @getTestsForGetVD: Generate test steps for 'OnVehicleData' tests for defined test types
+--[[ @getTestsForOnVD: Generate test steps for 'OnVehicleData' tests for defined test types
 --! @parameters:
 --! pTestTypes: test types
 --! @return: test steps
