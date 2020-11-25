@@ -62,18 +62,18 @@ end
 --! pFuncName: name of the API function, e.g. 'GetVehicleData'
 --! @return: structure with hierarchy of parameters
 --]]
-local function getParamsData(pAPI, pEventType, pFuncName)
+local function getParamsData(pAPIType, pEventType, pFuncName)
 
   local function buildParams(pTbl, pParams)
     for k, v in pairs(pParams) do
       pTbl[k] = utils.cloneTable(v)
-      if schema[pAPI].struct[getType(v.type)] then
+      if schema[pAPIType].struct[getType(v.type)] then
         pTbl[k].data = {}
-        buildParams(pTbl[k].data, schema[pAPI].struct[getType(v.type)].param)
+        buildParams(pTbl[k].data, schema[pAPIType].struct[getType(v.type)].param)
         pTbl[k].type = m.dataType.STRUCT.type
-      elseif schema[pAPI].enum[getType(v.type)] then
+      elseif schema[pAPIType].enum[getType(v.type)] then
         pTbl[k].data = {}
-        for kk in utils.spairs(schema[pAPI].enum[getType(v.type)]) do
+        for kk in utils.spairs(schema[pAPIType].enum[getType(v.type)]) do
           table.insert(pTbl[k].data, kk)
         end
         pTbl[k].type = m.dataType.ENUM.type
@@ -82,16 +82,16 @@ local function getParamsData(pAPI, pEventType, pFuncName)
   end
 
   local function getAPIParams()
-    if pAPI == m.apiType.MOBILE then
+    if pAPIType == m.apiType.MOBILE then
       return schema.mobile.type[pEventType].functions[pFuncName].param
-    elseif pAPI == m.apiType.HMI then
+    elseif pAPIType == m.apiType.HMI then
       local iName = utils.splitString(pFuncName, ".")[1]
       local fName = utils.splitString(pFuncName, ".")[2]
       return api.hmi.interface[iName].type[pEventType].functions[fName].param
     end
   end
 
-  local params = getAPIParams(pAPI)
+  local params = getAPIParams(pAPIType)
 
   local out = {}
   buildParams(out, params)
