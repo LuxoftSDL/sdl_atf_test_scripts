@@ -14,6 +14,8 @@
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/SDL5_0/LowVoltage/common')
 local runner = require('user_modules/script_runner')
+local utils = require("user_modules/utils")
+local test = require('user_modules/dummy_connecttest')
 
 --[[ Test Configuration ]]
 runner.testSettings.isSelfIncluded = false
@@ -41,6 +43,35 @@ local function checkResumptionHMILevel()
   :Times(0)
 end
 
+function reRegister2App()
+  test.mobileSession[2] = nil
+  local mobSession = common.getMobileSession(2)
+  mobSession:StartService(7)
+  :Do(function()
+      local params = config["application2"].registerAppInterfaceParams
+      local corId = mobSession:SendRPC("RegisterAppInterface", params)
+      common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered", {
+        application = { appName = config["application2"].registerAppInterfaceParams.appName }
+      })      :Do(function(_, d1)
+          common.setHMIAppId(d1.params.application.appID, 2)
+          end)
+      mobSession:ExpectResponse(corId, { success = true, resultCode = "SUCCESS" })
+      :Do(function()
+          mobSession:ExpectNotification("OnPermissionsChange")
+        end)
+    end)
+  common.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = common.getHMIAppId(2) })
+  :Do(function(_, data)
+      common.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})
+    end)
+  mobSession:ExpectNotification("OnHMIStatus",
+      { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" },
+      { hmiLevel = "FULL", systemContext = "MAIN", audioStreamingState = "AUDIBLE" })
+    :Times(2)
+  utils.wait(30000)
+end
+
+
 --[[ Scenario ]]
 runner.Title("Preconditions")
 runner.Step("Clean environment", common.preconditions)
@@ -61,6 +92,11 @@ runner.Step("Wait 35 sec after IGNITION_ON", common.wait, {35000})
 runner.Step("Re-register App, check resumption data and HMI level", common.reRegisterApp, {
   1, checkAppId, checkResumptionData, checkResumptionHMILevel, "SUCCESS", 5000
 })
+
+runner.Step("Register 2 App ", common.registerApp, {2})
+runner.Step("Activate 2 app", common.activateApp, {2})
+runner.Step("unexpectedDisconnect 2 app", common.unexpectedDisconnect, {2})
+runner.Step("Re-register 2 App and check HMI level", reRegister2App)
 
 runner.Title("Postconditions")
 runner.Step("Stop SDL", common.postconditions)
