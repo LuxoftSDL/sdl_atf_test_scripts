@@ -1,0 +1,3 @@
+;Revoked application activation
+./test_scripts/Defects/7_1/3580/001_revoked_app_activation_after_device_consent_ptu.lua
+./test_scripts/Defects/7_1/3580/002_revoked_app_activation_after_device_consent_ignition_off.lua
