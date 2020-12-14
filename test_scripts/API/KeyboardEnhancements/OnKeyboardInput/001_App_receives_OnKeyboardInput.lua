@@ -16,11 +16,7 @@
 --  - Transfer 'OnKeyboardInput' notification to App
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local sgpParams = {
@@ -36,18 +32,18 @@ local function ptUpd(pTbl)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
-runner.Step("PTU", common.policyTableUpdate, { ptUpd })
-runner.Step("Activate App", common.activateApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
+common.Step("PTU", common.policyTableUpdate, { ptUpd })
+common.Step("Activate App", common.activateApp)
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU", common.sendOnSCU)
-runner.Step("App sends SetGP", common.sendSetGP, { sgpParams, common.result.success })
-runner.Step("HMI sends OnKI", common.sendOnKI, { { data = "k", event = "INPUT_KEY_MASK_ENABLED" } })
-runner.Step("HMI sends OnKI", common.sendOnKI, { { data = "k", event = "INPUT_KEY_MASK_DISABLED" } })
+common.Title("Test")
+common.Step("HMI sends OnSCU", common.sendOnSCU)
+common.Step("App sends SetGP", common.sendSetGP, { sgpParams, common.result.success })
+common.Step("HMI sends OnKI", common.sendOnKI, { { event = "INPUT_KEY_MASK_ENABLED" } })
+common.Step("HMI sends OnKI", common.sendOnKI, { { event = "INPUT_KEY_MASK_DISABLED" } })
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

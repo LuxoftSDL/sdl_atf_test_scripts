@@ -14,11 +14,7 @@
 --  - Respond with INVALID_DATA, success:false to App
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local dispCaps = common.getDispCaps()
@@ -46,17 +42,17 @@ local function getSGPParams(pKeys)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU", common.sendOnSCU, { dispCaps })
-for tc, data in pairs(tcs) do
-  runner.Title("TC[" .. string.format("%03d", tc) .. "]")
-  runner.Step("App sends SetGP", common.sendSetGP, { getSGPParams(data), common.result.invalid_data })
+common.Title("Test")
+common.Step("HMI sends OnSCU", common.sendOnSCU, { dispCaps })
+for tc, data in common.spairs(tcs) do
+  common.Title("TC[" .. string.format("%03d", tc) .. "]")
+  common.Step("App sends SetGP", common.sendSetGP, { getSGPParams(data), common.result.invalid_data })
 end
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

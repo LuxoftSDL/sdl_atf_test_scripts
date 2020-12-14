@@ -23,11 +23,7 @@
 --  - Not proceed with request and respond with INVALID_DATA, success:false to App
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local dispCaps1 = common.getDispCaps()
@@ -55,33 +51,33 @@ local function getSGPParams(pLayout, pNumOfKeys)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerAppWOPTU, { 1 })
-runner.Step("Register App", common.registerAppWOPTU, { 2 })
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerAppWOPTU, { 1 })
+common.Step("Register App", common.registerAppWOPTU, { 2 })
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU for App 1", common.sendOnSCU, { dispCaps1, nil, nil, 1 })
-runner.Step("HMI sends OnSCU for App 2", common.sendOnSCU, { dispCaps2, nil, nil, 2 })
+common.Title("Test")
+common.Step("HMI sends OnSCU for App 1", common.sendOnSCU, { dispCaps1, nil, nil, 1 })
+common.Step("HMI sends OnSCU for App 2", common.sendOnSCU, { dispCaps2, nil, nil, 2 })
 
-runner.Title("App 1")
-runner.Step("App 1 sends SetGP valid", common.sendSetGP,
+common.Title("App 1")
+common.Step("App 1 sends SetGP valid", common.sendSetGP,
   { getSGPParams("AZERTY", 1), common.result.success, nil, 1 })
-runner.Step("App 1 sends SetGP valid", common.sendSetGP,
+common.Step("App 1 sends SetGP valid", common.sendSetGP,
   { getSGPParams("AZERTY", 2), common.result.success, nil, 1 })
-runner.Step("App 1 sends SetGP invalid", common.sendSetGP,
+common.Step("App 1 sends SetGP invalid", common.sendSetGP,
   { getSGPParams("AZERTY", 3), common.result.invalid_data, nil, 1 })
-runner.Step("App 1 sends SetGP invalid", common.sendSetGP,
+common.Step("App 1 sends SetGP invalid", common.sendSetGP,
   { getSGPParams("NUMERIC", 1), common.result.invalid_data, nil, 1 })
 
-runner.Title("App 2")
-runner.Step("App 2 sends SetGP valid", common.sendSetGP,
+common.Title("App 2")
+common.Step("App 2 sends SetGP valid", common.sendSetGP,
   { getSGPParams("NUMERIC", 1), common.result.success, nil, 2 })
-runner.Step("App 2 sends SetGP invalid", common.sendSetGP,
+common.Step("App 2 sends SetGP invalid", common.sendSetGP,
   { getSGPParams("NUMERIC", 2), common.result.invalid_data, nil, 2 })
-runner.Step("App 2 sends SetGP invalid", common.sendSetGP,
+common.Step("App 2 sends SetGP invalid", common.sendSetGP,
   { getSGPParams("AZERTY", 1), common.result.invalid_data, nil, 2 })
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

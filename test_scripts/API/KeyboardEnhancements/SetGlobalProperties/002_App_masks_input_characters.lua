@@ -13,11 +13,7 @@
 --  - Proceed with request successfully
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local maskValues = { "ENABLE_INPUT_KEY_MASK", "DISABLE_INPUT_KEY_MASK", "USER_CHOICE_INPUT_KEY_MASK" }
@@ -33,16 +29,16 @@ local function getSGPParams(pMaskValue)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU", common.sendOnSCU)
-for _, v in pairs(maskValues) do
-  runner.Step("App sends SetGP " .. v, common.sendSetGP, { getSGPParams(v), common.result.success })
+common.Title("Test")
+common.Step("HMI sends OnSCU", common.sendOnSCU)
+for _, v in common.spairs(maskValues) do
+  common.Step("App sends SetGP " .. v, common.sendSetGP, { getSGPParams(v), common.result.success })
 end
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

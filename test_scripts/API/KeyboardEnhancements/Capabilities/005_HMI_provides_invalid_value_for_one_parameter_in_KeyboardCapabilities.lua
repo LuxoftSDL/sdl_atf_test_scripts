@@ -13,11 +13,7 @@
 --  - Respond with DATA_NOT_AVAILABLE, success:false to App
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local keyboardLayouts = { "QWERTY", "QWERTZ", "AZERTY", "NUMERIC" }
@@ -49,18 +45,18 @@ local function check(_, data)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-for tc, data in pairs(tcs) do
-  runner.Title("TC[" .. string.format("%03d", tc) .. "]")
+common.Title("Test")
+for tc, data in common.spairs(tcs) do
+  common.Title("TC[" .. string.format("%03d", tc) .. "]")
   local dispCaps = getDispCaps(data)
-  runner.Step("HMI sends OnSCU", common.sendOnSCU, { dispCaps, common.expected.no })
-  runner.Step("App sends GetSC", common.sendGetSC, { { }, common.result.data_not_available, check })
+  common.Step("HMI sends OnSCU", common.sendOnSCU, { dispCaps, common.expected.no })
+  common.Step("App sends GetSC", common.sendGetSC, { { }, common.result.data_not_available, check })
 end
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

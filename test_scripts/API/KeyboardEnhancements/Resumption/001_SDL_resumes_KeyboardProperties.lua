@@ -15,11 +15,7 @@
 --  - Send the values defined by App for 'KeyboardProperties' to HMI within 'UI.SetGlobalProperties' request
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local hashId
@@ -65,17 +61,17 @@ local function sendSetGP(...)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU", common.sendOnSCU)
-runner.Step("App sends SetGP", sendSetGP, { sgpParams, common.result.success })
+common.Title("Test")
+common.Step("HMI sends OnSCU", common.sendOnSCU)
+common.Step("App sends SetGP", sendSetGP, { sgpParams, common.result.success })
 common.Step("Unexpected disconnect", common.unexpectedDisconnect)
 common.Step("Connect mobile", common.connectMobile)
 common.Step("Re-register App", reRegisterApp)
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

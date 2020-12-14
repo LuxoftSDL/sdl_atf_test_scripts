@@ -31,11 +31,9 @@ do
   m.connectMobile = actions.mobile.connect
   m.wait = utils.wait
   m.json = actions.json
-  m.isTableEqual = utils.isTableEqual
-  m.printTable = utils.printTable
-  m.tableToString = utils.tableToString
   m.getPolicyAppId = actions.app.getPolicyAppId
   m.getParams = actions.app.getParams
+  m.spairs = utils.spairs
 end
 
 --[[ Common Variables ]]
@@ -128,7 +126,6 @@ end
 --! @return: none
 --]]
 function m.sendOnKI(pData, pTimes, pValidFunc, pAppId)
-  if not pData then pData = { } end
   if not pTimes then pTimes = 1 end
   if not pValidFunc then pValidFunc = function() return true end end
   m.getHMIConnection():SendNotification("UI.OnKeyboardInput", pData)

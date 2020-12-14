@@ -13,11 +13,7 @@
 --  - Respond with DATA_NOT_AVAILABLE, success:false to App
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Functions ]]
 local function check(_, data)
@@ -28,13 +24,13 @@ local function check(_, data)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-runner.Step("App sends GetSC", common.sendGetSC, { { }, common.result.data_not_available, check })
+common.Title("Test")
+common.Step("App sends GetSC", common.sendGetSC, { { }, common.result.data_not_available, check })
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

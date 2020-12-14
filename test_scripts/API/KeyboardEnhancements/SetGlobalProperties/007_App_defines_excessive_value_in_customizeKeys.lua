@@ -15,11 +15,7 @@
 --  - Respond with INVALID_DATA, success:false to App with appropriate message in 'info'
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local keys = { "$", "#", "&" }
@@ -56,26 +52,26 @@ local function check(_, data)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU 1", common.sendOnSCU, { getOnSCUParams(1) })
-runner.Step("App sends SetGP 1 success", common.sendSetGP,
+common.Title("Test")
+common.Step("HMI sends OnSCU 1", common.sendOnSCU, { getOnSCUParams(1) })
+common.Step("App sends SetGP 1 success", common.sendSetGP,
   { getSGPParams(1), common.result.success, check })
-runner.Step("App sends SetGP 2 invalid_data", common.sendSetGP,
+common.Step("App sends SetGP 2 invalid_data", common.sendSetGP,
   { getSGPParams(2), common.result.invalid_data, check })
-runner.Step("HMI sends OnSCU 1", common.sendOnSCU, { getOnSCUParams(2) })
-runner.Step("App sends SetGP 1 success", common.sendSetGP,
+common.Step("HMI sends OnSCU 1", common.sendOnSCU, { getOnSCUParams(2) })
+common.Step("App sends SetGP 1 success", common.sendSetGP,
   { getSGPParams(1), common.result.success, check })
-runner.Step("App sends SetGP 2 success", common.sendSetGP,
+common.Step("App sends SetGP 2 success", common.sendSetGP,
   { getSGPParams(2), common.result.success, check })
-runner.Step("App sends SetGP 3 invalid_data", common.sendSetGP,
+common.Step("App sends SetGP 3 invalid_data", common.sendSetGP,
   { getSGPParams(3), common.result.invalid_data, check })
-runner.Step("App sends SetGP 1 unknown layout invalid_data", common.sendSetGP,
+common.Step("App sends SetGP 1 unknown layout invalid_data", common.sendSetGP,
   { getSGPParams(1, "QWERTY"), common.result.invalid_data, check })
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

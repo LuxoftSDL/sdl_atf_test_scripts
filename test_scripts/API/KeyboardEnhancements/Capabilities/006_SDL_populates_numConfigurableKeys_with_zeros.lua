@@ -14,11 +14,7 @@
 --  - Provide 'KeyboardCapabilities' to App with 'numConfigurableKeys' set to zero
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local tcs = {
@@ -94,19 +90,19 @@ local function sendOnSCU(pSrc, pExp)
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-for n, tc in pairs(tcs) do
-  runner.Title("TC[" .. string.format("%03d", n) .. "]")
+common.Title("Test")
+for n, tc in common.spairs(tcs) do
+  common.Title("TC[" .. string.format("%03d", n) .. "]")
   local srcData = getDispCaps(tc.src)
   local expData = getDispCaps(tc.trg)
-  runner.Step("HMI sends OnSCU", sendOnSCU, { srcData, expData })
-  runner.Step("App sends GetSC", common.sendGetSC, { expData, common.success })
+  common.Step("HMI sends OnSCU", sendOnSCU, { srcData, expData })
+  common.Step("App sends GetSC", common.sendGetSC, { expData, common.success })
 end
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)

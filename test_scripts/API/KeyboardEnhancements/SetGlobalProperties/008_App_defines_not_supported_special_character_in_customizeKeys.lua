@@ -17,11 +17,7 @@
 --  - Respond with 'WARNINGS', success:true to App with appropriate message in 'info'
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
-local runner = require('user_modules/script_runner')
 local common = require('test_scripts/API/KeyboardEnhancements/common')
-
--- [[ Test Configuration ]]
-runner.testSettings.isSelfIncluded = false
 
 --[[ Local Variables ]]
 local msg = "some symbols might not be supported by system"
@@ -45,14 +41,14 @@ local function sendSetGP()
 end
 
 --[[ Scenario ]]
-runner.Title("Preconditions")
-runner.Step("Clean environment", common.preconditions)
-runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-runner.Step("Register App", common.registerApp)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
+common.Step("Register App", common.registerApp)
 
-runner.Title("Test")
-runner.Step("HMI sends OnSCU", common.sendOnSCU)
-runner.Step("App sends SetGP warnings", sendSetGP)
+common.Title("Test")
+common.Step("HMI sends OnSCU", common.sendOnSCU)
+common.Step("App sends SetGP warnings", sendSetGP)
 
-runner.Title("Postconditions")
-runner.Step("Stop SDL", common.postconditions)
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)
