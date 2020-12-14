@@ -12,9 +12,9 @@
 -- 3. App sends 'SetGlobalProperties' with 'maskInputCharacters' in 'KeyboardProperties'
 -- SDL does:
 --  - Transfer request to HMI
--- 4. HMI responds with erroneous 'WARNINGS' message
+-- 4. HMI responds with successful 'WARNINGS' message
 -- SDL does:
---  - Respond with 'WARNINGS', success:true to App with appropriate message in 'info'
+--  - Respond with 'WARNINGS', success:true to App
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/KeyboardEnhancements/common')
@@ -35,9 +35,9 @@ local function sendSetGP()
   local cid = common.getMobileSession():SendRPC("SetGlobalProperties", sgpParams)
   common.getHMIConnection():ExpectRequest("UI.SetGlobalProperties", dataToHMI)
   :Do(function(_, data)
-      common.getHMIConnection():SendError(data.id, data.method, "WARNINGS", msg)
+      common.getHMIConnection():SendResponse(data.id, data.method, "WARNINGS", {})
     end)
-  common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "WARNINGS", info = msg })
+  common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "WARNINGS" })
 end
 
 --[[ Scenario ]]

@@ -19,7 +19,7 @@ local common = require('test_scripts/API/KeyboardEnhancements/common')
 local keyboardLayouts = { "QWERTY", "QWERTZ", "AZERTY", "NUMERIC" }
 
 local tcs = {
-  [01] = { maskInputCharactersSupported = "false" },
+  [01] = { maskInputCharactersSupported = "false" }, --invalid type
   [02] = { supportedKeyboardLayouts = { } },
   [03] = { supportedKeyboardLayouts = common.getArrayValue(keyboardLayouts, 1001) },
   [04] = { configurableKeys = { { keyboardLayout = "QWERTY", numConfigurableKeys = "0" }} },
