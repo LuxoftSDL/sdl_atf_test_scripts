@@ -11,6 +11,7 @@ local events = require("events")
 local bson = require('bson4lua')
 local SDL = require('SDL')
 local hmi_values = require("user_modules/hmi_values")
+local test = require("user_modules/dummy_connecttest")
 
 --[[ General configuration parameters ]]
 config.defaultProtocolVersion = 5
@@ -30,6 +31,7 @@ common.testSettings = runner.testSettings
 common.Title = runner.Title
 common.Step = runner.Step
 common.getDefaultHMITable = hmi_values.getDefaultHMITable
+common.spairs = utils.spairs
 
 common.bsonType = {
     DOUBLE   = 0x01,
@@ -99,6 +101,8 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         encryption = false
     })
     :ValidIf(function(_, data)
+        test.mobileSession[pAppId].hashCode = data.binaryData
+        test.mobileSession[pAppId].sessionId = data.sessionId
         local actPayload = bson.to_table(data.binaryData)
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
@@ -246,6 +250,55 @@ function common.getCapWithMandatoryExp()
     initialCap.VehicleInfo.GetVehicleType.mandatory = true
     initialCap.BasicCommunication.GetSystemInfo.mandatory = true
     return initialCap
+end
+
+function common.setStringBsonValue(pValue)
+    return { type = common.bsonType.STRING, value = pValue }
+end
+
+function common.getRpcServiceAckParams(pHMIcap)
+  local vehicleTypeParams = pHMIcap.VehicleInfo.GetVehicleType.params.vehicleType
+  local systemInfoParams = pHMIcap.BasicCommunication.GetSystemInfo.params
+  local ackParams = {
+    make = common.setStringBsonValue(vehicleTypeParams.make),
+    model = common.setStringBsonValue(vehicleTypeParams.model),
+    ["model year"] = common.setStringBsonValue(vehicleTypeParams.modelYear),
+    trim = common.setStringBsonValue(vehicleTypeParams.trim),
+    systemSoftwareVersion = common.setStringBsonValue(systemInfoParams.ccpu_version),
+    systemHardwareVersion = common.setStringBsonValue(systemInfoParams.systemHardwareVersion)
+  }
+  for key, KeyValue in pairs(ackParams) do
+    if not KeyValue.value then
+      ackParams[key] = nil
+    end
+  end
+  return ackParams
+end
+
+function common.endRPCSevice()
+    local mobSession = common.getMobileSession(1)
+    local msg = {
+        serviceType = common.serviceType.RPC,
+        frameType = constants.FRAME_TYPE.CONTROL_FRAME,
+        frameInfo = constants.FRAME_INFO.END_SERVICE,
+        binaryData = mobSession.hashCode,
+        encryption = false
+    }
+    mobSession:Send(msg)
+    local event = actions.run.createEvent()
+    -- prepare event to expect
+    event.matches = function(_, data)
+        return data.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
+        data.serviceType == common.serviceType.RPC and
+        (data.frameInfo == constants.FRAME_INFO.END_SERVICE_ACK or
+            data.frameInfo == constants.FRAME_INFO.END_SERVICE_NACK)
+    end
+
+    mobSession:ExpectEvent(event, "EndService ACK")
+    :ValidIf(function(_, data)
+        if data.frameInfo == constants.FRAME_INFO.END_SERVICE_ACK then return true
+        else return false, "EndService NACK received" end
+    end)
 end
 
 function common.getHMIParamsWithOutRequests(pParams)
