@@ -32,6 +32,11 @@ common.Title = runner.Title
 common.Step = runner.Step
 common.getDefaultHMITable = hmi_values.getDefaultHMITable
 common.spairs = utils.spairs
+common.deleteSession = actions.mobile.deleteSession
+common.ptsTable = actions.sdl.getPTS
+common.getParams = actions.app.getParams
+common.isTableEqual = utils.isTableEqual
+common.failTestStep = actions.run.fail
 
 common.bsonType = {
     DOUBLE   = 0x01,
@@ -44,6 +49,25 @@ common.bsonType = {
 }
 
 local hmiDefaultCapabilities = common.getDefaultHMITable()
+
+common.vehicleTypeInfoParams = {
+  default = {
+    make = "Ford",
+    model = "Focus",
+    modelYear = 2015,
+    trim = "SEL",
+    ccpu_version = "12345_TV",
+    systemHardwareVersion = "V4567_GJK"
+  },
+  custom = {
+    make = "OEM1",
+    model = "Mustang",
+    modelYear = 2020,
+    trim = "LES",
+    ccpu_version = "2020_TV",
+    systemHardwareVersion = "2020_GJK"
+  }
+}
 
 --[[ Tests Configuration ]]
 runner.testSettings.isSelfIncluded = false
@@ -336,23 +360,20 @@ function common.registerApp(responseExpectedData, pAppId)
         end
         return isResult, errorMsg
     end)
-end
 
-function common.getHMIParamsWithOutRequests(pParams)
-  local params = pParams or utils.cloneTable(hmiDefaultCapabilities)
-  params.RC.GetCapabilities.occurrence = 0
-  params.UI.GetSupportedLanguages.occurrence = 0
-  params.UI.GetCapabilities.occurrence = 0
-  params.VR.GetSupportedLanguages.occurrence = 0
-  params.VR.GetCapabilities.occurrence = 0
-  params.TTS.GetSupportedLanguages.occurrence = 0
-  params.TTS.GetCapabilities.occurrence = 0
-  params.Buttons.GetCapabilities.occurrence = 0
-  params.VehicleInfo.GetVehicleType.occurrence = 0
-  params.UI.GetLanguage.occurrence = 0
-  params.VR.GetLanguage.occurrence = 0
-  params.TTS.GetLanguage.occurrence = 0
-  return params
+function common.getHmiCap(pVehicleTypeInfo)
+  if not pVehicleTypeInfo then pVehicleTypeInfo = common.vehicleTypeInfoParams.default end
+  local hmicap = common.getCapWithMandatoryExp()
+  local getVehicleTypeParams = hmicap.VehicleInfo.GetVehicleType.params.vehicleType
+  getVehicleTypeParams.make = pVehicleTypeInfo.make
+  getVehicleTypeParams.model = pVehicleTypeInfo.model
+  getVehicleTypeParams.modelYear = pVehicleTypeInfo.modelYear
+  getVehicleTypeParams.trim = pVehicleTypeInfo.trim
+
+  local systemInfoParams = hmicap.BasicCommunication.GetSystemInfo.params
+  systemInfoParams.ccpu_version = pVehicleTypeInfo.ccpu_version
+  systemInfoParams.systemHardwareVersion = pVehicleTypeInfo.systemHardwareVersion
+  return hmicap
 end
 
 function common.ignitionOff()
