@@ -5,23 +5,16 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local hmicap = common.getCapWithMandatoryExp()
-local getVehicleTypeParams = hmicap.VehicleInfo.GetVehicleType.params.vehicleType
-getVehicleTypeParams.make = "Ford"
-getVehicleTypeParams.model = "Focus"
-getVehicleTypeParams.modelYear = 2015
-getVehicleTypeParams.trim = "SEL"
-
-local getSystemInfoParams = hmicap.BasicCommunication.GetSystemInfo.params
-getSystemInfoParams.ccpu_version = "12345_TV"
-getSystemInfoParams.systemHardwareVersion = "V4567_GJK"
-
-local rpcServiceParams = {
-  reqParams = {
-    protocolVersion = common.setStringBsonValue("5.3.0")
-  },
-  ackParams = common.getRpcServiceAckParams(hmicap)
+local vehicleTypeData = {
+  make = "Ford",
+  model = "Focus",
+  modelYear = "2015",
+  trim = "SEL",
+  ccpu_version = "12345_TV",
+  systemHardwareVersion = "V4567_GJK"
 }
+local hmicap = common.setHMIcap(vehicleTypeData)
+local rpcServiceAckParams = common.getRpcServiceAckParams(hmicap)
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -29,8 +22,7 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmicap })
 
 common.Title("Test")
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startServiceUnprotectedACK,
-  { 1, common.serviceType.RPC, rpcServiceParams.reqParams, rpcServiceParams.ackParams })
+common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

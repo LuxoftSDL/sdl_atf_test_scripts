@@ -5,7 +5,11 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local removeCreatedSession = true
 local paramsToExclude = { "model", "modelYear", "trim", "systemHardwareVersion" }
+local rpcServiceReqParams = {
+  protocolVersion = common.setStringBsonValue("5.3.0")
+}
 local vehicleTypeData = {
   make = "Ford",
   model = "Focus",
@@ -15,7 +19,6 @@ local vehicleTypeData = {
   systemHardwareVersion = "V4567_GJK"
 }
 local hmicap = common.setHMIcap(vehicleTypeData)
-local removeCreatedSession = true
 
 --[[ Local Functions ]]
 local function getHMICap(pParamsToExclude)
@@ -31,6 +34,16 @@ local function getHMICap(pParamsToExclude)
   return out
 end
 
+local function registerApp(pParamsToExclude)
+  local vehicleData  = common.cloneTable(vehicleTypeData)
+  for _, value in pairs(pParamsToExclude) do
+    for key in pairs(vehicleData) do
+      if key == value then vehicleData[key] = nil end
+    end
+  end
+  common.registerApp(vehicleData)
+end
+
 --[[ Scenario ]]
 for _, parameter in common.spairs(paramsToExclude) do
   common.Title("Test with excluding " .. parameter .. " parameter")
@@ -42,6 +55,7 @@ for _, parameter in common.spairs(paramsToExclude) do
   common.Title("Test")
   common.Step("Vehicle type data without " .. parameter .. " in StartServiceAck", common.startRpcService,
     { common.getRpcServiceAckParams(hmiCap) })
+  common.Step("RAI, Vehicle type data in StartServiceAck", registerApp, { { parameter } })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions, { removeCreatedSession })
@@ -55,6 +69,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCus
 common.Title("Test")
 common.Step("Vehicle type data without all not mandatory params in StartServiceAck", common.startRpcService,
   { common.getRpcServiceAckParams(getHMICap(paramsToExclude)) })
+common.Step("RAI, Vehicle type data in StartServiceAck", registerApp, { paramsToExclude })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

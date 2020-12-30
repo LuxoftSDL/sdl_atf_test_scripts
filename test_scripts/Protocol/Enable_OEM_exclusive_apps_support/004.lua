@@ -23,7 +23,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCus
 
 common.Title("Test")
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
-common.Step("EndService", common.endRPCSevice)
+common.Step("RAI, Vehicle type data in StartServiceAck", common.registerApp, { vehicleTypeData })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

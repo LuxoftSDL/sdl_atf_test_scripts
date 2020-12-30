@@ -16,6 +16,13 @@ local vehicleTypeData = {
 local hmicap = common.setHMIcap(vehicleTypeData)
 local rpcServiceAckParams = common.getRpcServiceAckParams(hmicap)
 
+--[[ Local Functions ]]
+local function unregisterAppInterface()
+  local cid = common.getMobileSession():SendRPC("UnregisterAppInterface",{})
+  common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppUnregistered", { unexpectedDisconnect = false })
+  common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS"})
+end
+
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
@@ -23,7 +30,8 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCus
 
 common.Title("Test")
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
-common.Step("EndService", common.endRPCSevice)
+common.Step("RAI, Vehicle type data in StartServiceAck", common.registerApp, { vehicleTypeData })
+common.Step("UnregisterAppInterface", unregisterAppInterface)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
