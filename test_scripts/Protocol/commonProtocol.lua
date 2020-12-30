@@ -130,7 +130,7 @@ function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload,
     end)
 end
 
-function common.registerAppUpdatedProtocolVersion(hasPTU, responseExpectedData)
+function common.registerAppUpdatedProtocolVersion(hasPTU)
     local appId = 1
     local session = common.getMobileSession()
     local msg = {
@@ -160,14 +160,7 @@ function common.registerAppUpdatedProtocolVersion(hasPTU, responseExpectedData)
             end
         end)
 
-        local responseData = { success = true, resultCode = "SUCCESS" }
-        if responseExpectedData then
-            for key, value in pairs(responseExpectedData) do
-                responseData[key] = value
-            end
-        end
-
-        session:ExpectResponse(corId, responseData)
+        session:ExpectResponse(corId, { success = true, resultCode = "SUCCESS" })
         :Do(function()
             session:ExpectNotification("OnHMIStatus",
                 { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
@@ -301,6 +294,50 @@ function common.endRPCSevice()
     end)
 end
 
+function common.registerApp(responseExpectedData, pAppId)
+    pAppId = 1 or pAppId
+    local session = common.getMobileSession(pAppId)
+    local corId = session:SendRPC("RegisterAppInterface", common.app.getParams(pAppId))
+
+    common.hmi.getConnection():ExpectNotification("BasicCommunication.OnAppRegistered",
+        { application = { appName = common.app.getParams(pAppId).appName } })
+    :Do(function(_, d1)
+        common.app.setHMIId(d1.params.application.appID, pAppId)
+    end)
+
+    local responseData = { success = true, resultCode = "SUCCESS" }
+    responseData.systemSoftwareVersion = responseExpectedData.ccpu_version
+    responseData.systemHardwareVersion = responseExpectedData.systemHardwareVersion
+    local vehicleType = {
+        make = responseExpectedData.make,
+        model = responseExpectedData.model,
+        modelYear = responseExpectedData.modelYear,
+        trim = responseExpectedData.trim
+    }
+
+    session:ExpectResponse(corId, responseData)
+    :Do(function()
+        session:ExpectNotification("OnHMIStatus",
+            { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
+    end)
+    :ValidIf(function(_, data)
+        local isResult  = true
+        local errorMsg = ""
+        if not responseExpectedData.systemHardwareVersion and data.systemHardwareVersion then
+            errorMsg = errorMsg .. "\n RAI response contains unexpected systemHardwareVersion parameter"
+            isResult = false
+        end
+
+        if utils.isTableEqual(data.payload.vehicleType, vehicleType) == false then
+            errorMsg = "\nData from vehicleType structure in RAI response does not correspond to expected one" ..
+            "\nExpected result:\n" .. utils.tableToString(vehicleType) ..
+            "\nActual result:\n" .. utils.tableToString(data.payload.vehicleType)
+            isResult = false
+        end
+        return isResult, errorMsg
+    end)
+end
+
 function common.getHMIParamsWithOutRequests(pParams)
   local params = pParams or utils.cloneTable(hmiDefaultCapabilities)
   params.RC.GetCapabilities.occurrence = 0
@@ -361,6 +398,33 @@ function common.ignitionOff()
     end
   end
   actions.run.runAfter(forceStopSDL, timeout + 500)
+end
+
+function common.setHMIcap(pVehicleTypeData)
+    local hmicap = common.getCapWithMandatoryExp()
+    local getVehicleTypeParams = hmicap.VehicleInfo.GetVehicleType.params.vehicleType
+    getVehicleTypeParams.make = pVehicleTypeData.make
+    getVehicleTypeParams.model = pVehicleTypeData.model
+    getVehicleTypeParams.modelYear = pVehicleTypeData.modelYear
+    getVehicleTypeParams.trim = pVehicleTypeData.trim
+
+    local getSystemInfoParams = hmicap.BasicCommunication.GetSystemInfo.params
+    getSystemInfoParams.ccpu_version = pVehicleTypeData.ccpu_version
+    getSystemInfoParams.systemHardwareVersion = pVehicleTypeData.systemHardwareVersion
+
+    return hmicap
+end
+
+local postconditionsOrig = ssl.postconditions
+function common.postconditions(isRemoveSession)
+    postconditionsOrig()
+     if isRemoveSession == true then actions.mobile.deleteSession() end
+end
+
+function common.startRpcService(pAckParams, pAppId)
+    pAppId = 1 or pAppId
+    local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
+    common.startServiceUnprotectedACK( pAppId, common.serviceType.RPC, reqParams, pAckParams)
 end
 
 return common
