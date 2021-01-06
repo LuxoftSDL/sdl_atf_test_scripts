@@ -18,7 +18,7 @@ local function verifyPTSnapshot()
     common.failTestStep("Policy table snapshot was not created")
   else
     local hardware_version = ptsTable.policy_table.module_meta.hardware_version
-    if not common.isTableEqual(hardware_version, systemHardwareVersion ) then
+    if not hardware_version == systemHardwareVersion then
       common.failTestStep("Incorrect systemHardwareVersion value\n" ..
         " Expected: " .. systemHardwareVersion  .. "\n" ..
         " Actual: " .. tostring(hardware_version) .. "\n" )

@@ -5,7 +5,6 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local removeCreatedSession = true
 local tcs = {
   [01] = string.rep("a", 501), -- out of upper bound value
   [02] = "", -- out of lower bound value
@@ -37,5 +36,5 @@ for tc, data in common.spairs(tcs) do
     { rpcServiceAckParams })
 
   common.Title("Postconditions")
-  common.Step("Stop SDL", common.postconditions, { removeCreatedSession })
+  common.Step("Stop SDL", common.postconditions)
 end
