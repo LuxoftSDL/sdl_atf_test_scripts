@@ -32,7 +32,7 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
 
 common.Title("Test")
-common.Step("Register App, PTU is triggered", common.registerApp)
+common.Step("Register App, PTU is triggered", common.registerAppEx)
 common.Step("Check that PTS contains systemHardwareVersion", verifyPTSnapshot)
 
 common.Title("Postconditions")

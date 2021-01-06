@@ -37,6 +37,10 @@ common.getParams = actions.app.getParams
 common.isTableEqual = utils.isTableEqual
 common.failTestStep = actions.run.fail
 common.initHMI_onReady = test.initHMI_onReady
+common.getHMICapabilitiesFromFile = actions.sdl.getHMICapabilitiesFromFile
+common.setHMICapabilitiesToFile = actions.sdl.setHMICapabilitiesToFile
+common.createSession = actions.mobile.createSession
+common.getHMIConnection = actions.hmi.getConnection
 
 common.bsonType = {
     DOUBLE   = 0x01,
@@ -319,8 +323,8 @@ function common.endRPCSevice()
     end)
 end
 
-function common.registerApp(responseExpectedData, pAppId)
-    pAppId = 1 or pAppId
+function common.registerAppEx(responseExpectedData, pAppId)
+    pAppId = pAppId or 1
     local session = common.getMobileSession(pAppId)
     local corId = session:SendRPC("RegisterAppInterface", common.app.getParams(pAppId))
 

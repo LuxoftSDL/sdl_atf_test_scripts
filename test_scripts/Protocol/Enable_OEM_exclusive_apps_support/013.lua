@@ -4,15 +4,20 @@
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
+--[[ Test Configuration ]]
+config.defaultProtocolVersion = 4 -- Set 4 protocol as default for script
+
 --[[ Local Variables ]]
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
 
 --[[ Local Functions ]]
-local function unregisterAppInterface()
-  local cid = common.getMobileSession():SendRPC("UnregisterAppInterface",{})
-  common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppUnregistered", { unexpectedDisconnect = false })
-  common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS"})
+local function registerApp(responseExpectedData, pAppId)
+  if not pAppId then pAppId = 1 end
+  local session = common.createSession(pAppId)
+  session:StartService(7)
+  :Do(function()
+     common.registerAppEx(responseExpectedData, pAppId)
+  end)
 end
 
 --[[ Scenario ]]
@@ -21,9 +26,7 @@ common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
 
 common.Title("Test")
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
-common.Step("Vehicle type data in RAI response", common.registerAppEx, { common.vehicleTypeInfoParams.default })
-common.Step("UnregisterAppInterface", unregisterAppInterface)
+common.Step("Vehicle type data in RAI", registerApp, { common.vehicleTypeInfoParams.default })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

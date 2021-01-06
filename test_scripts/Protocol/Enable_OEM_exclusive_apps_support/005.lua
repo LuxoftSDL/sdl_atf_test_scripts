@@ -29,7 +29,7 @@ local function registerApp(pParamsToExclude)
       if key == value then vehicleData[key] = nil end
     end
   end
-  common.registerApp(vehicleData)
+  common.registerAppEx(vehicleData)
 end
 
 --[[ Scenario ]]
