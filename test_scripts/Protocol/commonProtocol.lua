@@ -91,12 +91,14 @@ end
 function common.startServiceProtectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     mobSession:StartSecureService(pServiceId, bson.to_bytes(pRequestPayload))
+    common.log("MOB->SDL: App" ..pAppId.." StartSecureService(" ..pServiceId.. ") " .. utils.tableToString(pRequestPayload))
     mobSession:ExpectControlMessage(pServiceId, {
       frameInfo = common.frameInfo.START_SERVICE_ACK,
       encryption = true
     })
     :ValidIf(function(_, data)
         local actPayload = bson.to_table(data.binaryData)
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 
@@ -144,7 +146,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         test.mobileSession[pAppId].hashCode = data.binaryData
         test.mobileSession[pAppId].sessionId = data.sessionId
         local actPayload = bson.to_table(data.binaryData)
-        common.log("SDL->MOB: App" ..pAppId.." StartService(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 end
@@ -248,19 +250,50 @@ function common.setProtectedServicesInIni()
   common.sdl.setSDLIniParameter("ForceProtectedService", "0x0A, 0x0B")
 end
 
+local function getSystemTimeValue()
+  local dd = os.date("*t")
+  return {
+    millisecond = 0,
+    second = dd.sec,
+    minute = dd.min,
+    hour = dd.hour,
+    day = dd.day,
+    month = dd.month,
+    year = dd.year,
+    tz_hour = 2,
+    tz_minute = 0
+  }
+end
+
+local function registerGetSystemTimeResponse()
+  actions.getHMIConnection():ExpectRequest("BasicCommunication.GetSystemTime")
+  :Do(function(_, data)
+      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { systemTime = getSystemTimeValue() })
+    end)
+  :Pin()
+  :Times(AnyNumber())
+end
+
 function common.startWithCustomCap(pHMIParams)
     local event = actions.run.createEvent()
     actions.init.SDL()
     :Do(function()
         actions.init.HMI()
         :Do(function()
-            actions.init.HMI_onReady(pHMIParams or hmiDefaultCapabilities)
+            local rid = actions.getHMIConnection():SendRequest("MB.subscribeTo", {
+                propertyName = "BasicCommunication.OnSystemTimeReady" })
+            actions.getHMIConnection():ExpectResponse(rid)
             :Do(function()
-                actions.init.connectMobile()
+                actions.init.HMI_onReady(pHMIParams or hmiDefaultCapabilities)
                 :Do(function()
-                    actions.init.allowSDL()
+                    actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemTimeReady")
+                    registerGetSystemTimeResponse()
+                    actions.init.connectMobile()
                     :Do(function()
-                        actions.hmi.getConnection():RaiseEvent(event, "Start event")
+                        actions.init.allowSDL()
+                        :Do(function()
+                            actions.hmi.getConnection():RaiseEvent(event, "Start event")
+                        end)
                     end)
                 end)
             end)
@@ -296,7 +329,7 @@ function common.getRpcServiceAckParams(pHMIcap)
     local ackParams = {
         make = common.setStringBsonValue(vehicleTypeParams.make),
         model = common.setStringBsonValue(vehicleTypeParams.model),
-        ["model year"] = common.setStringBsonValue(vehicleTypeParams.modelYear),
+        modelYear = common.setStringBsonValue(vehicleTypeParams.modelYear),
         trim = common.setStringBsonValue(vehicleTypeParams.trim),
         systemSoftwareVersion = common.setStringBsonValue(systemInfoParams.ccpu_version),
         systemHardwareVersion = common.setStringBsonValue(systemInfoParams.systemHardwareVersion)

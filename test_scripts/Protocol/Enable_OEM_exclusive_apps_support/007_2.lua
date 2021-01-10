@@ -15,6 +15,23 @@ local vehicleTypeInfoParams = {
 }
 
 --[[ Local Functions ]]
+local function getRpcServiceAckParams(pVehicleTypeInfoParams)
+  local ackParams = {
+    make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
+    model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
+    modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
+    trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
+    systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
+    systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
+  }
+  for key, KeyValue in pairs(ackParams) do
+    if not KeyValue.value then
+      ackParams[key] = nil
+    end
+  end
+  return ackParams
+end
+
 local function updateHMICapabilitiesFile()
   local hmiCapTbl = common.getHMICapabilitiesFromFile()
   hmiCapTbl.VehicleInfo.vehicleType.make = common.vehicleTypeInfoParams.default.make
@@ -28,7 +45,6 @@ local function startNoResponseGetVehicleType()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
   hmiCap.VehicleInfo.GetVehicleType = nil
   common.startWithCustomCap(hmiCap)
-  :Timeout(15000) -- because of SDL delays requests of capabilities
 end
 
 
@@ -39,7 +55,8 @@ common.Step("Update HMI capabilities", updateHMICapabilitiesFile)
 common.Step("Start SDL, HMI does not send GetSystemInfo notification", startNoResponseGetVehicleType )
 
 common.Title("Test")
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { vehicleTypeInfoParams })
+common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
+  common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
 common.Title("Postconditions")

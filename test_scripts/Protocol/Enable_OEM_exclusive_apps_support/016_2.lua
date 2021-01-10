@@ -29,14 +29,29 @@ local vehicleTypeInfoParams = {
 }
 
 local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-local customHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
 
 --[[ Local Functions ]]
+local function getRpcServiceAckParams(pVehicleTypeInfoParams)
+  local ackParams = {
+    make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
+    model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
+    modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
+    trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
+    systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
+    systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
+  }
+  for key, KeyValue in pairs(ackParams) do
+    if not KeyValue.value then
+      ackParams[key] = nil
+    end
+  end
+  return ackParams
+end
+
 local function startNoResponseGetVehicleType(pHmiCap)
   local hmiCap = common.setHMIcap(pHmiCap)
   hmiCap.VehicleInfo.GetVehicleType = nil
   common.startWithCustomCap(hmiCap)
-  :Timeout(15000) -- because of SDL delays requests of capabilities
 end
 
 local function updateHMICapabilitiesFile(pVehicleTypeParams)
@@ -56,8 +71,10 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCus
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
-common.Step("Start SDL, HMI, connect Mobile, start Session", startNoResponseGetVehicleType, { customHmiCap })
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { vehicleTypeInfoParams })
+common.Step("Start SDL, HMI, connect Mobile, start Session",
+  startNoResponseGetVehicleType, { common.vehicleTypeInfoParams.custom })
+common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
+  common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
 common.Title("Postconditions")

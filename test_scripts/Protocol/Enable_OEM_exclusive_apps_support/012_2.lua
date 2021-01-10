@@ -18,9 +18,33 @@ local tcs = {
   [03] = 1 -- invalid type
 }
 local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-local rpcServiceAckParams = common.getRpcServiceAckParams(defaultHmiCap)
+local vehicleTypeInfoParams = {
+  make = common.vehicleTypeInfoParams.custom.make,
+  model = common.vehicleTypeInfoParams.custom.model,
+  modelYear = common.vehicleTypeInfoParams.custom.modelYear,
+  trim = common.vehicleTypeInfoParams.custom.trim,
+  ccpu_version = common.vehicleTypeInfoParams.default.ccpu_version,
+  systemHardwareVersion = common.vehicleTypeInfoParams.default.systemHardwareVersion
+}
 
 --[[ Local Functions ]]
+local function getRpcServiceAckParams(pVehicleTypeInfoParams)
+  local ackParams = {
+    make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
+    model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
+    modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
+    trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
+    systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
+    systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
+  }
+  for key, KeyValue in pairs(ackParams) do
+    if not KeyValue.value then
+      ackParams[key] = nil
+    end
+  end
+  return ackParams
+end
+
 local function setHmiCap(pTC, pVehicleTypeInfo)
   local hmiCap = common.setHMIcap(pVehicleTypeInfo)
   local systemInfoParams = hmiCap.BasicCommunication.GetSystemInfo.params
@@ -40,7 +64,7 @@ for tc, data in common.spairs(tcs) do
   common.Title("Test")
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { customHmiCap })
   common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService,
-    { rpcServiceAckParams })
+    { getRpcServiceAckParams(vehicleTypeInfoParams) })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

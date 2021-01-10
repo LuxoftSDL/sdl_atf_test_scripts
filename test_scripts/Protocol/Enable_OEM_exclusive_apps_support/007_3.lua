@@ -14,6 +14,23 @@ local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
 hmiCap.VehicleInfo.GetVehicleType.params.vehicleType = {}
 
 --[[ Local Functions ]]
+local function getRpcServiceAckParams(pVehicleTypeInfoParams)
+  local ackParams = {
+    make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
+    model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
+    modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
+    trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
+    systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
+    systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
+  }
+  for key, KeyValue in pairs(ackParams) do
+    if not KeyValue.value then
+      ackParams[key] = nil
+    end
+  end
+  return ackParams
+end
+
 local function updateHMICapabilitiesFile()
   local hmiCapTbl = common.getHMICapabilitiesFromFile()
   hmiCapTbl.VehicleInfo.vehicleType.make = common.vehicleTypeInfoParams.default.make
@@ -30,7 +47,8 @@ common.Step("Update HMI capabilities", updateHMICapabilitiesFile)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
 
 common.Title("Test")
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { vehicleTypeInfoParams })
+common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
+  common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
 common.Title("Postconditions")

@@ -14,6 +14,7 @@ end
 --[[ Local Variables ]]
 local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 local customHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
+local rpcServiceAckParams = common.getRpcServiceAckParams(customHmiCap)
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -23,8 +24,9 @@ common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { customHmiCap })
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { common.vehicleTypeInfoParams.default })
-common.Step("Vehicle type data in RAI", common.registerAppEx, { common.vehicleTypeInfoParams.default })
+common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
+  common.startRpcService, { rpcServiceAckParams })
+common.Step("Vehicle type data in RAI", common.registerAppEx, { common.vehicleTypeInfoParams.custom })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

@@ -24,7 +24,7 @@ local rpcServiceParams = {
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Init SDL certificates", common.initSDLCertificates, { "./files/Security/client_credential.pem" , true })
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
 common.Step("Register App", common.registerApp)
 common.Step("Activate App", common.activateApp)
 
