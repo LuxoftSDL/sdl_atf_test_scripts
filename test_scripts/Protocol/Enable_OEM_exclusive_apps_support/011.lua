@@ -24,7 +24,7 @@ for tc, data in common.spairs(tcs) do
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
   local hmiCap = setHmiCap(data)
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
+  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 
   common.Title("Test")
   local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)

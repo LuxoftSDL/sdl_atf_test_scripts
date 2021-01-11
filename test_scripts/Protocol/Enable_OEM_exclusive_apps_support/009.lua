@@ -36,12 +36,12 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update HMI capabilities", updateHMICapabilitiesFile)
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Ignition on, Start SDL, HMI does not send GetSystemInfo notification",
-  common.startWithCustomCap, { hmiCapWithOutRequests })
+  common.start, { hmiCapWithOutRequests })
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { common.vehicleTypeInfoParams.custom })
 

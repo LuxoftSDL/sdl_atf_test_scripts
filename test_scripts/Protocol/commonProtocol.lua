@@ -37,11 +37,14 @@ common.ptsTable = actions.sdl.getPTS
 common.getParams = actions.app.getParams
 common.isTableEqual = utils.isTableEqual
 common.failTestStep = actions.run.fail
-common.initHMI_onReady = ssl.initHMI_onReady
 common.getHMICapabilitiesFromFile = actions.sdl.getHMICapabilitiesFromFile
 common.setHMICapabilitiesToFile = actions.sdl.setHMICapabilitiesToFile
 common.createSession = actions.mobile.createSession
 common.getHMIConnection = actions.hmi.getConnection
+common.toString = utils.toString
+common.wait = utils.wait
+common.getMobileSession = actions.getMobileSession
+common.tableToString = utils.tableToString
 
 common.bsonType = {
     DOUBLE   = 0x01,
@@ -54,6 +57,7 @@ common.bsonType = {
 }
 
 local hmiDefaultCapabilities = common.getDefaultHMITable()
+common.isCacheUsed = false
 
 common.vehicleTypeInfoParams = {
   default = {
@@ -150,6 +154,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 end
+
 
 function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtensionFunc)
     if pExtensionFunc then pExtensionFunc() end
@@ -248,58 +253,6 @@ end
 
 function common.setProtectedServicesInIni()
   common.sdl.setSDLIniParameter("ForceProtectedService", "0x0A, 0x0B")
-end
-
-local function getSystemTimeValue()
-  local dd = os.date("*t")
-  return {
-    millisecond = 0,
-    second = dd.sec,
-    minute = dd.min,
-    hour = dd.hour,
-    day = dd.day,
-    month = dd.month,
-    year = dd.year,
-    tz_hour = 2,
-    tz_minute = 0
-  }
-end
-
-local function registerGetSystemTimeResponse()
-  actions.getHMIConnection():ExpectRequest("BasicCommunication.GetSystemTime")
-  :Do(function(_, data)
-      actions.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { systemTime = getSystemTimeValue() })
-    end)
-  :Pin()
-  :Times(AnyNumber())
-end
-
-function common.startWithCustomCap(pHMIParams)
-    local event = actions.run.createEvent()
-    actions.init.SDL()
-    :Do(function()
-        actions.init.HMI()
-        :Do(function()
-            local rid = actions.getHMIConnection():SendRequest("MB.subscribeTo", {
-                propertyName = "BasicCommunication.OnSystemTimeReady" })
-            actions.getHMIConnection():ExpectResponse(rid)
-            :Do(function()
-                actions.init.HMI_onReady(pHMIParams or hmiDefaultCapabilities)
-                :Do(function()
-                    actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemTimeReady")
-                    registerGetSystemTimeResponse()
-                    actions.init.connectMobile()
-                    :Do(function()
-                        actions.init.allowSDL()
-                        :Do(function()
-                            actions.hmi.getConnection():RaiseEvent(event, "Start event")
-                        end)
-                    end)
-                end)
-            end)
-        end)
-    end)
-    return actions.hmi.getConnection():ExpectEvent(event, "Start event")
 end
 
 function common.getVehicleTypeDataFromInitialCap()

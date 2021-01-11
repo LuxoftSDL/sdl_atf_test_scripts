@@ -44,7 +44,7 @@ end
 local function startErrorResponseGetVehicleType()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
   hmiCap.VehicleInfo.GetVehicleType = nil
-  common.startWithCustomCap(hmiCap)
+  common.start(hmiCap)
   common.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleType")
   :Do(function(_, data)
     common.getHMIConnection():SendError(data.id, data.method, "GENERIC_ERROR", "info message")

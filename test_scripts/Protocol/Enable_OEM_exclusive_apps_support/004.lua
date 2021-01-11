@@ -11,7 +11,7 @@ local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 
 common.Title("Test")
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })

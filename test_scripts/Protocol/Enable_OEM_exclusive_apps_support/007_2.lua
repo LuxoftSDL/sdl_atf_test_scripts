@@ -44,7 +44,7 @@ end
 local function startNoResponseGetVehicleType()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
   hmiCap.VehicleInfo.GetVehicleType = nil
-  common.startWithCustomCap(hmiCap)
+  common.start(hmiCap)
 end
 
 

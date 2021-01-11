@@ -5,13 +5,23 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local initialVehicleTypeParams = {
+  make = "OEM2",
+  model = "Ranger",
+  modelYear = "2021",
+  trim = "Base"
+}
+
 local vehicleTypeInfoParams = {
+  make = initialVehicleTypeParams.make,
+  model = initialVehicleTypeParams.model,
+  modelYear = initialVehicleTypeParams.modelYear,
+  trim = initialVehicleTypeParams.trim,
   ccpu_version = common.vehicleTypeInfoParams.custom.ccpu_version,
   systemHardwareVersion = common.vehicleTypeInfoParams.custom.systemHardwareVersion
 }
 
-local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
-hmiCap.VehicleInfo.GetVehicleType.params.vehicleType = {}
+local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
 --[[ Local Functions ]]
 local function getRpcServiceAckParams(pVehicleTypeInfoParams)
@@ -31,26 +41,34 @@ local function getRpcServiceAckParams(pVehicleTypeInfoParams)
   return ackParams
 end
 
-local function updateHMICapabilitiesFile()
+local function startNoResponseGetVehicleType(pHmiCap)
+  local hmiCap = common.setHMIcap(pHmiCap)
+  hmiCap.VehicleInfo.GetVehicleType = nil
+  common.start(hmiCap)
+end
+
+local function updateHMICapabilitiesFile(pVehicleTypeParams)
   local hmiCapTbl = common.getHMICapabilitiesFromFile()
-  hmiCapTbl.VehicleInfo.vehicleType.make = common.vehicleTypeInfoParams.default.make
-  hmiCapTbl.VehicleInfo.vehicleType.model = common.vehicleTypeInfoParams.default.model
-  hmiCapTbl.VehicleInfo.vehicleType.modelYear = common.vehicleTypeInfoParams.default.modelYear
-  hmiCapTbl.VehicleInfo.vehicleType.trim = common.vehicleTypeInfoParams.default.trim
+  hmiCapTbl.VehicleInfo.vehicleType.make = pVehicleTypeParams.make
+  hmiCapTbl.VehicleInfo.vehicleType.model = pVehicleTypeParams.model
+  hmiCapTbl.VehicleInfo.vehicleType.modelYear = pVehicleTypeParams.modelYear
+  hmiCapTbl.VehicleInfo.vehicleType.trim = pVehicleTypeParams.trim
   common.setHMICapabilitiesToFile(hmiCapTbl)
 end
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", updateHMICapabilitiesFile)
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
+common.Step("Update HMI capabilities", updateHMICapabilitiesFile, { initialVehicleTypeParams })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap })
+common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
+common.Step("Start SDL, HMI, connect Mobile, start Session",
+  startNoResponseGetVehicleType, { common.vehicleTypeInfoParams.custom })
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
   common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
-

@@ -10,6 +10,7 @@ local SDL = require("SDL")
 local constants = require("protocol_handler/ford_protocol_constants")
 local events = require("events")
 local json = require("modules/json")
+local hmi_values = require("user_modules/hmi_values")
 
 --[[ General configuration parameters ]]
 config.SecurityProtocol = "DTLS"
@@ -21,6 +22,8 @@ local m = actions
 
 m.frameInfo = security.frameInfo
 m.readFile = utils.readFile
+
+local hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 
 --[[ Functions ]]
 local function getSystemTimeValue()
@@ -62,7 +65,7 @@ function m.allowSDL()
   return m.getHMIConnection():ExpectEvent(event, "Allow SDL event")
 end
 
-function m.start()
+function m.start(pHMIParams, isCacheUsed)
   test:runSDL()
   SDL.WaitForSDLStart(test)
   :Do(function()
@@ -73,7 +76,7 @@ function m.start()
           actions.getHMIConnection():ExpectResponse(rid)
           :Do(function()
               utils.cprint(35, "HMI initialized")
-              test:initHMI_onReady()
+              test:initHMI_onReady(pHMIParams or hmiDefaultCapabilities, isCacheUsed)
               :Do(function()
                   utils.cprint(35, "HMI is ready")
                   actions.getHMIConnection():SendNotification("BasicCommunication.OnSystemTimeReady")
