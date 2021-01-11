@@ -5,7 +5,6 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local removeCreatedSession = true
 local tcs = {
   [01] = string.rep("a", 500), --max value
   [02] = string.rep("a", 1) -- min value
@@ -25,7 +24,7 @@ for tc, data in common.spairs(tcs) do
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
   local hmiCap = setHmiCap(data)
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithCustomCap, { hmiCap })
+  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 
   common.Title("Test")
   local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
@@ -33,6 +32,6 @@ for tc, data in common.spairs(tcs) do
     common.startRpcService, { rpcServiceAckParams })
 
   common.Title("Postconditions")
-  common.Step("Stop SDL", common.postconditions, { removeCreatedSession })
+  common.Step("Stop SDL", common.postconditions)
 end
 

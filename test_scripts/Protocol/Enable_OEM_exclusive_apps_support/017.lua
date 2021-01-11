@@ -8,22 +8,23 @@ local common = require("test_scripts/Protocol/commonProtocol")
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
 
---[[ Local Functions ]]
-local function unregisterAppInterface()
-  local cid = common.getMobileSession():SendRPC("UnregisterAppInterface",{})
-  common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppUnregistered", { unexpectedDisconnect = false })
-  common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS"})
-end
+local rpcServiceParams = {
+  reqParams = {
+    protocolVersion = { type = common.bsonType.STRING, value = "5.3.0" }
+  }
+}
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
+common.Step("Init SDL certificates", common.initSDLCertificates, { "./files/Security/client_credential.pem" })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
+common.Step("Register App", common.registerApp)
+common.Step("Activate App", common.activateApp)
 
 common.Title("Test")
-common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
-common.Step("Vehicle type data in RAI response", common.registerAppEx, { common.vehicleTypeInfoParams.default })
-common.Step("UnregisterAppInterface", unregisterAppInterface)
+common.Step("Switch RPC Service to Protected mode ACK",
+  common.startServiceProtectedACK, { 1, common.serviceType.RPC, rpcServiceParams.reqParams, rpcServiceAckParams })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

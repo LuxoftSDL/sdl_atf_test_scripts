@@ -5,12 +5,6 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local tcs = {
-  [01] = string.rep("a", 501), -- out of upper bound value
-  [02] = "", -- out of lower bound value
-  [03] = 1 -- invalid type
-}
-local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 local vehicleTypeInfoParams = {
   make = common.vehicleTypeInfoParams.custom.make,
   model = common.vehicleTypeInfoParams.custom.model,
@@ -19,6 +13,8 @@ local vehicleTypeInfoParams = {
   ccpu_version = common.vehicleTypeInfoParams.default.ccpu_version,
   systemHardwareVersion = common.vehicleTypeInfoParams.default.systemHardwareVersion
 }
+
+local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
 --[[ Local Functions ]]
 local function getRpcServiceAckParams(pVehicleTypeInfoParams)
@@ -38,27 +34,28 @@ local function getRpcServiceAckParams(pVehicleTypeInfoParams)
   return ackParams
 end
 
-local function setHmiCap(pTC, pVehicleTypeInfo)
-  local hmiCap = common.setHMIcap(pVehicleTypeInfo)
-  local systemInfoParams = hmiCap.BasicCommunication.GetSystemInfo.params
-  systemInfoParams.systemHardwareVersion = pTC
-  return hmiCap
+local function startErrorResponseGetSystemInfo()
+  local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
+  hmiCap.BasicCommunication.GetSystemInfo = nil
+  common.start(hmiCap, common.isCacheUsed)
+  common.getHMIConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
+  :Do(function(_, data)
+    common.getHMIConnection():SendError(data.id, data.method, "GENERIC_ERROR", "info message")
+  end)
 end
 
 --[[ Scenario ]]
-for tc, data in common.spairs(tcs) do
-  common.Title("TC[" .. string.format("%03d", tc) .. "]")
-  common.Title("Preconditions")
-  common.Step("Clean environment", common.preconditions)
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheUsed })
-  common.Step("Ignition off", common.ignitionOff)
-  local customHmiCap = setHmiCap(data, common.vehicleTypeInfoParams.custom)
+common.Title("Preconditions")
+common.Step("Clean environment", common.preconditions)
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheUsed })
+common.Step("Ignition off", common.ignitionOff)
 
-  common.Title("Test")
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { customHmiCap, common.isCacheUsed })
-  common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService,
-    { getRpcServiceAckParams(vehicleTypeInfoParams) })
+common.Title("Test")
+common.Step("Start SDL, HMI sends GetSystemInfo(GENERIC_ERROR) response", startErrorResponseGetSystemInfo )
+common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
+  common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
+common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
-  common.Title("Postconditions")
-  common.Step("Stop SDL", common.postconditions)
-end
+common.Title("Postconditions")
+common.Step("Stop SDL", common.postconditions)
+

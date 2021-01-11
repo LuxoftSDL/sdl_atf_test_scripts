@@ -12,6 +12,7 @@ local bson = require('bson4lua')
 local SDL = require('SDL')
 local hmi_values = require("user_modules/hmi_values")
 local test = require("user_modules/dummy_connecttest")
+local atf_logger = require("atf_logger")
 
 --[[ General configuration parameters ]]
 config.defaultProtocolVersion = 5
@@ -36,7 +37,14 @@ common.ptsTable = actions.sdl.getPTS
 common.getParams = actions.app.getParams
 common.isTableEqual = utils.isTableEqual
 common.failTestStep = actions.run.fail
-common.initHMI_onReady = test.initHMI_onReady
+common.getHMICapabilitiesFromFile = actions.sdl.getHMICapabilitiesFromFile
+common.setHMICapabilitiesToFile = actions.sdl.setHMICapabilitiesToFile
+common.createSession = actions.mobile.createSession
+common.getHMIConnection = actions.hmi.getConnection
+common.toString = utils.toString
+common.wait = utils.wait
+common.getMobileSession = actions.getMobileSession
+common.tableToString = utils.tableToString
 
 common.bsonType = {
     DOUBLE   = 0x01,
@@ -49,6 +57,7 @@ common.bsonType = {
 }
 
 local hmiDefaultCapabilities = common.getDefaultHMITable()
+common.isCacheUsed = false
 
 common.vehicleTypeInfoParams = {
   default = {
@@ -73,15 +82,27 @@ common.vehicleTypeInfoParams = {
 runner.testSettings.isSelfIncluded = false
 
 --[[ Functions ]]
+function common.log(...)
+  local str = "[" .. atf_logger.formated_time(true) .. "]"
+  for i, p in pairs({...}) do
+    local delimiter = "\t"
+    if i == 1 then delimiter = " " end
+    str = str .. delimiter .. p
+  end
+  utils.cprint(35, str)
+end
+
 function common.startServiceProtectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     mobSession:StartSecureService(pServiceId, bson.to_bytes(pRequestPayload))
+    common.log("MOB->SDL: App" ..pAppId.." StartSecureService(" ..pServiceId.. ") " .. utils.tableToString(pRequestPayload))
     mobSession:ExpectControlMessage(pServiceId, {
       frameInfo = common.frameInfo.START_SERVICE_ACK,
       encryption = true
     })
     :ValidIf(function(_, data)
         local actPayload = bson.to_table(data.binaryData)
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 
@@ -120,6 +141,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         binaryData = bson.to_bytes(pRequestPayload)
     }
     mobSession:Send(msg)
+    common.log("MOB->SDL: App" ..pAppId.." StartService(" ..pServiceId.. ") " .. utils.tableToString(pRequestPayload))
     mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_ACK,
         encryption = false
@@ -128,9 +150,11 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         test.mobileSession[pAppId].hashCode = data.binaryData
         test.mobileSession[pAppId].sessionId = data.sessionId
         local actPayload = bson.to_table(data.binaryData)
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 end
+
 
 function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtensionFunc)
     if pExtensionFunc then pExtensionFunc() end
@@ -231,27 +255,6 @@ function common.setProtectedServicesInIni()
   common.sdl.setSDLIniParameter("ForceProtectedService", "0x0A, 0x0B")
 end
 
-function common.startWithCustomCap(pHMIParams)
-    local event = actions.run.createEvent()
-    actions.init.SDL()
-    :Do(function()
-        actions.init.HMI()
-        :Do(function()
-            actions.init.HMI_onReady(pHMIParams or hmiDefaultCapabilities)
-            :Do(function()
-                actions.init.connectMobile()
-                :Do(function()
-                    actions.init.allowSDL()
-                    :Do(function()
-                        actions.hmi.getConnection():RaiseEvent(event, "Start event")
-                    end)
-                end)
-            end)
-        end)
-    end)
-    return actions.hmi.getConnection():ExpectEvent(event, "Start event")
-end
-
 function common.getVehicleTypeDataFromInitialCap()
     local initialCap = SDL.HMICap.get()
     return initialCap.VehicleInfo.vehicleType
@@ -279,7 +282,7 @@ function common.getRpcServiceAckParams(pHMIcap)
     local ackParams = {
         make = common.setStringBsonValue(vehicleTypeParams.make),
         model = common.setStringBsonValue(vehicleTypeParams.model),
-        ["model year"] = common.setStringBsonValue(vehicleTypeParams.modelYear),
+        modelYear = common.setStringBsonValue(vehicleTypeParams.modelYear),
         trim = common.setStringBsonValue(vehicleTypeParams.trim),
         systemSoftwareVersion = common.setStringBsonValue(systemInfoParams.ccpu_version),
         systemHardwareVersion = common.setStringBsonValue(systemInfoParams.systemHardwareVersion)
@@ -319,8 +322,8 @@ function common.endRPCSevice()
     end)
 end
 
-function common.registerApp(responseExpectedData, pAppId)
-    pAppId = 1 or pAppId
+function common.registerAppEx(responseExpectedData, pAppId)
+    pAppId = pAppId or 1
     local session = common.getMobileSession(pAppId)
     local corId = session:SendRPC("RegisterAppInterface", common.app.getParams(pAppId))
 
@@ -427,9 +430,9 @@ function common.ignitionOff()
 end
 
 local postconditionsOrig = ssl.postconditions
-function common.postconditions(isRemoveSession)
+function common.postconditions()
     postconditionsOrig()
-     if isRemoveSession == true then actions.mobile.deleteSession() end
+    actions.mobile.deleteSession()
 end
 
 function common.startRpcService(pAckParams, pAppId)
