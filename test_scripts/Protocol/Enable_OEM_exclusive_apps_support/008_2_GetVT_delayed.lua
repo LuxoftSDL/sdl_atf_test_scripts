@@ -8,20 +8,42 @@ local common = require("test_scripts/Protocol/commonProtocol")
 local delay = 3000
 local tolerance = 500
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-hmiCap.VehicleInfo.GetVehicleType.delay = delay
+hmiCap.BasicCommunication.GetSystemInfo.mandatory = false
+hmiCap.VehicleInfo.GetVehicleType.mandatory = false
 local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
 
 --[[ Local Functions ]]
-local function delayedStartServiceAck(pStartServiceEvent)
-  local ts_req = timestamp()
+local function delayedStartServiceAck(pStartServiceEvent, pHMICap)
+  local ts_req
+  local ts_getSI_res
+  local ts_getVT_req
+  common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
+  :Do(function(_, data)
+      ts_req = timestamp()
+      local getSIparams = pHMICap.BasicCommunication.GetSystemInfo.params
+      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
+      ts_getSI_res = timestamp()
+    end)
+  common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
+  :Do(function(_, data)
+      ts_getVT_req = timestamp()
+      local function sendGetSIresp()
+        local getVTparams = pHMICap.VehicleInfo.GetVehicleType.params
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getVTparams)
+      end
+      RUN_AFTER(sendGetSIresp, delay)
+    end)
   common.startRpcService(rpcServiceAckParams)
   :ValidIf(function()
       local ts_res = timestamp()
+      -- delay between receiving of BC.GetSystemInfo and requesting VI.GetVehicleType
+      local getVTdelay = ts_getVT_req - ts_getSI_res
+      local exp_delay = delay + getVTdelay
       local act_delay = ts_res - ts_req
       common.log("Delay:", act_delay)
       common.hmi.getConnection():RaiseEvent(pStartServiceEvent, "Start event")
-      if act_delay < delay - tolerance or act_delay > delay + tolerance then
-        return false, "Expected delay: " .. delay .. "ms, actual: " .. act_delay .. "ms"
+      if act_delay < exp_delay - tolerance or act_delay > exp_delay + tolerance then
+        return false, "Expected delay: " .. exp_delay .. "ms, actual: " .. act_delay .. "ms"
       end
       return true
     end)
