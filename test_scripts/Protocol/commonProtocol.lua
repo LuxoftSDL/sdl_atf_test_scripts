@@ -499,7 +499,8 @@ function common.nackExtensionForStart(pStartEvent)
             common.log("Delay:", act_delay)
             common.hmi.getConnection():RaiseEvent(pStartEvent, "Start event")
             if act_delay > tolerance then
-                return false, "Expected delay: " .. tolerance .. "ms, actual: " .. act_delay .. "ms"
+                return false, "StartServiceNack is expected right after StartService request, actual delay: " ..
+                act_delay .. "ms"
             end
             return true
         end
