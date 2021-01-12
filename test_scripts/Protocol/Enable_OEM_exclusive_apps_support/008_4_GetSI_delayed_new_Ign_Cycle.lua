@@ -8,8 +8,9 @@ local common = require("test_scripts/Protocol/commonProtocol")
 local delay = 3000
 local tolerance = 500
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-hmiCap.BasicCommunication.GetSystemInfo.delay = delay
-local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
+local hmiCapDelayed = common.cloneTable(hmiCap)
+hmiCapDelayed.BasicCommunication.GetSystemInfo.delay = delay
+local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCapDelayed)
 
 --[[ Local Functions ]]
 local function delayedStartServiceAck(pStartServiceEvent)
@@ -25,6 +26,7 @@ local function delayedStartServiceAck(pStartServiceEvent)
       end
       return true
     end)
+  common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType"):Times(0)
 end
 
 --[[ Scenario ]]
@@ -35,7 +37,7 @@ common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", common.startWithExtension,
-  { hmiCap, delayedStartServiceAck })
+  { hmiCapDelayed, delayedStartServiceAck })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
