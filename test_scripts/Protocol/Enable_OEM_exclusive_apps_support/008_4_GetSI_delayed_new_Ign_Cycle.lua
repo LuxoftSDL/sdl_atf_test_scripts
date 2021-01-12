@@ -8,23 +8,13 @@ local common = require("test_scripts/Protocol/commonProtocol")
 local delay = 3000
 local tolerance = 500
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-local hmiCapWithoutExp = common.cloneTable(hmiCap)
-hmiCapWithoutExp.BasicCommunication.GetSystemInfo.mandatory = false
-hmiCapWithoutExp.VehicleInfo.GetVehicleType.mandatory = false
-local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCapWithoutExp)
+local hmiCapDelayed = common.cloneTable(hmiCap)
+hmiCapDelayed.BasicCommunication.GetSystemInfo.delay = delay
+local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCapDelayed)
 
 --[[ Local Functions ]]
-local function delayedStartServiceAck(pStartServiceEvent, pHMICap)
-  local ts_req
-  common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
-  :Do(function(_, data)
-      ts_req = timestamp()
-      local function sendGetSIresp()
-        local getSIparams = pHMICap.BasicCommunication.GetSystemInfo.params
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
-      end
-      RUN_AFTER(sendGetSIresp, delay)
-    end)
+local function delayedStartServiceAck(pStartServiceEvent)
+  local ts_req = timestamp()
   common.startRpcService(rpcServiceAckParams)
   :ValidIf(function()
       local ts_res = timestamp()
@@ -47,7 +37,7 @@ common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", common.startWithExtension,
-  { hmiCapWithoutExp, delayedStartServiceAck })
+  { hmiCapDelayed, delayedStartServiceAck })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
