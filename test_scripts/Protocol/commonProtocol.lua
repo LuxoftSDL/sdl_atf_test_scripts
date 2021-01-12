@@ -97,14 +97,14 @@ end
 function common.startServiceProtectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     mobSession:StartSecureService(pServiceId, bson.to_bytes(pRequestPayload))
-    common.log("MOB->SDL: App" ..pAppId.." StartSecureService(" ..pServiceId.. ") " .. utils.tableToString(pRequestPayload))
+    common.log("MOB->SDL: App" ..pAppId.." StartSecureService(" ..pServiceId.. ") ") -- .. utils.tableToString(pRequestPayload))
     mobSession:ExpectControlMessage(pServiceId, {
       frameInfo = common.frameInfo.START_SERVICE_ACK,
       encryption = true
     })
     :ValidIf(function(_, data)
         local actPayload = bson.to_table(data.binaryData)
-        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") ") -- .. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 
@@ -144,7 +144,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         binaryData = bson.to_bytes(pRequestPayload)
     }
     mobSession:Send(msg)
-    common.log("MOB->SDL: App" ..pAppId.." StartService(" ..pServiceId.. ") " .. utils.tableToString(pRequestPayload))
+    common.log("MOB->SDL: App" ..pAppId.." StartService(" ..pServiceId.. ") ") --.. utils.tableToString(pRequestPayload))
     local ret = mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_ACK,
         encryption = false
@@ -153,7 +153,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         test.mobileSession[pAppId].hashCode = data.binaryData
         test.mobileSession[pAppId].sessionId = data.sessionId
         local actPayload = bson.to_table(data.binaryData)
-        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") ") --.. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
     return ret
@@ -446,20 +446,17 @@ function common.startRpcService(pAckParams, pAppId)
     return common.startServiceUnprotectedACK( pAppId, common.serviceType.RPC, reqParams, pAckParams)
 end
 
-function common.startWithExtension(pHmiCap, pExtensionFunc)
-    local event = common.run.createEvent()
+function common.startWithExtension(pExtensionFunc)
     common.init.SDL()
     :Do(function()
         common.init.HMI()
         :Do(function()
             common.init.connectMobile()
             :Do(function()
-                pExtensionFunc(event)
+                pExtensionFunc()
             end)
-            common.init.HMI_onReady(pHmiCap)
         end)
     end)
-  return common.hmi.getConnection():ExpectEvent(event, "Start event")
 end
 
 function common.nackExtensionForStart(pStartEvent)
@@ -510,6 +507,132 @@ function common.nackExtensionForStart(pStartEvent)
         return false, "Unexpected message have been received"
     end)
     :Times(2)
+end
+
+function common.delayedStartServiceAckP5(pHmiCap, pDelayGetSI, pDelayGetVT)
+  config.defaultProtocolVersion = 5
+  local toleranceForRAI = 750
+  local rpcServiceAckParams = common.getRpcServiceAckParams(pHmiCap)
+  local getSIparams = pHmiCap.BasicCommunication.GetSystemInfo.params
+  local getVTparams = pHmiCap.VehicleInfo.GetVehicleType.params
+  pHmiCap.VehicleInfo.GetVehicleType = nil
+  pHmiCap.BasicCommunication.GetSystemInfo = nil
+
+  local ts_get_si
+  local ts_get_vt
+
+  common.init.HMI_onReady(pHmiCap)
+
+  common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
+  :Do(function(_, data)
+      local function response()
+        ts_get_si = timestamp()
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
+      end
+      common.run.runAfter(response, pDelayGetSI)
+    end)
+
+  local times_GetVT = 1
+  if pDelayGetVT == -1 then times_GetVT = 0 end
+  common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
+  :Do(function(_, data)
+      local function response()
+        ts_get_vt = timestamp()
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getVTparams)
+      end
+      if pDelayGetVT ~= -1 then common.run.runAfter(response, pDelayGetVT) end
+    end)
+   :Times(times_GetVT)
+
+  common.startRpcService(rpcServiceAckParams)
+  :ValidIf(function()
+      if ts_get_si == nil then
+        return false, "StartServiceAck received before receiving of GetSystemInfo from HMI"
+      end
+      if ts_get_vt == nil and pDelayGetVT ~= -1 then
+        return false, "StartServiceAck received before receiving of GetVehicleType from HMI"
+      end
+      return true
+    end)
+  :Do(function()
+      common.log("RAI")
+      local ts_req = timestamp()
+      common.registerAppEx(common.vehicleTypeInfoParams.default)
+      :ValidIf(function()
+          common.log("RAIResponse")
+          local ts_res = timestamp()
+          local act_delay = ts_res - ts_req
+          common.log("StartServiceAck", act_delay)
+          if act_delay > toleranceForRAI then
+            return false, "RAI response is expected right after RAI request, actual delay: " ..
+            act_delay .. "ms"
+          end
+          return true
+        end)
+    end)
+end
+
+function common.delayedStartServiceAckP4(pHmiCap, pDelayGetSI, pDelayGetVT)
+  config.defaultProtocolVersion = 4
+  local toleranceForAck = 100
+  local getSIparams = pHmiCap.BasicCommunication.GetSystemInfo.params
+  local getVTparams = pHmiCap.VehicleInfo.GetVehicleType.params
+  pHmiCap.VehicleInfo.GetVehicleType = nil
+  pHmiCap.BasicCommunication.GetSystemInfo = nil
+
+  local ts_get_si
+  local ts_get_vt
+
+  common.init.HMI_onReady(pHmiCap)
+
+  common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
+  :Do(function(_, data)
+      local function response()
+        ts_get_si = timestamp()
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
+      end
+      common.run.runAfter(response, pDelayGetSI)
+    end)
+
+  local times_GetVT = 1
+  if pDelayGetVT == -1 then times_GetVT = 0 end
+  common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
+  :Do(function(_, data)
+      local function response()
+        ts_get_vt = timestamp()
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getVTparams)
+      end
+      if pDelayGetVT ~= -1 then common.run.runAfter(response, pDelayGetVT) end
+    end)
+   :Times(times_GetVT)
+
+  local ts_req = timestamp()
+  common.log("StartService")
+  common.getMobileSession():StartService(common.serviceType.RPC)
+  :Do(function()
+      common.log("RAI")
+      common.registerAppEx(common.vehicleTypeInfoParams.default)
+      :ValidIf(function()
+          common.log("RAIResponse")
+          if ts_get_si == nil then
+            return false, "RAI response received before receiving of GetSystemInfo from HMI"
+          end
+          if ts_get_vt == nil and pDelayGetVT ~= -1 then
+            return false, "RAI response received before receiving of GetVehicleType from HMI"
+          end
+          return true
+        end)
+    end)
+  :ValidIf(function()
+      local ts_res = timestamp()
+      local act_delay = ts_res - ts_req
+      common.log("StartServiceAck", act_delay)
+      if act_delay > toleranceForAck then
+        return false, "StartServiceAck is expected right after StartService request, actual delay: " ..
+        act_delay .. "ms"
+      end
+      return true
+   end)
 end
 
 return common
