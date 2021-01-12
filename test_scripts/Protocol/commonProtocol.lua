@@ -142,7 +142,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
     }
     mobSession:Send(msg)
     common.log("MOB->SDL: App" ..pAppId.." StartService(" ..pServiceId.. ") " .. utils.tableToString(pRequestPayload))
-    mobSession:ExpectControlMessage(pServiceId, {
+    local ret = mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_ACK,
         encryption = false
     })
@@ -153,6 +153,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") " .. utils.tableToString(actPayload))
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
+    return ret
 end
 
 
@@ -168,7 +169,7 @@ function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload,
         binaryData = bson.to_bytes(pRequestPayload)
     }
     mobSession:Send(msg)
-    mobSession:ExpectControlMessage(pServiceId, {
+    local ret = mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_NACK,
         encryption = false
     })
@@ -176,6 +177,7 @@ function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload,
         local actPayload = bson.to_table(data.binaryData)
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
+    return ret
 end
 
 function common.registerAppUpdatedProtocolVersion(hasPTU)
