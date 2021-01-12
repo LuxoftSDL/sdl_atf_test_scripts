@@ -440,7 +440,7 @@ end
 function common.startRpcService(pAckParams, pAppId)
     pAppId = pAppId or 1
     local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
-    common.startServiceUnprotectedACK( pAppId, common.serviceType.RPC, reqParams, pAckParams)
+    return common.startServiceUnprotectedACK( pAppId, common.serviceType.RPC, reqParams, pAckParams)
 end
 
 return common

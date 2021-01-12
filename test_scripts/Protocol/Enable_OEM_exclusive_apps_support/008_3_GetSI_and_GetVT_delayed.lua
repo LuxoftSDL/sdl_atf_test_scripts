@@ -12,6 +12,7 @@ local tolerance = 500
 --[[ Local Functions ]]
 local function start()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
+  local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
   hmiCap.BasicCommunication.GetSystemInfo.delay = delay1
   hmiCap.VehicleInfo.GetVehicleType.delay = delay2
   local event = common.run.createEvent()
@@ -21,9 +22,8 @@ local function start()
       :Do(function()
           common.init.connectMobile()
           :Do(function()
-            local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
             local ts_req = timestamp()
-            common.startServiceUnprotectedACK(1, common.serviceType.RPC, reqParams, { })
+            common.startRpcService(rpcServiceAckParams)
             :ValidIf(function()
                 local ts_res = timestamp()
                 local exp_delay = delay1 + delay2
