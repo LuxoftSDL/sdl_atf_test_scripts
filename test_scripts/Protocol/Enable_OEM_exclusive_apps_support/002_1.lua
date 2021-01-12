@@ -5,7 +5,7 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local paramsToExclude = { "model", "modelYear", "trim", "systemHardwareVersion" }
+local paramsToExclude = { "make", "model", "modelYear", "trim", "systemHardwareVersion" }
 
 --[[ Local Functions ]]
 local function setHMICap(pParamsToExclude)
@@ -21,6 +21,26 @@ local function setHMICap(pParamsToExclude)
   return out
 end
 
+local function startRpcService(pAckParams, pNotExpected)
+  common.startRpcService(pAckParams)
+  :ValidIf(function(_, data)
+    local errorMessages = ""
+    local actPayload = common.bson_to_table(data.binaryData)
+    for _, param in pairs(pNotExpected) do
+      for Key, _ in pairs(actPayload) do
+        if Key == param then
+          errorMessages = errorMessages .. "BinaryData contains unexpected " .. param .. " parameter\n"
+        end
+      end
+    end
+    if string.len(errorMessages) > 0 then
+      return false, errorMessages
+    else
+      return true
+    end
+  end)
+end
+
 --[[ Scenario ]]
 for _, parameter in common.spairs(paramsToExclude) do
   common.Title("Test with excluding " .. parameter .. " parameter")
@@ -30,8 +50,8 @@ for _, parameter in common.spairs(paramsToExclude) do
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 
   common.Title("Test")
-  common.Step("Vehicle type data without " .. parameter .. " in StartServiceAck", common.startRpcService,
-    { common.getRpcServiceAckParams(hmiCap) })
+  common.Step("Vehicle type data without " .. parameter .. " in StartServiceAck", startRpcService,
+    { common.getRpcServiceAckParams(hmiCap), { parameter } })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)

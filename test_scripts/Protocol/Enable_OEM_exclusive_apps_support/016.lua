@@ -12,7 +12,8 @@ local videoServiceParams = {
     height        = { type = common.bsonType.INT32,  value = 350 },
     width         = { type = common.bsonType.INT32,  value = 800 },
     videoProtocol = { type = common.bsonType.STRING, value = "RAW" },
-    videoCodec    = { type = common.bsonType.STRING, value = "H264" }
+    videoCodec    = { type = common.bsonType.STRING, value = "H264" },
+    mtu = { type = common.bsonType.INT64,  value = 131072 }
   }
 }
 
@@ -30,6 +31,19 @@ local function setVideoConfig()
     end)
 end
 
+local function startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtensionFunc)
+  common.startServiceUnprotectedACK( pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtensionFunc )
+  :ValidIf(function(_, data)
+      local actPayload = common.bson_to_table(data.binaryData)
+      if false == common.isTableEqual(actPayload, pResponsePayload) then
+        return false, "BinaryData are not match to expected result.\n" ..
+          "Actual result:" .. common.tableToString(actPayload) .. "\n" ..
+          "Expected result:" ..common.tableToString(pResponsePayload) .."\n"
+      end
+      return true
+  end)
+end
+
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
@@ -38,9 +52,9 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmi
 common.Title("Test")
 common.Step("Register App", common.registerAppUpdatedProtocolVersion)
 common.Step("Activate App", common.activateApp)
-common.Step("Start unprotected Video Service, ACK", common.startServiceUnprotectedACK,
+common.Step("Start unprotected Video Service, ACK", startServiceUnprotectedACK,
   { 1, common.serviceType.VIDEO, videoServiceParams.reqParams, videoServiceParams.reqParams, setVideoConfig })
-common.Step("Start unprotected Audio Service, ACK", common.startServiceUnprotectedACK,
+common.Step("Start unprotected Audio Service, ACK", startServiceUnprotectedACK,
   { 1, common.serviceType.PCM, audioServiceParams.reqParams, audioServiceParams.reqParams })
 
 common.Title("Postconditions")

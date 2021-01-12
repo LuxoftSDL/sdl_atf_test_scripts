@@ -5,7 +5,7 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local paramsToExclude = { "model", "modelYear", "trim", "systemHardwareVersion" }
+local paramsToExclude = { "make", "model", "modelYear", "trim", "systemHardwareVersion" }
 
 --[[ Local Functions ]]
 local function setHMICap(pParamsToExclude)

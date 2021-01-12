@@ -47,7 +47,6 @@ common.getMobileSession = actions.getMobileSession
 common.tableToString = utils.tableToString
 common.bson_to_table = bson.to_table
 common.bson_to_bytes = bson.to_bytes
-common.tableToString = utils.tableToString
 
 common.bsonType = {
     DOUBLE   = 0x01,
