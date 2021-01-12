@@ -27,5 +27,6 @@
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/016.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/017.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/018_1.lua
-
-
+./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/019_1_Delayed_GetSI_StartServiceNack.lua
+./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/019_2_Delayed_GetVT_StartServiceNack.lua
+./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/019_3_Delayed_GetVT_GetSI_StartServiceNack.lua

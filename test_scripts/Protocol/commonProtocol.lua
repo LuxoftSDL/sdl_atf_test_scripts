@@ -119,7 +119,7 @@ end
 function common.startServiceProtectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     mobSession:StartSecureService(pServiceId, bson.to_bytes(pRequestPayload))
-    mobSession:ExpectControlMessage(pServiceId, {
+    local ret = mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_NACK,
         encryption = false
     })
@@ -127,6 +127,7 @@ function common.startServiceProtectedNACK(pAppId, pServiceId, pRequestPayload, p
         local actPayload = bson.to_table(data.binaryData)
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
+    return ret
 end
 
 function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtensionFunc)
@@ -155,7 +156,6 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
     end)
     return ret
 end
-
 
 function common.startServiceUnprotectedNACK(pAppId, pServiceId, pRequestPayload, pResponsePayload, pExtensionFunc)
     if pExtensionFunc then pExtensionFunc() end
@@ -441,6 +441,71 @@ function common.startRpcService(pAckParams, pAppId)
     pAppId = pAppId or 1
     local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
     return common.startServiceUnprotectedACK( pAppId, common.serviceType.RPC, reqParams, pAckParams)
+end
+
+function common.startWithExtension(pHmiCap, pExtensionFunc)
+    local event = common.run.createEvent()
+    common.init.SDL()
+    :Do(function()
+        common.init.HMI()
+        :Do(function()
+            common.init.connectMobile()
+            :Do(function()
+                pExtensionFunc(event)
+            end)
+            common.init.HMI_onReady(pHmiCap)
+        end)
+    end)
+  return common.hmi.getConnection():ExpectEvent(event, "Start event")
+end
+
+function common.nackExtensionForStart(pStartEvent)
+    local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
+    local tolerance = 100
+    local mobSession = common.getMobileSession()
+
+    local msg = {
+        serviceType = common.serviceType.RPC,
+        frameType = common.frameType.CONTROL_FRAME,
+        frameInfo = common.frameInfo.START_SERVICE,
+        encryption = false,
+        version = 4
+    }
+    mobSession:Send(msg)
+
+    local ts_req
+    local eventStartService = common.run.createEvent()
+    eventStartService.matches = function(_, data)
+        return data.frameType == common.frameType.CONTROL_FRAME and
+        data.serviceType == common.serviceType.RPC and
+        (data.frameInfo == common.frameInfo.START_SERVICE_ACK or
+        data.frameInfo == common.frameInfo.START_SERVICE_NACK)
+    end
+    mobSession:ExpectEvent(eventStartService, "StartService")
+    :DoOnce(function(_, data)
+        mobSession.sessionId = data.sessionId
+        msg.binaryData = bson.to_bytes(reqParams)
+        msg.version = 5
+        ts_req = timestamp()
+
+        mobSession:Send(msg)
+    end)
+    :ValidIf(function(exp, data)
+        local ts_res = timestamp()
+        if exp.occurences == 1 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
+            return true
+        elseif exp.occurences == 2 and data.frameInfo == common.frameInfo.START_SERVICE_NACK then
+            local act_delay = ts_res - ts_req
+            common.log("Delay:", act_delay)
+            common.hmi.getConnection():RaiseEvent(pStartEvent, "Start event")
+            if act_delay > tolerance then
+                return false, "Expected delay: " .. tolerance .. "ms, actual: " .. act_delay .. "ms"
+            end
+            return true
+        end
+        return false, "Unexpected message have been received"
+    end)
+    :Times(2)
 end
 
 return common
