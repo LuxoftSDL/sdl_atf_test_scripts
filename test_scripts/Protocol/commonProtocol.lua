@@ -348,7 +348,7 @@ function common.registerAppEx(responseExpectedData, pAppId)
         trim = responseExpectedData.trim
     }
 
-    session:ExpectResponse(corId, responseData)
+    local ret = session:ExpectResponse(corId, responseData)
     :Do(function()
         session:ExpectNotification("OnHMIStatus",
             { hmiLevel = "NONE", audioStreamingState = "NOT_AUDIBLE", systemContext = "MAIN" })
@@ -372,6 +372,7 @@ function common.registerAppEx(responseExpectedData, pAppId)
         end
         return isResult, errorMsg
     end)
+    return ret
 end
 
 function common.setHMIcap(pVehicleTypeData)
