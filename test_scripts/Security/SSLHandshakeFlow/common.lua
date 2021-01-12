@@ -10,7 +10,6 @@ local SDL = require("SDL")
 local constants = require("protocol_handler/ford_protocol_constants")
 local events = require("events")
 local json = require("modules/json")
-local hmi_values = require("user_modules/hmi_values")
 
 --[[ General configuration parameters ]]
 config.SecurityProtocol = "DTLS"
@@ -22,8 +21,6 @@ local m = actions
 
 m.frameInfo = security.frameInfo
 m.readFile = utils.readFile
-
-local hmiDefaultCapabilities = hmi_values.getDefaultHMITable()
 
 --[[ Functions ]]
 local function getSystemTimeValue()
