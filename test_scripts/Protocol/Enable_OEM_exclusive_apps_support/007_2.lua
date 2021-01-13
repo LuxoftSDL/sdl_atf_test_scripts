@@ -44,6 +44,10 @@ end
 local function startNoResponseGetVehicleType()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
   hmiCap.VehicleInfo.GetVehicleType = nil
+  common.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleType")
+  :Do(function()
+      -- do nothing
+    end)
   common.start(hmiCap)
 end
 
@@ -52,7 +56,7 @@ end
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update HMI capabilities", updateHMICapabilitiesFile)
-common.Step("Start SDL, HMI does not send GetSystemInfo notification", startNoResponseGetVehicleType )
+common.Step("Start SDL, HMI does not send GetVehicleType response", startNoResponseGetVehicleType )
 
 common.Title("Test")
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck",

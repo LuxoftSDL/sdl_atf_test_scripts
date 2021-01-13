@@ -9,10 +9,10 @@ local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
 local videoServiceParams = {
   reqParams = {
-    height        = { type = common.bsonType.INT32,  value = 350 },
-    width         = { type = common.bsonType.INT32,  value = 800 },
+    height = { type = common.bsonType.INT32,  value = 350 },
+    width = { type = common.bsonType.INT32,  value = 800 },
     videoProtocol = { type = common.bsonType.STRING, value = "RAW" },
-    videoCodec    = { type = common.bsonType.STRING, value = "H264" },
+    videoCodec = { type = common.bsonType.STRING, value = "H264" },
     mtu = { type = common.bsonType.INT64,  value = 131072 }
   }
 }

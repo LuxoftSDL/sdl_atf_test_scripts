@@ -5,28 +5,18 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local paramsToExclude = { "make","model", "modelYear", "trim", "systemHardwareVersion" }
+local vehicleTypeData = {
+  ccpu_version = common.vehicleTypeInfoParams.default["ccpu_version"]
+}
 
 --[[ Local Functions ]]
-local function setHMICap(pParamsToExclude)
-  local out = common.setHMIcap(common.vehicleTypeInfoParams.default)
-  for _, value in pairs(pParamsToExclude) do
-    for key in pairs(out.VehicleInfo.GetVehicleType.params.vehicleType) do
-      if key == value then out.VehicleInfo.GetVehicleType.params.vehicleType[key] = nil end
-    end
-    for key in pairs(out.BasicCommunication.GetSystemInfo.params) do
-      if key == value then out.BasicCommunication.GetSystemInfo.params[key] = nil end
-    end
-  end
-  return out
-end
-
-local function startRpcService(pAckParams, pNotExpected)
+local function startRpcService(pAckParams)
+  local excludedParams = { "make","model", "modelYear", "trim", "systemHardwareVersion" }
   common.startRpcService(pAckParams)
   :ValidIf(function(_, data)
     local errorMessages = ""
     local actPayload = common.bson_to_table(data.binaryData)
-    for _, param in pairs(pNotExpected) do
+    for _, param in pairs(excludedParams) do
       for Key, _ in pairs(actPayload) do
         if Key == param then
           errorMessages = errorMessages .. "BinaryData contains unexpected " .. param .. " parameter\n"
@@ -35,9 +25,8 @@ local function startRpcService(pAckParams, pNotExpected)
     end
     if string.len(errorMessages) > 0 then
       return false, errorMessages
-    else
-      return true
     end
+    return true
   end)
 end
 
@@ -45,12 +34,12 @@ end
 common.Title("Test with excluding all not mandatory parameters")
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-local hmiCap = setHMICap(paramsToExclude)
+local hmiCap = common.setHMIcap(vehicleTypeData)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 
 common.Title("Test")
 common.Step("Vehicle type data without all not mandatory params in StartServiceAck", startRpcService,
-  { common.getRpcServiceAckParams(hmiCap), paramsToExclude })
+  { common.getRpcServiceAckParams(hmiCap) })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

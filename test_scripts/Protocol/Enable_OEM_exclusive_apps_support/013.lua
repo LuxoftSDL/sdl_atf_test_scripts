@@ -11,12 +11,11 @@ config.defaultProtocolVersion = 4 -- Set 4 protocol as default for script
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
 --[[ Local Functions ]]
-local function registerApp(responseExpectedData, pAppId)
-  if not pAppId then pAppId = 1 end
-  local session = common.createSession(pAppId)
+local function registerApp(responseExpectedData)
+  local session = common.createSession()
   session:StartService(7)
   :Do(function()
-     common.registerAppEx(responseExpectedData, pAppId)
+     common.registerAppEx(responseExpectedData)
   end)
 end
 
