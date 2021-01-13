@@ -71,19 +71,14 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
   }
 
   mobSession:Send(msg)
-  local ts_req1 = timestamp()
-  common.log("MOB->SDL: App1".." StartService(7) " .. common.tableToString(reqParams))
+  common.log("MOB->SDL: App1".." StartService(7)", reqParams)
 
   mobSession:Send(msg)
-  local ts_req2 = timestamp()
-  common.log("MOB->SDL: App2" .." StartService(7) " .. common.tableToString(reqParams))
+  common.log("MOB->SDL: App2" .." StartService(7)", reqParams)
 
-  local function validateResponse(pData, pts_Req)
-    local ts_res = timestamp()
-    local act_delay = ts_res - pts_Req
+  local function validateResponse(pData)
     local actPayload = common.bson_to_table(pData.binaryData)
-    common.log("Delay:", act_delay)
-    common.log("SDL->MOB: App" ..pData.sessionId.." StartServiceAck(7) " .. common.tableToString(actPayload))
+    common.log("SDL->MOB: App" ..pData.sessionId.." StartServiceAck(7)", actPayload)
     if ts_get_si == nil then
       return false, "StartServiceAck received before receiving of GetSystemInfo from HMI"
     end
@@ -99,9 +94,9 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
   })
   :ValidIf(function(exp, data)
     if exp.occurences == 1 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
-      return validateResponse(data, ts_req1)
+      return validateResponse(data)
     elseif exp.occurences == 2 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
-      return validateResponse(data, ts_req2)
+      return validateResponse(data)
     end
       return false, "Unexpected message have been received"
   end)

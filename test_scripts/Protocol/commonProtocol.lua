@@ -85,26 +85,41 @@ runner.testSettings.isSelfIncluded = false
 
 --[[ Functions ]]
 function common.log(...)
-  local str = "[" .. atf_logger.formated_time(true) .. "]"
-  for i, p in pairs({...}) do
-    local delimiter = "\t"
-    if i == 1 then delimiter = " " end
-    str = str .. delimiter .. p
-  end
-  utils.cprint(35, str)
+    local strBinaryData = ""
+    local str = "[" .. atf_logger.formated_time(true) .. "]"
+        for _,a in pairs({...}) do
+            str = str .. " "
+            if type(a) == 'table' then
+                for p, v in pairs(a) do
+                    if type(v.value) == 'table' then
+                        local val = ""
+                        for _, k in pairs(v.value) do
+                            val = val .. k.value
+                        end
+                        strBinaryData = strBinaryData .. p ..":" .. "{ ".. val .." }" .. ", "
+                    else
+                        strBinaryData = strBinaryData .. p ..":" .. v.value .. ", "
+                    end
+                end
+                str = str .. " " .. "{ " .. strBinaryData .. "}"
+            else
+                str = str .. " ".. a
+            end
+        end
+    utils.cprint(35, str)
 end
 
 function common.startServiceProtectedACK(pAppId, pServiceId, pRequestPayload, pResponsePayload)
     local mobSession = common.getMobileSession(pAppId)
     mobSession:StartSecureService(pServiceId, bson.to_bytes(pRequestPayload))
-    common.log("MOB->SDL: App" ..pAppId.." StartSecureService(" ..pServiceId.. ") ") -- .. utils.tableToString(pRequestPayload))
+    common.log("MOB->SDL: App" ..pAppId.." StartSecureService(" ..pServiceId.. ")", pRequestPayload)
     mobSession:ExpectControlMessage(pServiceId, {
       frameInfo = common.frameInfo.START_SERVICE_ACK,
       encryption = true
     })
     :ValidIf(function(_, data)
         local actPayload = bson.to_table(data.binaryData)
-        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") ") -- .. utils.tableToString(actPayload))
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ")", actPayload)
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
 
@@ -144,7 +159,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         binaryData = bson.to_bytes(pRequestPayload)
     }
     mobSession:Send(msg)
-    common.log("MOB->SDL: App" ..pAppId.." StartService(" ..pServiceId.. ") ") --.. utils.tableToString(pRequestPayload))
+    common.log("MOB->SDL: App" ..pAppId.." StartService(" ..pServiceId.. ")", pRequestPayload)
     local ret = mobSession:ExpectControlMessage(pServiceId, {
         frameInfo = common.frameInfo.START_SERVICE_ACK,
         encryption = false
@@ -153,7 +168,7 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         test.mobileSession[pAppId].hashCode = data.binaryData
         test.mobileSession[pAppId].sessionId = data.sessionId
         local actPayload = bson.to_table(data.binaryData)
-        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ") ") --.. utils.tableToString(actPayload))
+        common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ")", actPayload)
         return compareValues(pResponsePayload, actPayload, "binaryData")
     end)
     return ret
