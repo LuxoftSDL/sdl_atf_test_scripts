@@ -1,6 +1,16 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: Check that SDL is able to provide all vehicle type data in RAI response in case the app is registered
+--  via 4th protocol
+--
+-- Steps:
+-- 1. HMI provides all vehicle type data in BC.GetSystemInfo(ccpu_version, systemHardwareVersion)
+--  and VI.GetVehicleType(make, model, modelYear, trim) responses
+-- 2. App requests RAI via 4th protocol
+-- SDL does:
+--  - Provide all vehicle type data received from HMI in RAI response to the app
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 

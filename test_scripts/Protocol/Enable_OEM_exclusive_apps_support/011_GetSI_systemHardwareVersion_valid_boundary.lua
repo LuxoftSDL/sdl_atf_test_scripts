@@ -1,6 +1,18 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: Check that SDL is able to process successfully the systemHardwareVersion parameter with
+--  valid boundary value in BC.GetSystemInfo response
+--
+-- Steps:
+-- 1. HMI sends BC.GetSystemInfo with valid boundary value of systemHardwareVersion parameter
+-- SDL does:
+--  - Process the response successfully
+--  - Apply received systemHardwareVersion value
+-- 2. App requests StartService(RPC) via 5th protocol
+-- SDL does:
+--  - Provide systemHardwareVersion value received from HMI in StartServiceAck to the app
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 

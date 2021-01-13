@@ -1,6 +1,18 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: SDL is able to process successfully BC.GetSystemInfo request with systemHardwareVersion parameter and
+--  provides this value in the snapshot for external_proprietary policy flow
+--
+-- Steps:
+-- 1. HMI sends BC.GetSystemInfo response with systemHardwareVersion parameter
+-- SDL does:
+--  - Process the response successful
+--  - Store systemHardwareVersion in the DB
+-- 2. App is registered and PTU is triggered
+-- SDL does:
+--  - Create snapshot file with systemHardwareVersion value in hardware_version parameter
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 

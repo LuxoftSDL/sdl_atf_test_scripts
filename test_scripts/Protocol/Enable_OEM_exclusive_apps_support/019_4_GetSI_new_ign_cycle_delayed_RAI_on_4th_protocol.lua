@@ -1,25 +1,22 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
--- Description: Check that SDL is able to postpone sending of StartServiceAck in case HMI responds with delay to
---  BC.GetSystemInfo request, VI.GetVehicleType is not requested because the data from VI.GetVehicleType have been
---  cached in the previous ignition cycle
+-- Description: Check that SDL is able to postpone sending of RAI response for app registered via 4th protocol
+--  in case HMI responds with delay to BC.GetSystemInfo request, VI.GetVehicleType is not requested because
+--  the data from VI.GetVehicleType have been cached in the previous ignition cycle
 --
 -- Steps:
 -- 1. SDL requests BC.GetSystemInfo to HMI after start
--- 2. Vehicle type data is cached in the previous ignition cycle(SDL does not request VI.GetVehicleType)
--- 2. App requests StartService(RPC) via 5th protocol
+-- 2. App requests StartService(RPC) via 4th protocol
 -- SDL does:
---  - Postpone the sending of StartServiceAck before receiving of BC.GetSystemInfo response
--- 3. HMI responds with delay to BC.GetSystemInfo request
+--  - Sends StartServiceAck to mobile app right after receiving StartService request
+-- 3. App requests RAI
 -- SDL does:
---  - Send StartServiceAck right after receiving BC.GetSystemInfo response
---  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
---     in StartServiceAck to the app
---  - Provide the values for make, model, modelYear, trim parameters from the cache in StartServiceAck to the app
--- 4. App requests RAI
+--  - Postpone the sending of RAI response before receiving of BC.GetSystemInfo response
+-- 4. HMI responds with delay to BC.GetSystemInfo request
 -- SDL does:
---  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--  - Send RAI response after receiving BC.GetSystemInfo responses
+--  - Provide systemSoftwareVersion and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
 --     in RAI response to the app
 --  - Provide the values for make, model, modelYear, trim parameters from the cache in RAI response to the app
 ---------------------------------------------------------------------------------------------------
@@ -34,7 +31,7 @@ local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 --[[ Local Functions ]]
 local function start()
   local function check()
-    common.delayedStartServiceAckP5(hmiCap, delay1, delay2)
+    common.delayedStartServiceAckP4(hmiCap, delay1, delay2)
   end
   common.startWithExtension(check)
 end

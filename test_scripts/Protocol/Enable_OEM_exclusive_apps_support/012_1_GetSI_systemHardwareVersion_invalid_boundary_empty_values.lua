@@ -1,6 +1,18 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: Check that SDL is able to process correctly the systemHardwareVersion parameter with invalid value in
+--  BC.GetSystemInfo response in the first ignition cycle
+--
+-- Steps:
+-- 1. HMI sends BC.GetSystemInfo with invalid value of systemHardwareVersion parameter in the first ignition cycle,
+-- systemSoftwareVersion and systemHardwareVersion parameter are empty in the DB
+-- SDL does:
+--  - Process the response as invalid
+-- 2. App requests StartService(RPC) via 5th protocol
+-- SDL does:
+--  - Not provide systemHardwareVersion and systemSoftwareVersion values in StartServiceAck to the app
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 

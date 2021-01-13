@@ -1,6 +1,16 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: Check that SDL is able to provide vehicle type data in the encrypted StartServiceAck
+--
+-- Steps:
+-- 1. HMI provides all vehicle type data in BC.GetSystemInfo(ccpu_version, systemHardwareVersion)
+--  and VI.GetVehicleType(make, model, modelYear, trim) responses
+-- 2. Unprotected RPC service is started
+-- 3. App requests protected StartService(RPC) via 5th protocol
+-- SDL does:
+--  - Provide all vehicle type data received from HMI in protected StartServiceAck to the app
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 

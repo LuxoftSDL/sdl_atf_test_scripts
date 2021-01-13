@@ -1,6 +1,19 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: SDL is able to stop RPC service successfully in case the mobile app does not support
+--  the vehicle type data received from SDL and requests EndService after StartServiceAck
+--
+-- Steps:
+-- 1. HMI provides all vehicle type data in BC.GetSystemInfo(ccpu_version, systemHardwareVersion)
+--  and VI.GetVehicleType(make, model, modelYear, trim) responses
+-- 2. App requests StartService(RPC) via 5th protocol
+-- SDL does:
+--  - Provide all vehicle type data received from HMI in StartServiceAck to the app
+-- 3. App does not support the received vehicle type data and requests EndService
+-- SDL does:
+--  - End RPC service successfully and sends EndServiceAck to the app
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
@@ -15,7 +28,7 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmi
 
 common.Title("Test")
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService, { rpcServiceAckParams })
-common.Step("Vehicle type data in RAI response", common.registerAppEx, { common.vehicleTypeInfoParams.default })
+common.Step("EndService", common.endRPCSevice)
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

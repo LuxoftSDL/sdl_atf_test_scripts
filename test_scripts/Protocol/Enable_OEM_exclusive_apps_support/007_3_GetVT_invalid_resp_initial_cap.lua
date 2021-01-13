@@ -1,17 +1,41 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
+-- Description: Check that SDL uses the vehicle type data from the initial SDL capabilities file for StartServiceAck and
+--  RAI response after the first SDL start when a file with cached capabilities is absent in case HMI responds with
+--  invalid data to VI.GetVehicleType request
+--
+-- Steps:
+-- 1. HMI provides BC.GetSystemInfo(ccpu_version, systemHardwareVersion)
+-- 2. HMI responds with invalid data in vehicleType structure to VI.GetVehicleType requests
+-- 3. App requests StartService(RPC) via 5th protocol
+-- SDL does:
+--  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--     in StartServiceAck to the app
+--  - Provide the values for make, model, modelYear, trim parameters from the initial SDL capabilities file defined in
+--     .ini file in HMICapabilities parameter in StartServiceAck to the app
+-- 3. App sends RAI request via 5th protocol
+-- SDL does:
+--  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--     in RAI response to the app
+--  - Provide the values for make, model, modelYear, trim parameters from the initial SDL capabilities file defined in
+--     .ini file in HMICapabilities parameter in RAI response to the app
+---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
 local vehicleTypeInfoParams = {
+  make = common.vehicleTypeInfoParams.default.make,
+  model = common.vehicleTypeInfoParams.default.model,
+  modelYear = common.vehicleTypeInfoParams.default.modelYear,
+  trim = common.vehicleTypeInfoParams.default.trim,
   ccpu_version = common.vehicleTypeInfoParams.custom.ccpu_version,
   systemHardwareVersion = common.vehicleTypeInfoParams.custom.systemHardwareVersion
 }
 
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
-hmiCap.VehicleInfo.GetVehicleType.params.vehicleType = {}
+hmiCap.VehicleInfo.GetVehicleType.params.vehicleType.make = 12345 --invalid data type
 
 --[[ Local Functions ]]
 local function getRpcServiceAckParams(pVehicleTypeInfoParams)
