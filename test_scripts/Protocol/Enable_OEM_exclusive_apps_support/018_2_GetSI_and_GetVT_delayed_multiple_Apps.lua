@@ -69,7 +69,7 @@ common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
 common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", common.startWithExtension,
-  { hmiCap, startServiceMultipleApps })
+  { startServiceMultipleApps })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
