@@ -27,7 +27,7 @@
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/016.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/017.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/018_1.lua
-./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/018_2_GetSI_and_GetVT_delayed_multiple_Apps.lua
+;./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/018_2_GetSI_and_GetVT_delayed_multiple_Apps.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/020_1_GetSI_delayed_RAI_on_4th_protocol.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/020_2_GetVT_delayed_RAI_on_4th_protocol.lua
 ./test_scripts/Protocol/Enable_OEM_exclusive_apps_support/020_3_GetVT_GetSI_delayed_RAI_on_4th_protocol.lua
