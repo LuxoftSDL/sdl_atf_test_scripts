@@ -11,7 +11,6 @@ local events = require("events")
 local bson = require('bson4lua')
 local SDL = require('SDL')
 local hmi_values = require("user_modules/hmi_values")
-local test = require("user_modules/dummy_connecttest")
 local atf_logger = require("atf_logger")
 
 --[[ General configuration parameters ]]
@@ -92,13 +91,14 @@ function common.log(...)
       return count
     end
     local str = "[" .. atf_logger.formated_time(true) .. "]"
-        for _,a in pairs({...}) do
+        for _, a in pairs({...}) do
             if type(a) == 'table' then
                 local i = 0
                 for p, v in pairs(a) do
                     i = i + 1
                     local endDelimiter = ",\n "
                     if i == getTableSize(a) then endDelimiter = "\n " end
+                    local vv = v.value
                     if type(v.value) == 'table' then
                         local val = ""
                         local subEndDelimiter = ", "
@@ -106,10 +106,9 @@ function common.log(...)
                             if key == getTableSize(v.value) then subEndDelimiter = "" end
                             val = val .. subv.value .. subEndDelimiter
                         end
-                        strBinaryData = strBinaryData .. p .." : " .. "{ ".. val .." }" .. endDelimiter
-                    else
-                        strBinaryData = strBinaryData .. p .." : " .. v.value .. endDelimiter
+                        vv = "{ ".. val .." }"
                     end
+                    strBinaryData = strBinaryData .. p .." : " .. vv .. endDelimiter
                 end
                 str = str .. " " .. "{\n " .. strBinaryData .. "}"
             else
@@ -175,8 +174,8 @@ function common.startServiceUnprotectedACK(pAppId, pServiceId, pRequestPayload, 
         encryption = false
     })
     :ValidIf(function(_, data)
-        test.mobileSession[pAppId].hashCode = data.binaryData
-        test.mobileSession[pAppId].sessionId = data.sessionId
+        mobSession.hashCode = data.binaryData
+        mobSession.sessionId = data.sessionId
         local actPayload = bson.to_table(data.binaryData)
         common.log("SDL->MOB: App" ..pAppId.." StartServiceAck(" ..pServiceId.. ")", actPayload)
         return compareValues(pResponsePayload, actPayload, "binaryData")
@@ -324,7 +323,7 @@ function common.getRpcServiceAckParams(pHMIcap)
     return ackParams
 end
 
-function common.endRPCSevice()
+function common.endRPCService()
     local mobSession = common.getMobileSession(1)
     local msg = {
         serviceType = common.serviceType.RPC,
@@ -468,7 +467,7 @@ end
 function common.startRpcService(pAckParams, pAppId)
     pAppId = pAppId or 1
     local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
-    return common.startServiceUnprotectedACK( pAppId, common.serviceType.RPC, reqParams, pAckParams)
+    return common.startServiceUnprotectedACK(pAppId, common.serviceType.RPC, reqParams, pAckParams)
 end
 
 function common.startWithExtension(pExtensionFunc)

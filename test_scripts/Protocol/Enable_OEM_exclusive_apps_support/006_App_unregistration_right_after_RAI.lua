@@ -32,7 +32,7 @@ local function unregisterAppInterface()
   common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppUnregistered", { unexpectedDisconnect = false })
   common.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
   :Do(function()
-      common.endRPCSevice()
+      common.endRPCService()
     end)
 end
 
