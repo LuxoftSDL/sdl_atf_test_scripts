@@ -86,24 +86,34 @@ runner.testSettings.isSelfIncluded = false
 --[[ Functions ]]
 function common.log(...)
     local strBinaryData = ""
+    local function getTableSize(T)
+      local count = 0
+      for _ in pairs(T) do count = count + 1 end
+      return count
+    end
     local str = "[" .. atf_logger.formated_time(true) .. "]"
         for _,a in pairs({...}) do
-            str = str .. " "
             if type(a) == 'table' then
+                local i = 0
                 for p, v in pairs(a) do
+                    i = i + 1
+                    local endDelimiter = ",\n "
+                    if i == getTableSize(a) then endDelimiter = "\n " end
                     if type(v.value) == 'table' then
                         local val = ""
-                        for _, k in pairs(v.value) do
-                            val = val .. k.value
+                        local subEndDelimiter = ", "
+                        for key, subv in pairs(v.value) do
+                            if key == getTableSize(v.value) then subEndDelimiter = "" end
+                            val = val .. subv.value .. subEndDelimiter
                         end
-                        strBinaryData = strBinaryData .. p ..":" .. "{ ".. val .." }" .. ", "
+                        strBinaryData = strBinaryData .. p .." : " .. "{ ".. val .." }" .. endDelimiter
                     else
-                        strBinaryData = strBinaryData .. p ..":" .. v.value .. ", "
+                        strBinaryData = strBinaryData .. p .." : " .. v.value .. endDelimiter
                     end
                 end
-                str = str .. " " .. "{ " .. strBinaryData .. "}"
+                str = str .. " " .. "{\n " .. strBinaryData .. "}"
             else
-                str = str .. " ".. a
+                str = str .. " " .. a
             end
         end
     utils.cprint(35, str)
