@@ -46,23 +46,6 @@ local vehicleTypeInfoParams = {
 local defaultHmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
 --[[ Local Functions ]]
-local function getRpcServiceAckParams(pVehicleTypeInfoParams)
-  local ackParams = {
-    make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
-    model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
-    modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
-    trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
-    systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
-    systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
-  }
-  for key, KeyValue in pairs(ackParams) do
-    if not KeyValue.value then
-      ackParams[key] = nil
-    end
-  end
-  return ackParams
-end
-
 local function startErrorResponseGetSystemInfo()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
   hmiCap.BasicCommunication.GetSystemInfo = nil
@@ -76,26 +59,17 @@ local function startErrorResponseGetSystemInfo()
   common.wait(15000)
  end
 
-local function updateHMICapabilitiesFile(pVehicleTypeParams)
-  local hmiCapTbl = common.getHMICapabilitiesFromFile()
-  hmiCapTbl.VehicleInfo.vehicleType.make = pVehicleTypeParams.make
-  hmiCapTbl.VehicleInfo.vehicleType.model = pVehicleTypeParams.model
-  hmiCapTbl.VehicleInfo.vehicleType.modelYear = pVehicleTypeParams.modelYear
-  hmiCapTbl.VehicleInfo.vehicleType.trim = pVehicleTypeParams.trim
-  common.setHMICapabilitiesToFile(hmiCapTbl)
-end
-
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", updateHMICapabilitiesFile, { initialVehicleTypeParams })
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile, { initialVehicleTypeParams })
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheUsed })
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
 common.Step("Start SDL, HMI sends GetSystemInfo(GENERIC_ERROR) response", startErrorResponseGetSystemInfo )
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
-  common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
+  common.startRpcService, { common.getRpcServiceAckParamsFromStruct(vehicleTypeInfoParams) })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
 common.Title("Postconditions")

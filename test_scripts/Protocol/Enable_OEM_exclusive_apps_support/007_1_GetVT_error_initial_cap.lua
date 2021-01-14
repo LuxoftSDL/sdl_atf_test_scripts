@@ -25,44 +25,20 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local defaultVTD = common.vehicleTypeInfoParams.default
+local customVTD = common.vehicleTypeInfoParams.custom
 local vehicleTypeInfoParams = {
-  make = common.vehicleTypeInfoParams.default.make,
-  model = common.vehicleTypeInfoParams.default.model,
-  modelYear = common.vehicleTypeInfoParams.default.modelYear,
-  trim = common.vehicleTypeInfoParams.default.trim,
-  ccpu_version = common.vehicleTypeInfoParams.custom.ccpu_version,
-  systemHardwareVersion = common.vehicleTypeInfoParams.custom.systemHardwareVersion
+  make = defaultVTD.make,
+  model = defaultVTD.model,
+  modelYear = defaultVTD.modelYear,
+  trim = defaultVTD.trim,
+  ccpu_version = customVTD.ccpu_version,
+  systemHardwareVersion = customVTD.systemHardwareVersion
 }
 
 --[[ Local Functions ]]
-local function getRpcServiceAckParams(pVehicleTypeInfoParams)
-  local ackParams = {
-    make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
-    model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
-    modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
-    trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
-    systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
-    systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
-  }
-  for key, KeyValue in pairs(ackParams) do
-    if not KeyValue.value then
-      ackParams[key] = nil
-    end
-  end
-  return ackParams
-end
-
-local function updateHMICapabilitiesFile()
-  local hmiCapTbl = common.getHMICapabilitiesFromFile()
-  hmiCapTbl.VehicleInfo.vehicleType.make = common.vehicleTypeInfoParams.default.make
-  hmiCapTbl.VehicleInfo.vehicleType.model = common.vehicleTypeInfoParams.default.model
-  hmiCapTbl.VehicleInfo.vehicleType.modelYear = common.vehicleTypeInfoParams.default.modelYear
-  hmiCapTbl.VehicleInfo.vehicleType.trim = common.vehicleTypeInfoParams.default.trim
-  common.setHMICapabilitiesToFile(hmiCapTbl)
-end
-
 local function startErrorResponseGetVehicleType()
-  local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
+  local hmiCap = common.setHMIcap(customVTD)
   hmiCap.VehicleInfo.GetVehicleType = nil
   common.start(hmiCap)
   common.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleType")
@@ -74,12 +50,12 @@ end
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
-common.Step("Update HMI capabilities", updateHMICapabilitiesFile)
+common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile, { defaultVTD })
 common.Step("Start SDL, HMI sends GetSystemInfo(GENERIC_ERROR) response", startErrorResponseGetVehicleType )
 
 common.Title("Test")
 common.Step("Start RPC Service, Vehicle type data in StartServiceAck",
-  common.startRpcService, { getRpcServiceAckParams(vehicleTypeInfoParams) })
+  common.startRpcService, { common.getRpcServiceAckParamsFromStruct(vehicleTypeInfoParams) })
 common.Step("Vehicle type data in RAI", common.registerAppEx, { vehicleTypeInfoParams })
 
 common.Title("Postconditions")

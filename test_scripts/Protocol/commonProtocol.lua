@@ -609,4 +609,30 @@ function common.delayedStartServiceAckP4(pHmiCap, pDelayGetSI, pDelayGetVT)
    end)
 end
 
+function common.updateHMICapabilitiesFile(pVehicleTypeData)
+    local hmiCapTbl = common.getHMICapabilitiesFromFile()
+    hmiCapTbl.VehicleInfo.vehicleType.make = pVehicleTypeData.make
+    hmiCapTbl.VehicleInfo.vehicleType.model = pVehicleTypeData.model
+    hmiCapTbl.VehicleInfo.vehicleType.modelYear = pVehicleTypeData.modelYear
+    hmiCapTbl.VehicleInfo.vehicleType.trim = pVehicleTypeData.trim
+    common.setHMICapabilitiesToFile(hmiCapTbl)
+end
+
+function common.getRpcServiceAckParamsFromStruct(pVehicleTypeInfoParams)
+    local ackParams = {
+        make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
+        model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
+        modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
+        trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
+        systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
+        systemHardwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.systemHardwareVersion)
+    }
+    for key, KeyValue in pairs(ackParams) do
+        if not KeyValue.value then
+            ackParams[key] = nil
+        end
+    end
+    return ackParams
+end
+
 return common
