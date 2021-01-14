@@ -62,12 +62,12 @@ for tc, data in common.spairs(tcs) do
   common.Title("TC[" .. string.format("%03d", tc) .. "]")
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheUsed })
+  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheNotUsed })
   common.Step("Ignition off", common.ignitionOff)
   local customHmiCap = setHmiCap(data, common.vehicleTypeInfoParams.custom)
 
   common.Title("Test")
-  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { customHmiCap, common.isCacheUsed })
+  common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { customHmiCap, common.isCacheNotUsed })
   common.Step("Start RPC Service, Vehicle type data in StartServiceAck", common.startRpcService,
     { getRpcServiceAckParams(vehicleTypeInfoParams) })
 

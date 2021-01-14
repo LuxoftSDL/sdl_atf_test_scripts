@@ -59,7 +59,7 @@ common.bsonType = {
 }
 
 local hmiDefaultCapabilities = common.getDefaultHMITable()
-common.isCacheUsed = false
+common.isCacheNotUsed = false
 
 common.vehicleTypeInfoParams = {
   default = {

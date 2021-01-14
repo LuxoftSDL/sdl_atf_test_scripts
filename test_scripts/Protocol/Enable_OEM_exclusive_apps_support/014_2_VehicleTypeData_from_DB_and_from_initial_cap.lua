@@ -50,7 +50,7 @@ local function startErrorResponseGetSystemInfo()
   local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.custom)
   hmiCap.BasicCommunication.GetSystemInfo = nil
   hmiCap.VehicleInfo.GetVehicleType = nil
-  common.start(hmiCap, common.isCacheUsed)
+  common.start(hmiCap, common.isCacheNotUsed)
   common.getHMIConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
   :Do(function(_, data)
     common.getHMIConnection():SendError(data.id, data.method, "GENERIC_ERROR", "info message")
@@ -63,7 +63,7 @@ local function startErrorResponseGetSystemInfo()
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Update HMI capabilities", common.updateHMICapabilitiesFile, { initialVehicleTypeParams })
-common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheUsed })
+common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { defaultHmiCap, common.isCacheNotUsed })
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
