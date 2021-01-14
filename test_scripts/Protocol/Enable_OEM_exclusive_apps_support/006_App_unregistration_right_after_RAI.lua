@@ -11,8 +11,8 @@
 -- 2. RPC service is opened by app via 5th protocol
 -- 3. App sends RAI request via 5th protocol
 -- SDL does:
---  - Provide all vehicle type data received from HMI in RAI response to the app
--- 4. App does not support the received vehicle type data and requests UnregisterAppInterface RPC
+--  - Provide the vehicle type info with all parameter values received from HMI in RAI response to the app
+-- 4. App does not support the data from received vehicle type info and requests UnregisterAppInterface RPC
 -- SDL does:
 --  - Unregister the app successfully and sends UnregisterAppInterface(SUCCESS) response to the app
 -- 5. App requests EndService

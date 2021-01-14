@@ -9,8 +9,8 @@
 --  and VI.GetVehicleType(make, model, modelYear, trim) responses
 -- 2. App requests StartService(RPC) via 5th protocol
 -- SDL does:
---  - Provide all vehicle type data received from HMI in StartServiceAck to the app
--- 3. App does not support the received vehicle type data and requests EndService
+--  - Provide the vehicle type info with all parameter values received from HMI in StartServiceAck to the app
+-- 3. App does not support the data from received vehicle type info and requests EndService
 -- SDL does:
 --  - End RPC service successfully and sends EndServiceAck to the app
 ---------------------------------------------------------------------------------------------------

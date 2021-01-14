@@ -10,16 +10,16 @@
 -- 2. HMI responds with invalid data in vehicleType structure to VI.GetVehicleType requests
 -- 3. App requests StartService(RPC) via 5th protocol
 -- SDL does:
---  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
---     in StartServiceAck to the app
+--  - Provide systemSoftwareVersion and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--     via StartServiceAck to the app
 --  - Provide the values for make, model, modelYear, trim parameters from the initial SDL capabilities file defined in
---     .ini file in HMICapabilities parameter in StartServiceAck to the app
+--     .ini file in HMICapabilities parameter via StartServiceAck to the app
 -- 3. App sends RAI request via 5th protocol
 -- SDL does:
---  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
---     in RAI response to the app
+--  - Provide systemSoftwareVersion and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--     via RAI response to the app
 --  - Provide the values for make, model, modelYear, trim parameters from the initial SDL capabilities file defined in
---     .ini file in HMICapabilities parameter in RAI response to the app
+--     .ini file in HMICapabilities parameter via RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

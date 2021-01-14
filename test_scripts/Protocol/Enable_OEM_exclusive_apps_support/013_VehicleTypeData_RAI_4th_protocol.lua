@@ -9,7 +9,7 @@
 --  and VI.GetVehicleType(make, model, modelYear, trim) responses
 -- 2. App requests RAI via 4th protocol
 -- SDL does:
---  - Provide all vehicle type data received from HMI in RAI response to the app
+--  - Provide the vehicle type info with all parameter values received from HMI in RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

@@ -9,7 +9,7 @@
 -- 2. App is registered via 5th protocol and activated
 -- 3. App requests StartService(VIDEO) and StartService(PCM) via 5th protocol
 -- SDL does:
---  - Not provide the vehicle type data in StartServiceAck for audio and video services to the app
+--  - Not provide the vehicle type info in StartServiceAck for audio and video services to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

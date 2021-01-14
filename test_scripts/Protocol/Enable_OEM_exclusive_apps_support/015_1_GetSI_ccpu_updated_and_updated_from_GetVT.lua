@@ -12,10 +12,10 @@
 -- 2. HMI responds with updated values to VI.GetVehicleType request
 -- 3. App requests StartService(RPC) via 5th protocol
 -- SDL does:
---  - Provide the vehicle type data received from HMI in StartServiceAck to the app
+--  - Provide the vehicle type info with parameter values received from HMI in StartServiceAck to the app
 -- 4. App requests RAI
 -- SDL does:
---  - Provide the vehicle type data received from HMI in RAI response to the app
+--  - Provide the vehicle type info with parameter values received from HMI in RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

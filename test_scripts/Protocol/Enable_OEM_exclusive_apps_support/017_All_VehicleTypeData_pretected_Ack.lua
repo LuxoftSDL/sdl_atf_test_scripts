@@ -9,7 +9,7 @@
 -- 2. Unprotected RPC service is started
 -- 3. App requests protected StartService(RPC) via 5th protocol
 -- SDL does:
---  - Provide all vehicle type data received from HMI in protected StartServiceAck to the app
+--  - Provide the vehicle type info with all parameter values received from HMI in protected StartServiceAck to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

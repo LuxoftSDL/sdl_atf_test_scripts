@@ -13,12 +13,12 @@
 -- 3. HMI responds with delay to BC.GetSystemInfo request and immediately to VI.GetVehicleType request
 -- SDL does:
 --  - Send StartServiceAck after receiving VI.GetVehicleType and BC.GetSystemInfo responses
---  - Provide the vehicle type data received from HMI in BC.GetSystemInfo and VI.GetVehicleType responses
---     in StartServiceAck to the app
+--  - Provide the vehicle type info with parameter values received from HMI in BC.GetSystemInfo and
+--     VI.GetVehicleType responses via StartServiceAck to the app
 -- 4. App requests RAI
 -- SDL does:
---  - Provide the vehicle type data received from HMI in BC.GetSystemInfo and VI.GetVehicleType responses
---     in RAI response to the app
+--  - Provide the vehicle type info with parameter values received from HMI in BC.GetSystemInfo and
+--     VI.GetVehicleType responses via RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

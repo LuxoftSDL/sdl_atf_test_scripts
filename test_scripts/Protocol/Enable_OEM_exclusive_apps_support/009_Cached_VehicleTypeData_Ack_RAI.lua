@@ -14,14 +14,14 @@
 -- 3. HMI sends BC.GetSystemInfo(ccpu_version, systemHardwareVersion) response
 -- 4. App requests StartService(RPC) via 5th protocol
 -- SDL does:
---  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
---     in StartServiceAck to the app
+--  - Provide systemSoftwareVersion and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--     via StartServiceAck to the app
 --  - Provide the values for make, model, modelYear, trim parameters from cached HMI capabilities
 --     in StartServiceAck to the app
 -- 5. App requests RAI
 -- SDL does:
---  - Provide ccpu_version and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
---     in RAI response to the app
+--  - Provide systemSoftwareVersion and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
+--     via RAI response to the app
 --  - Provide the values for make, model, modelYear, trim parameters from cached HMI capabilities
 --     in RAI response to the app
 ---------------------------------------------------------------------------------------------------
