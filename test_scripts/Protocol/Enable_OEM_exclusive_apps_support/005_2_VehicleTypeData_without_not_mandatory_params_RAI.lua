@@ -19,8 +19,8 @@ local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
 local vehicleData = {
-    ccpu_version = common.vehicleTypeInfoParams.default["ccpu_version"]
-  }
+  ccpu_version = common.vehicleTypeInfoParams.default["ccpu_version"]
+}
 
 --[[ Scenario ]]
 common.Title("Test with excluding all not mandatory parameters")
