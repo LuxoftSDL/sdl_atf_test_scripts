@@ -635,4 +635,8 @@ function common.getRpcServiceAckParamsFromStruct(pVehicleTypeInfoParams)
     return ackParams
 end
 
+function common.updateSessionId(pAppId, pSessionId)
+    test.mobileSession[pAppId].sessionId = pSessionId
+end
+
 return common

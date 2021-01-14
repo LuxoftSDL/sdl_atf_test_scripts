@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
--- Description: Check that SDL is able to provide vehicle type data for each app that requests StartService via
---  5 protocol after all vehicle type data have been received in case StartService is requested before receiving
+-- Description: Check that SDL is able to provide vehicle type data for each app that requests StartService and
+--  RAI via 5 protocol after all vehicle type data have been received in case StartService is requested before receiving
 --  BC.GetSystemInfo and VI.GetVehicleType responses
 --
 -- Steps:
@@ -14,11 +14,16 @@
 -- SDL does:
 --  - Send StartServiceAcks after receiving VI.GetVehicleType and BC.GetSystemInfo responses with the vehicle type info
 --     with all parameter values received from HMI to app1 and app2
+-- 4. App1 and App2 request RAI after receiving StartServiceAck
+-- SDL does:
+--  - Provide the vehicle type info with all parameter values received from HMI in RAI response to the app1 and app2
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
+local appSessionId1 = 1
+local appSessionId2 = 2
 local delay1 = 2000
 local delay2 = 3000
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
@@ -55,7 +60,8 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
     end)
 
   local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
-  local mobSession = common.getMobileSession()
+  local mobSession1 = common.createSession(1)
+  local mobSession2 = common.createSession(2)
   local msg = {
     serviceType = common.serviceType.RPC,
     frameType = common.frameType.CONTROL_FRAME,
@@ -64,10 +70,10 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
     binaryData = common.bson_to_bytes(reqParams)
   }
 
-  mobSession:Send(msg)
+  mobSession1:Send(msg)
   common.log("MOB->SDL: App1".." StartService(7)", reqParams)
 
-  mobSession:Send(msg)
+  mobSession2:Send(msg)
   common.log("MOB->SDL: App2" .." StartService(7)", reqParams)
 
   local function validateResponse(pData)
@@ -82,13 +88,20 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
     return compareValues(rpcServiceAckParams, actPayload, "binaryData")
   end
 
-  mobSession:ExpectControlMessage(common.serviceType.RPC, {
+  common.getMobileSession():ExpectControlMessage(common.serviceType.RPC, {
     frameInfo = common.frameInfo.START_SERVICE_ACK,
     encryption = false
   })
-  :ValidIf(function(_, data)
-    return validateResponse(data)
-  end)
+  :ValidIf(function(exp, data)
+      if exp.occurences == 1 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
+          common.updateSessionId(1, data.sessionId)
+          return validateResponse(data)
+      elseif exp.occurences == 2 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
+          common.updateSessionId(2, data.sessionId)
+          return validateResponse(data)
+      end
+      return false, "Unexpected message have been received"
+    end)
   :Times(2)
 end
 
@@ -105,6 +118,11 @@ common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
 common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", start)
+common.Step("Vehicle type data in RAI App1", common.registerAppEx,
+  { common.vehicleTypeInfoParams.default, appSessionId1 })
+common.Step("Vehicle type data in RAI App2", common.registerAppEx,
+  { common.vehicleTypeInfoParams.default, appSessionId2 })
+
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
