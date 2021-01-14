@@ -22,7 +22,13 @@
 local common = require("test_scripts/Protocol/commonProtocol")
 
 --[[ Local Variables ]]
-local paramsToExclude = { "make", "model", "modelYear", "trim", "systemHardwareVersion" }
+local tcs = {
+  [01] = "make",
+  [02] = "model",
+  [03] = "modelYear",
+  [04] = "trim",
+  [05] = "systemHardwareVersion"
+}
 
 --[[ Local Functions ]]
 local function setHMICap(pParamToExclude)
@@ -39,17 +45,17 @@ local function registerApp(pParamToExclude)
 end
 
 --[[ Scenario ]]
-for _, parameter in common.spairs(paramsToExclude) do
-  common.Title("Test with excluding " .. parameter .. " parameter")
+for tc, data in common.spairs(tcs) do
+  common.Title("TC[" .. string.format("%03d", tc) .. "]")
   common.Title("Preconditions")
   common.Step("Clean environment", common.preconditions)
-  local hmiCap = setHMICap(parameter)
+  local hmiCap = setHMICap(data)
   common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmiCap })
 
   common.Title("Test")
-  common.Step("Vehicle type data without " .. parameter .. " in StartServiceAck", common.startRpcService,
+  common.Step("Vehicle type data without " .. data .. " in StartServiceAck", common.startRpcService,
     { common.getRpcServiceAckParams(hmiCap) })
-  common.Step("Vehicle type data without " .. parameter .. " in RAI response", registerApp, { parameter })
+  common.Step("Vehicle type data without " .. data .. " in RAI response", registerApp, { data })
 
   common.Title("Postconditions")
   common.Step("Stop SDL", common.postconditions)
