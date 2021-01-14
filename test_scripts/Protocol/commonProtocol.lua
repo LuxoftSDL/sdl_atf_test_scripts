@@ -548,7 +548,7 @@ end
 
 function common.delayedStartServiceAckP4(pHmiCap, pDelayGetSI, pDelayGetVT)
   config.defaultProtocolVersion = 4
-  local toleranceForAck = 100
+  local toleranceForAck = 750
   local getSIparams = pHmiCap.BasicCommunication.GetSystemInfo.params
   local getVTparams = pHmiCap.VehicleInfo.GetVehicleType.params
   pHmiCap.VehicleInfo.GetVehicleType = nil
