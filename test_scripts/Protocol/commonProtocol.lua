@@ -534,10 +534,9 @@ function common.delayedStartServiceAckP5(pHmiCap, pDelayGetSI, pDelayGetVT)
       local ts_req = timestamp()
       common.registerAppEx(common.vehicleTypeInfoParams.default)
       :ValidIf(function()
-          common.log("RAIResponse")
           local ts_res = timestamp()
           local act_delay = ts_res - ts_req
-          common.log("StartServiceAck", act_delay)
+          common.log("RAIResponse", act_delay)
           if act_delay > toleranceForRAI then
             return false, "RAI response is expected right after RAI request, actual delay: " ..
             act_delay .. "ms"
