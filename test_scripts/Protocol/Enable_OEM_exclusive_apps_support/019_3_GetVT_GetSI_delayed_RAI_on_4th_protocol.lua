@@ -8,7 +8,7 @@
 -- 1. SDL requests BC.GetSystemInfo and VI.GetVehicleType to HMI after start
 -- 2. App requests StartService(RPC) via 4th protocol
 -- SDL does:
---  - Sends StartServiceAck to mobile app right after receiving StartService request
+--  - Send StartServiceAck to mobile app right after receiving StartService request
 -- 3. App requests RAI
 -- SDL does:
 --  - Postpone the sending of RAI response before receiving of BC.GetSystemInfo and VI.GetVehicleType responses
@@ -16,7 +16,7 @@
 -- SDL does:
 --  - Send RAI response after receiving VI.GetVehicleType and BC.GetSystemInfo responses
 --  - Provide the vehicle type data received from HMI in BC.GetSystemInfo and VI.GetVehicleType responses
---     in RAI response to the app
+--     via RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

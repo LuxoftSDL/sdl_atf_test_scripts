@@ -2,27 +2,26 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
 -- Description: SDL is able to provide systemSoftwareVersion and systemHardwareVersion versions from the DB
---  in the second SDL ignition cycle when ссpu and systemHardwareVersion versions have been saved to the DB
---  in the previous ignition cycle and values for make, model, modelYear, trim parameters from
---  the initial SDL capabilities file
+--  and values for make, model, modelYear, trim parameters from the initial SDL capabilities file
+--  in the second SDL ignition cycle
 --
 -- Steps:
 -- 1. HMI responds with erroneous code to BC.GetSystemInfo request in the second ignition cycle,
--- systemSoftwareVersion and systemHardwareVersion parameters have values in the DB
+--  systemSoftwareVersion and systemHardwareVersion have been saved to the DB in the previous ignition cycle
 -- SDL does:
 --  - Remove the cache file with hmi capabilities
---  - Request getting of all HMI capabilities and VI.GetVehicleType RPC
+--  - Request obtaining of all HMI capabilities and VI.GetVehicleType RPC
 -- 2. HMI does not respond to VI.GetVehicleType request
 -- 3. App requests StartService(RPC) via 5th protocol
 -- SDL does:
 --  - Provide systemHardwareVersion and systemSoftwareVersion values from the DB in StartServiceAck to the app
 --  - Provide the values for make, model, modelYear, trim parameters from the initial SDL capabilities file defined in
---     .ini file in HMICapabilities parameter in StartServiceAck to the app
+--     .ini file in HMICapabilities parameter via StartServiceAck to the app
 -- 4. App requests RAI
 -- SDL does:
 --  - Provide systemHardwareVersion and systemSoftwareVersion values from the DB in RAI response to the app
 --  - Provide the values for make, model, modelYear, trim parameters from the initial SDL capabilities file defined in
---     .ini file in HMICapabilities parameter in RAI response to the app
+--     .ini file in HMICapabilities parameter via RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

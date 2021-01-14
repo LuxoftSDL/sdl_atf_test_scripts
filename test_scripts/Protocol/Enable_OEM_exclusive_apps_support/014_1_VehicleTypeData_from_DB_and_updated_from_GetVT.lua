@@ -2,15 +2,14 @@
 -- Proposal: https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0293-vehicle-type-filter.md
 ---------------------------------------------------------------------------------------------------
 -- Description: SDL is able to provide systemSoftwareVersion and systemHardwareVersion versions from the DB
---  in the second SDL ignition cycle when ссpu and systemHardwareVersion versions have been saved to the DB
---  in the previous ignition cycle and updated values from VI.GetVehicleType response
+--  and updated values from VI.GetVehicleType response in the second SDL ignition cycle
 --
 -- Steps:
 -- 1. HMI responds with erroneous code to BC.GetSystemInfo request in the second ignition cycle,
--- systemSoftwareVersion and systemHardwareVersion parameters have values in the DB
+--  systemSoftwareVersion and systemHardwareVersion have been saved to the DB in the previous ignition cycle
 -- SDL does:
 --  - Remove the cache file with hmi capabilities
---  - Request getting of all HMI capabilities and VI.GetVehicleType RPC
+--  - Request obtaining of all HMI capabilities and VI.GetVehicleType RPC
 -- 2. HMI responds with updated values to VI.GetVehicleType request
 -- 3. App requests StartService(RPC) via 5th protocol
 -- SDL does:

@@ -8,16 +8,14 @@
 -- 1. HMI responds with new value of ccpu_version to BC.GetSystemInfo request in the second ignition cycle
 -- SDL does:
 --  - Remove the cache file with hmi capabilities
---  - Request getting of all HMI capabilities and VI.GetVehicleType RPC
+--  - Request obtaining of all HMI capabilities and VI.GetVehicleType RPC
 -- 2. HMI responds with updated values to VI.GetVehicleType request
 -- 3. App requests StartService(RPC) via 5th protocol
 -- SDL does:
---  - Provide systemHardwareVersion and systemSoftwareVersion values received from HMI in StartServiceAck to the app
---  - Provide the values for make, model, modelYear, trim parameters received from HMI in StartServiceAck to the app
+--  - Provide the vehicle type data received from HMI in StartServiceAck to the app
 -- 4. App requests RAI
 -- SDL does:
---  - Provide systemHardwareVersion and systemSoftwareVersion values received from HMI in RAI response to the app
---  - Provide the values for make, model, modelYear, trim parameters received from HMI in RAI response to the app
+--  - Provide the vehicle type data received from HMI in RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")

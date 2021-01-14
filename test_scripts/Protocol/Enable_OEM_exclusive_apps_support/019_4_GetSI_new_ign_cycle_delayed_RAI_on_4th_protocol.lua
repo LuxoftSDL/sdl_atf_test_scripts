@@ -9,15 +9,15 @@
 -- 1. SDL requests BC.GetSystemInfo to HMI after start
 -- 2. App requests StartService(RPC) via 4th protocol
 -- SDL does:
---  - Sends StartServiceAck to mobile app right after receiving StartService request
+--  - Send StartServiceAck to mobile app right after receiving StartService request
 -- 3. App requests RAI
 -- SDL does:
 --  - Postpone the sending of RAI response before receiving of BC.GetSystemInfo response
 -- 4. HMI responds with delay to BC.GetSystemInfo request
 -- SDL does:
---  - Send RAI response after receiving BC.GetSystemInfo responses
+--  - Send RAI response after receiving BC.GetSystemInfo response
 --  - Provide systemSoftwareVersion and systemHardwareVersion values received from HMI in BC.GetSystemInfo response
---     in RAI response to the app
+--     via RAI response to the app
 --  - Provide the values for make, model, modelYear, trim parameters from the cache in RAI response to the app
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
