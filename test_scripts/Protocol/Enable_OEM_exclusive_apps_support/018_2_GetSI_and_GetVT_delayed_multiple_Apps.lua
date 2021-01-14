@@ -48,8 +48,6 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
       common.run.runAfter(response, pDelayGetSI)
     end)
 
-  local times_GetVT = 1
-  if pDelayGetVT == -1 then times_GetVT = 0 end
   common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
   :Do(function(_, data)
       local function response()
@@ -58,7 +56,6 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
       end
       if pDelayGetVT ~= -1 then common.run.runAfter(response, pDelayGetVT) end
     end)
-   :Times(times_GetVT)
 
   local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
   local mobSession = common.getMobileSession()
@@ -66,7 +63,6 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
     serviceType = common.serviceType.RPC,
     frameType = common.frameType.CONTROL_FRAME,
     frameInfo = common.frameInfo.START_SERVICE,
-    sessionId = mobSession,
     encryption = false,
     binaryData = common.bson_to_bytes(reqParams)
   }
@@ -83,25 +79,20 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
     if ts_get_si == nil then
       return false, "StartServiceAck received before receiving of GetSystemInfo from HMI"
     end
-    if ts_get_vt == nil and pDelayGetVT ~= -1 then
+    if ts_get_vt == nil then
       return false, "StartServiceAck received before receiving of GetVehicleType from HMI"
     end
-      return compareValues(rpcServiceAckParams, actPayload, "binaryData")
+    return compareValues(rpcServiceAckParams, actPayload, "binaryData")
   end
 
   mobSession:ExpectControlMessage(common.serviceType.RPC, {
     frameInfo = common.frameInfo.START_SERVICE_ACK,
     encryption = false
   })
-  :ValidIf(function(exp, data)
-    if exp.occurences == 1 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
-      return validateResponse(data)
-    elseif exp.occurences == 2 and data.frameInfo == common.frameInfo.START_SERVICE_ACK then
-      return validateResponse(data)
-    end
-      return false, "Unexpected message have been received"
+  :ValidIf(function(_, data)
+    return validateResponse(data)
   end)
-    :Times(2)
+  :Times(2)
 end
 
 local function start()
