@@ -21,24 +21,17 @@
 --[[ Required Shared libraries ]]
 local common = require("test_scripts/Protocol/commonProtocol")
 
+--[[ Local Variables ]]
 local delay1 = 2000
 local delay2 = 3000
-local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
-
---[[ Local Functions ]]
-local function start()
-  local function check()
-    common.delayedStartServiceAckP4(hmiCap, delay1, delay2)
-  end
-  common.startWithExtension(check)
-end
 
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
-common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", start)
+common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", common.startWithExtension,
+  { delay1, delay2, common.delayedStartServiceAckP4 })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

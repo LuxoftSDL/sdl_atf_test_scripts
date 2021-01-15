@@ -470,38 +470,12 @@ function common.startRpcService(pAckParams, pAppId)
     return common.startServiceUnprotectedACK(pAppId, common.serviceType.RPC, reqParams, pAckParams)
 end
 
-function common.startWithExtension(pExtensionFunc)
-    common.init.SDL()
-    :Do(function()
-        common.init.HMI()
-        :Do(function()
-            common.init.connectMobile()
-            :Do(function()
-                pExtensionFunc()
-            end)
-        end)
-    end)
-end
-
-function common.delayedStartServiceAckP5(pHmiCap, pDelayGetSI, pDelayGetVT)
-  config.defaultProtocolVersion = 5
-  local toleranceForRAI = 750
-  local rpcServiceAckParams = common.getRpcServiceAckParams(pHmiCap)
-  local getSIparams = pHmiCap.BasicCommunication.GetSystemInfo.params
-  local getVTparams = pHmiCap.VehicleInfo.GetVehicleType.params
-  pHmiCap.VehicleInfo.GetVehicleType = nil
-  pHmiCap.BasicCommunication.GetSystemInfo = nil
-
-  local ts_get_si
-  local ts_get_vt
-
-  common.init.HMI_onReady(pHmiCap)
-
+local function registerExpFor_GetSI_and_GetVT(pGetSIparams, pGetVTparams, pDelayGetSI, pDelayGetVT, pTSs)
   common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
   :Do(function(_, data)
       local function response()
-        ts_get_si = timestamp()
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
+        pTSs.ts_get_si = timestamp()
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pGetSIparams)
       end
       common.run.runAfter(response, pDelayGetSI)
     end)
@@ -511,19 +485,50 @@ function common.delayedStartServiceAckP5(pHmiCap, pDelayGetSI, pDelayGetVT)
   common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
   :Do(function(_, data)
       local function response()
-        ts_get_vt = timestamp()
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getVTparams)
+        pTSs.ts_get_vt = timestamp()
+        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", pGetVTparams)
       end
       if pDelayGetVT ~= -1 then common.run.runAfter(response, pDelayGetVT) end
     end)
    :Times(times_GetVT)
+end
 
-  common.startRpcService(rpcServiceAckParams)
+function common.startWithExtension(pDelayGetSI, pDelayGetVT, pExtensionFunc)
+    local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
+    local rpcServiceAckParams = common.getRpcServiceAckParams(hmiCap)
+    local mobileConnectionDelay = 50
+    common.init.SDL()
+    :Do(function()
+        common.init.HMI()
+        :Do(function()
+            local ts = {}
+            local getSIparams = hmiCap.BasicCommunication.GetSystemInfo.params
+            local getVTparams = hmiCap.VehicleInfo.GetVehicleType.params
+            hmiCap.VehicleInfo.GetVehicleType = nil
+            hmiCap.BasicCommunication.GetSystemInfo = nil
+            registerExpFor_GetSI_and_GetVT(getSIparams, getVTparams, pDelayGetSI, pDelayGetVT, ts)
+            common.init.HMI_onReady(hmiCap)
+            common.run.runAfter(function()
+                common.init.connectMobile()
+                :Do(function()
+                    pExtensionFunc(pDelayGetVT, ts, rpcServiceAckParams)
+                end)
+            end, mobileConnectionDelay)
+        end)
+    end)
+end
+
+function common.delayedStartServiceAckP5(pDelayGetVT, pTS, pRpcServiceAckParams)
+  config.defaultProtocolVersion = 5
+
+  common.log("StartService")
+  common.startRpcService(pRpcServiceAckParams)
   :ValidIf(function()
-      if ts_get_si == nil then
+      common.log("StartServiceAck")
+      if pTS.ts_get_si == nil then
         return false, "StartServiceAck received before receiving of GetSystemInfo from HMI"
       end
-      if ts_get_vt == nil and pDelayGetVT ~= -1 then
+      if pTS.ts_get_vt == nil and pDelayGetVT ~= -1 then
         return false, "StartServiceAck received before receiving of GetVehicleType from HMI"
       end
       return true
@@ -533,10 +538,11 @@ function common.delayedStartServiceAckP5(pHmiCap, pDelayGetSI, pDelayGetVT)
       local ts_req = timestamp()
       common.registerAppEx(common.vehicleTypeInfoParams.default)
       :ValidIf(function()
+          local tolerance = 750
           local ts_res = timestamp()
           local act_delay = ts_res - ts_req
           common.log("RAIResponse", act_delay)
-          if act_delay > toleranceForRAI then
+          if act_delay > tolerance then
             return false, "RAI response is expected right after RAI request, actual delay: " ..
             act_delay .. "ms"
           end
@@ -545,39 +551,8 @@ function common.delayedStartServiceAckP5(pHmiCap, pDelayGetSI, pDelayGetVT)
     end)
 end
 
-function common.delayedStartServiceAckP4(pHmiCap, pDelayGetSI, pDelayGetVT)
+function common.delayedStartServiceAckP4(pDelayGetVT, pTS)
   config.defaultProtocolVersion = 4
-  local toleranceForAck = 750
-  local getSIparams = pHmiCap.BasicCommunication.GetSystemInfo.params
-  local getVTparams = pHmiCap.VehicleInfo.GetVehicleType.params
-  pHmiCap.VehicleInfo.GetVehicleType = nil
-  pHmiCap.BasicCommunication.GetSystemInfo = nil
-
-  local ts_get_si
-  local ts_get_vt
-
-  common.init.HMI_onReady(pHmiCap)
-
-  common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
-  :Do(function(_, data)
-      local function response()
-        ts_get_si = timestamp()
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
-      end
-      common.run.runAfter(response, pDelayGetSI)
-    end)
-
-  local times_GetVT = 1
-  if pDelayGetVT == -1 then times_GetVT = 0 end
-  common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
-  :Do(function(_, data)
-      local function response()
-        ts_get_vt = timestamp()
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getVTparams)
-      end
-      if pDelayGetVT ~= -1 then common.run.runAfter(response, pDelayGetVT) end
-    end)
-   :Times(times_GetVT)
 
   local ts_req = timestamp()
   common.log("StartService")
@@ -587,20 +562,21 @@ function common.delayedStartServiceAckP4(pHmiCap, pDelayGetSI, pDelayGetVT)
       common.registerAppEx(common.vehicleTypeInfoParams.default)
       :ValidIf(function()
           common.log("RAIResponse")
-          if ts_get_si == nil then
+          if pTS.ts_get_si == nil then
             return false, "RAI response received before receiving of GetSystemInfo from HMI"
           end
-          if ts_get_vt == nil and pDelayGetVT ~= -1 then
+          if pTS.ts_get_vt == nil and pDelayGetVT ~= -1 then
             return false, "RAI response received before receiving of GetVehicleType from HMI"
           end
           return true
         end)
     end)
   :ValidIf(function()
+      local tolerance = 750
       local ts_res = timestamp()
       local act_delay = ts_res - ts_req
       common.log("StartServiceAck", act_delay)
-      if act_delay > toleranceForAck then
+      if act_delay > tolerance then
         return false, "StartServiceAck is expected right after StartService request, actual delay: " ..
         act_delay .. "ms"
       end

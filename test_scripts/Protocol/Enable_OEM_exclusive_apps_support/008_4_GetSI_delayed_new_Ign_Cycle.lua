@@ -31,14 +31,6 @@ local delay1 = 3000
 local delay2 = -1
 local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
---[[ Local Functions ]]
-local function start()
-  local function check()
-    common.delayedStartServiceAckP5(hmiCap, delay1, delay2)
-  end
-  common.startWithExtension(check)
-end
-
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
@@ -46,7 +38,8 @@ common.Step("Start SDL, HMI, connect Mobile, start Session", common.start, { hmi
 common.Step("Ignition off", common.ignitionOff)
 
 common.Title("Test")
-common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", start)
+common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", common.startWithExtension,
+  { delay1, delay2, common.delayedStartServiceAckP5 })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

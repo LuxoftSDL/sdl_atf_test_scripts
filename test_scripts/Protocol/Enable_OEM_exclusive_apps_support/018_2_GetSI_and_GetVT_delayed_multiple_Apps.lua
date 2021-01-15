@@ -26,38 +26,10 @@ local appSessionId1 = 1
 local appSessionId2 = 2
 local delay1 = 2000
 local delay2 = 3000
-local hmiCap = common.setHMIcap(common.vehicleTypeInfoParams.default)
 
 --[[ Local Functions ]]
-local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGetVT)
-  local rpcServiceAckParams = common.getRpcServiceAckParams(pHmiCap)
-  local getSIparams = pHmiCap.BasicCommunication.GetSystemInfo.params
-  local getVTparams = pHmiCap.VehicleInfo.GetVehicleType.params
-  pHmiCap.VehicleInfo.GetVehicleType = nil
-  pHmiCap.BasicCommunication.GetSystemInfo = nil
+local function delayedStartServiceAckMultipleApps(_, pTS, pRpcServiceAckParams)
 
-  local ts_get_si
-  local ts_get_vt
-
-  common.init.HMI_onReady(pHmiCap)
-
-  common.hmi.getConnection():ExpectRequest("BasicCommunication.GetSystemInfo")
-  :Do(function(_, data)
-      local function response()
-        ts_get_si = timestamp()
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getSIparams)
-      end
-      common.run.runAfter(response, pDelayGetSI)
-    end)
-
-  common.hmi.getConnection():ExpectRequest("VehicleInfo.GetVehicleType")
-  :Do(function(_, data)
-      local function response()
-        ts_get_vt = timestamp()
-        common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", getVTparams)
-      end
-      if pDelayGetVT ~= -1 then common.run.runAfter(response, pDelayGetVT) end
-    end)
 
   local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
   local mobSession1 = common.createSession(1)
@@ -79,13 +51,13 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
   local function validateResponse(pData)
     local actPayload = common.bson_to_table(pData.binaryData)
     common.log("SDL->MOB: App" ..pData.sessionId.." StartServiceAck(7)", actPayload)
-    if ts_get_si == nil then
+    if pTS.ts_get_si == nil then
       return false, "StartServiceAck received before receiving of GetSystemInfo from HMI"
     end
-    if ts_get_vt == nil then
+    if pTS.ts_get_vt == nil then
       return false, "StartServiceAck received before receiving of GetVehicleType from HMI"
     end
-    return compareValues(rpcServiceAckParams, actPayload, "binaryData")
+    return compareValues(pRpcServiceAckParams, actPayload, "binaryData")
   end
 
   common.getMobileSession():ExpectControlMessage(common.serviceType.RPC, {
@@ -105,19 +77,13 @@ local function delayedStartServiceAckMultipleApps(pHmiCap, pDelayGetSI, pDelayGe
   :Times(2)
 end
 
-local function start()
-  local function check()
-    delayedStartServiceAckMultipleApps(hmiCap, delay1, delay2)
-  end
-  common.startWithExtension(check)
-end
-
 --[[ Scenario ]]
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 
 common.Title("Test")
-common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", start)
+common.Step("Start SDL, HMI, connect Mobile, start Session, send StartService", common.startWithExtension,
+  { delay1, delay2, delayedStartServiceAckMultipleApps })
 common.Step("Vehicle type data in RAI App1", common.registerAppEx,
   { common.vehicleTypeInfoParams.default, appSessionId1 })
 common.Step("Vehicle type data in RAI App2", common.registerAppEx,
