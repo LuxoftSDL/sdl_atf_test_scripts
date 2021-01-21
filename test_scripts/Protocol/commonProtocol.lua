@@ -303,15 +303,13 @@ function common.setStringBsonValue(pValue)
     return { type = common.bsonType.STRING, value = pValue }
 end
 
-function common.getRpcServiceAckParams(pHMIcap)
-    local vehicleTypeParams = pHMIcap.VehicleInfo.GetVehicleType.params.vehicleType
-    local systemInfoParams = pHMIcap.BasicCommunication.GetSystemInfo.params
+function common.getRpcServiceAckParamsFromStruct(pVehicleTypeInfoParams)
     local ackParams = {
-        make = common.setStringBsonValue(vehicleTypeParams.make),
-        model = common.setStringBsonValue(vehicleTypeParams.model),
-        modelYear = common.setStringBsonValue(vehicleTypeParams.modelYear),
-        trim = common.setStringBsonValue(vehicleTypeParams.trim),
-        systemSoftwareVersion = common.setStringBsonValue(systemInfoParams.ccpu_version),
+        make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
+        model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
+        modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
+        trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
+        systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
         systemHardwareVersion = common.setStringBsonValue(common.defaultSystemHardwareVersion)
     }
     for key, KeyValue in pairs(ackParams) do
@@ -320,6 +318,17 @@ function common.getRpcServiceAckParams(pHMIcap)
         end
     end
     return ackParams
+end
+
+function common.getRpcServiceAckParams(pHMIcap)
+    local vehicleTypeInfoParams = {}
+    for k, v in pairs(pHMIcap.VehicleInfo.GetVehicleType.params.vehicleType) do
+        vehicleTypeInfoParams[k] = v
+    end
+    for k, v in pairs(pHMIcap.BasicCommunication.GetSystemInfo.params) do
+        vehicleTypeInfoParams[k] = v
+    end
+    return common.getRpcServiceAckParamsFromStruct(vehicleTypeInfoParams)
 end
 
 function common.endRPCService()
@@ -588,23 +597,6 @@ function common.updateHMICapabilitiesFile(pVehicleTypeData)
     hmiCapTbl.VehicleInfo.vehicleType.modelYear = pVehicleTypeData.modelYear
     hmiCapTbl.VehicleInfo.vehicleType.trim = pVehicleTypeData.trim
     common.setHMICapabilitiesToFile(hmiCapTbl)
-end
-
-function common.getRpcServiceAckParamsFromStruct(pVehicleTypeInfoParams)
-    local ackParams = {
-        make = common.setStringBsonValue(pVehicleTypeInfoParams.make),
-        model = common.setStringBsonValue(pVehicleTypeInfoParams.model),
-        modelYear = common.setStringBsonValue(pVehicleTypeInfoParams.modelYear),
-        trim = common.setStringBsonValue(pVehicleTypeInfoParams.trim),
-        systemSoftwareVersion = common.setStringBsonValue(pVehicleTypeInfoParams.ccpu_version),
-        systemHardwareVersion = common.setStringBsonValue(common.defaultSystemHardwareVersion)
-    }
-    for key, KeyValue in pairs(ackParams) do
-        if not KeyValue.value then
-            ackParams[key] = nil
-        end
-    end
-    return ackParams
 end
 
 return common
