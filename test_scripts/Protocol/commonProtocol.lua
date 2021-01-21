@@ -214,7 +214,7 @@ function common.registerAppUpdatedProtocolVersion(hasPTU)
         frameInfo = constants.FRAME_INFO.START_SERVICE,
         sessionId = session.sessionId,
         encryption = false,
-        binaryData = bson.to_bytes({ protocolVersion = { type = common.bsonType.STRING, value = "5.3.0" }})
+        binaryData = bson.to_bytes({ protocolVersion = { type = common.bsonType.STRING, value = "5.4.0" }})
     }
     session:Send(msg)
 
@@ -472,7 +472,7 @@ end
 
 function common.startRpcService(pAckParams, pAppId)
     pAppId = pAppId or 1
-    local reqParams = { protocolVersion = common.setStringBsonValue("5.3.0") }
+    local reqParams = { protocolVersion = common.setStringBsonValue("5.4.0") }
     return common.startServiceUnprotectedACK(pAppId, common.serviceType.RPC, reqParams, pAckParams)
 end
 
