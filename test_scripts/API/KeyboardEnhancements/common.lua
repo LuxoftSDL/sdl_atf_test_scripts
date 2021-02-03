@@ -33,6 +33,7 @@ local m = {}
   m.getPolicyAppId = actions.app.getPolicyAppId
   m.getParams = actions.app.getParams
   m.spairs = utils.spairs
+  m.isTableEqual = utils.isTableEqual
 
 --[[ Common Variables ]]
 m.expected = {

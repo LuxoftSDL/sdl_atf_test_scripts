@@ -7,6 +7,7 @@
 ./test_scripts/API/KeyboardEnhancements/OnKeyboardInput/001_App_receives_OnKeyboardInput.lua
 ./test_scripts/API/KeyboardEnhancements/ResetGlobalProperties/001_App_resets_KeyboardProperties.lua
 ./test_scripts/API/KeyboardEnhancements/Resumption/001_SDL_resumes_KeyboardProperties.lua
+./test_scripts/API/KeyboardEnhancements/Resumption/002_SDL_resumes_cached_KeyboardProperties.lua
 ./test_scripts/API/KeyboardEnhancements/SetGlobalProperties/001_App_sets_NUMERIC_keyboard.lua
 ./test_scripts/API/KeyboardEnhancements/SetGlobalProperties/002_App_masks_input_characters.lua
 ./test_scripts/API/KeyboardEnhancements/SetGlobalProperties/003_App_defines_invalid_value_for_maskInputCharacters.lua
