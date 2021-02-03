@@ -34,6 +34,7 @@ local m = {}
   m.getParams = actions.app.getParams
   m.spairs = utils.spairs
   m.isTableEqual = utils.isTableEqual
+  m.tableToString = utils.tableToString
 
 --[[ Common Variables ]]
 m.expected = {

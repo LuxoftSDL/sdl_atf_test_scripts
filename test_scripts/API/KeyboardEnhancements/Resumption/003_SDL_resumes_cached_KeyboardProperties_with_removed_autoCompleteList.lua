@@ -2,21 +2,21 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check SDL is able to resume cached language, keyboardLayout, autoCompleteList from KeyboardProperties
+-- Description: Check SDL is able to resume cached language, keyboardLayout from KeyboardProperties
 -- after unexpected disconnect
 --
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
 -- 3. App sends 'SetGlobalProperties' with some non-default values for 'KeyboardProperties'
--- 4. App sends 'SetGlobalProperties' with empty 'KeyboardProperties'
+-- 4. App sends 'SetGlobalProperties' with empty array in autoCompleteList in 'KeyboardProperties'
 -- SDL does:
---  - Keep values for language, keyboardLayout, autoCompleteList
+--  - Keep values for language, keyboardLayout
 --  - Reset all other parameter values to the default values
 -- 5. App unexpectedly disconnects and reconnects
 -- SDL does:
 --  - Start data resumption process
---  - Send language, keyboardLayout, autoCompleteList defined by App in 'KeyboardProperties' to HMI
+--  - Send language, keyboardLayout defined by App in 'KeyboardProperties' to HMI
 --   within 'UI.SetGlobalProperties' request
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
@@ -41,7 +41,9 @@ local sgpParams_1 = {
 local sgpParams_2 = {
   vrHelpTitle = "title",
   vrHelp = { { text = "text1", position = 1 } },
-  keyboardProperties = { }
+  keyboardProperties = {
+    autoCompleteList = common.json.EMPTY_ARRAY
+  }
 }
 
 local sgpParams_resumption = {
@@ -49,8 +51,7 @@ local sgpParams_resumption = {
   vrHelp = { { text = "text1", position = 1 } },
   keyboardProperties = {
     language = "EN-US",
-    keyboardLayout = "AZERTY",
-    autoCompleteList = { "Daemon, Freedom" }
+    keyboardLayout = "AZERTY"
   }
 }
 
