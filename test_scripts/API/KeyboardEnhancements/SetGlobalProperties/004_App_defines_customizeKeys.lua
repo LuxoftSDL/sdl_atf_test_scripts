@@ -2,13 +2,13 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check App is able to change special characters via 'customizeKeys' parameter
+-- Description: Check App is able to change special characters via 'customKeys' parameter
 -- of 'KeyboardProperties' struct
 --
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with 'customizeKeys' in 'KeyboardProperties'
+-- 3. App sends 'SetGlobalProperties' with 'customKeys' in 'KeyboardProperties'
 -- SDL does:
 --  - Proceed with request successfully
 ----------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ local function getSGPParams(pKey)
   return {
     keyboardProperties = {
       keyboardLayout = "NUMERIC",
-      customizeKeys = { pKey }
+      customKeys = { pKey }
     }
   }
 end

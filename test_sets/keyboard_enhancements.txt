@@ -3,7 +3,6 @@
 ./test_scripts/API/KeyboardEnhancements/Capabilities/003_HMI_doesnt_provide_KeyboardCapabilities.lua
 ./test_scripts/API/KeyboardEnhancements/Capabilities/004_HMI_doesnt_send_OnSCU.lua
 ./test_scripts/API/KeyboardEnhancements/Capabilities/005_HMI_provides_invalid_value_for_one_parameter_in_KeyboardCapabilities.lua
-./test_scripts/API/KeyboardEnhancements/Capabilities/006_SDL_populates_numConfigurableKeys_with_zeros.lua
 ./test_scripts/API/KeyboardEnhancements/OnKeyboardInput/001_App_receives_OnKeyboardInput.lua
 ./test_scripts/API/KeyboardEnhancements/ResetGlobalProperties/001_App_resets_KeyboardProperties.lua
 ./test_scripts/API/KeyboardEnhancements/Resumption/001_SDL_resumes_KeyboardProperties.lua

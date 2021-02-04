@@ -2,13 +2,13 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check App receives 'INVALID_DATA' in case it defines invalid value for 'customizeKeys'
+-- Description: Check App receives 'INVALID_DATA' in case it defines invalid value for 'customKeys'
 -- parameter of 'KeyboardProperties' struct
 --
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with invalid value in 'customizeKeys' parameter in 'KeyboardProperties'
+-- 3. App sends 'SetGlobalProperties' with invalid value in 'customKeys' parameter in 'KeyboardProperties'
 -- SDL does:
 --  - Not transfer request to HMI
 --  - Respond with INVALID_DATA, success:false to App
@@ -19,16 +19,15 @@ local common = require('test_scripts/API/KeyboardEnhancements/common')
 --[[ Local Variables ]]
 local dispCaps = common.getDispCaps()
 dispCaps.systemCapability.displayCapabilities[1].windowCapabilities[1].keyboardCapabilities = {
-  supportedKeyboardLayouts = { "NUMERIC" },
-  configurableKeys = { { keyboardLayout = "NUMERIC", numConfigurableKeys = 10 } }
+  supportedKeyboards = { { keyboardLayout = "NUMERIC", numConfigurableKeys = 8 } }
 }
 
 local keys = { "$", "#", "&" }
 
 local tcs = {
-  [01] = { customizeKeys = { } },                             -- lower out of bound
-  [02] = { customizeKeys = common.getArrayValue(keys, 11) },  -- upper out of bound
-  [03] = { customizeKeys = 123 },                             -- invalid type
+  [01] = { customKeys = { } },                             -- lower out of bound
+  [02] = { customKeys = common.getArrayValue(keys, 9) },  -- upper out of bound
+  [03] = { customKeys = 123 },                             -- invalid type
 }
 
 --[[ Local Functions ]]
@@ -36,7 +35,7 @@ local function getSGPParams(pKeys)
   return {
     keyboardProperties = {
       keyboardLayout = "NUMERIC",
-      customizeKeys = pKeys.customizeKeys
+      customKeys = pKeys.customKeys
     }
   }
 end

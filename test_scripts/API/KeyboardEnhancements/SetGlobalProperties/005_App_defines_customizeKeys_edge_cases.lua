@@ -2,13 +2,13 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check App is able to change special characters via 'customizeKeys' parameter
+-- Description: Check App is able to change special characters via 'customKeys' parameter
 -- of 'KeyboardProperties' struct (edge scenarios)
 --
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with 'customizeKeys' in 'KeyboardProperties'
+-- 3. App sends 'SetGlobalProperties' with 'customKeys' in 'KeyboardProperties'
 -- SDL does:
 --  - Proceed with request successfully
 ----------------------------------------------------------------------------------------------------
@@ -18,15 +18,14 @@ local common = require('test_scripts/API/KeyboardEnhancements/common')
 --[[ Local Variables ]]
 local dispCaps = common.getDispCaps()
 dispCaps.systemCapability.displayCapabilities[1].windowCapabilities[1].keyboardCapabilities = {
-  supportedKeyboardLayouts = { "NUMERIC" },
-  configurableKeys = { { keyboardLayout = "NUMERIC", numConfigurableKeys = 10 } }
+  supportedKeyboards = { { keyboardLayout = "NUMERIC", numConfigurableKeys = 8 } }
 }
 
 local keys = { "$", "#", "&" }
 
 local tcs = {
-  [01] = { customizeKeys = common.getArrayValue(keys, 1) }, -- lower in bound
-  [02] = { customizeKeys = common.getArrayValue(keys, 10) } -- upper in bound
+  [01] = { customKeys = common.getArrayValue(keys, 1) }, -- lower in bound
+  [02] = { customKeys = common.getArrayValue(keys, 8) } -- upper in bound
 }
 
 --[[ Local Functions ]]
@@ -34,7 +33,7 @@ local function getSGPParams(pKeys)
   return {
     keyboardProperties = {
       keyboardLayout = "NUMERIC",
-      customizeKeys = pKeys.customizeKeys
+      customKeys = pKeys.customKeys
     }
   }
 end
