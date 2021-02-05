@@ -8,7 +8,7 @@
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with non-supported special character in 'customizeKeys' parameter
+-- 3. App sends 'SetGlobalProperties' with non-supported special character in 'customKeys' parameter
 -- in 'KeyboardProperties'
 -- SDL does:
 --  - Transfer request to HMI
@@ -24,7 +24,7 @@ local function sendSetGlobalProperties()
   local sgpParams = {
     keyboardProperties = {
       keyboardLayout = "NUMERIC",
-      customizeKeys = { "^" } -- special character that is not supported by HMI
+      customKeys = { "^" } -- special character that is not supported by HMI
     }
   }
   local dataToHMI = common.cloneTable(sgpParams)

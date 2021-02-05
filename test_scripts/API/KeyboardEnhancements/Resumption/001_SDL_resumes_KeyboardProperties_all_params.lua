@@ -2,31 +2,33 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check App is able to change special characters via 'customizeKeys' parameter
--- of 'KeyboardProperties' struct
+-- Description: Check SDL is able to resume previously defined by App 'KeyboardProperties' after
+-- unexpected disconnect
 --
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with 'customizeKeys' in 'KeyboardProperties'
+-- 3. App sends 'SetGlobalProperties' with some non-default values for 'KeyboardProperties'
+-- 4. App unexpectedly disconnects and reconnects
 -- SDL does:
---  - Proceed with request successfully
+--  - Start data resumption process
+--  - Send the values defined by App for 'KeyboardProperties' to HMI within 'UI.SetGlobalProperties' request
 ----------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/KeyboardEnhancements/common')
 
 --[[ Local Variables ]]
-local keys = { "$", "#", "&" }
-
---[[ Local Functions ]]
-local function getSGPParams(pKey)
-  return {
-    keyboardProperties = {
-      keyboardLayout = "NUMERIC",
-      customizeKeys = { pKey }
-    }
+local sgpParams = {
+  keyboardProperties = {
+    language = "EN-US",
+    keyboardLayout = "AZERTY",
+    keypressMode = "SINGLE_KEYPRESS",
+    limitedCharacterList = { "a" },
+    autoCompleteList = { "Daemon, Freedom" },
+    maskInputCharacters = "DISABLE_INPUT_KEY_MASK",
+    customKeys = { "#", "$" }
   }
-end
+}
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -36,10 +38,11 @@ common.Step("Register App", common.registerApp)
 
 common.Title("Test")
 common.Step("HMI sends OnSystemCapabilityUpdated", common.sendOnSystemCapabilityUpdated)
-for _, v in common.spairs(keys) do
-  common.Step("App sends SetGlobalProperties", common.sendSetGlobalProperties,
-    { getSGPParams(v), common.result.success })
-end
+common.Step("App sends SetGlobalProperties", common.sendSetGlobalPropertiesWithHashId,
+  { sgpParams, common.result.success })
+common.Step("Unexpected disconnect", common.unexpectedDisconnect)
+common.Step("Connect mobile", common.connectMobile)
+common.Step("Re-register App", common.reRegisterApp, { sgpParams })
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)

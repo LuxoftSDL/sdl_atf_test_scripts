@@ -2,12 +2,13 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check App is able to define 'KeyboardProperties' for 'NUMERIC' layout
+-- Description: Check App is able to change special characters via 'customKeys' parameter
+-- of 'KeyboardProperties' struct
 --
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with 'NUMERIC' layout in 'KeyboardProperties' and some non-default values
+-- 3. App sends 'SetGlobalProperties' with 'customKeys' in 'KeyboardProperties'
 -- SDL does:
 --  - Proceed with request successfully
 ----------------------------------------------------------------------------------------------------
@@ -15,17 +16,17 @@
 local common = require('test_scripts/API/KeyboardEnhancements/common')
 
 --[[ Local Variables ]]
-local sgpParams = {
-  keyboardProperties = {
-    language = "EN-US",
-    keyboardLayout = "NUMERIC",
-    keypressMode = "SINGLE_KEYPRESS",
-    limitedCharacterList = { "a" },
-    autoCompleteList = { "Daemon, Freedom" },
-    maskInputCharacters = "DISABLE_INPUT_KEY_MASK",
-    customKeys = { "#" }
+local keys = { "$", "#", "&" }
+
+--[[ Local Functions ]]
+local function getSGPParams(pKey)
+  return {
+    keyboardProperties = {
+      keyboardLayout = "NUMERIC",
+      customKeys = { pKey }
+    }
   }
-}
+end
 
 --[[ Scenario ]]
 common.Title("Preconditions")
@@ -35,7 +36,10 @@ common.Step("Register App", common.registerApp)
 
 common.Title("Test")
 common.Step("HMI sends OnSystemCapabilityUpdated", common.sendOnSystemCapabilityUpdated)
-common.Step("App sends SetGlobalProperties", common.sendSetGlobalProperties, { sgpParams, common.result.success })
+for _, v in common.spairs(keys) do
+  common.Step("App sends SetGlobalProperties", common.sendSetGlobalProperties,
+    { getSGPParams(v), common.result.success })
+end
 
 common.Title("Postconditions")
 common.Step("Stop SDL", common.postconditions)
