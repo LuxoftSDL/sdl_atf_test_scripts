@@ -43,9 +43,9 @@ local sgpParams_2 = {
 
 local sgpParams_resumption = {
   keyboardProperties = {
-    language = "EN-US",
-    keyboardLayout = "AZERTY",
-    autoCompleteList = { "Daemon, Freedom" }
+    language = sgpParams_1.keyboardProperties.language,
+    keyboardLayout = sgpParams_1.keyboardProperties.keyboardLayout,
+    autoCompleteList = sgpParams_1.keyboardProperties.autoCompleteList
   }
 }
 

@@ -25,9 +25,9 @@ dispCaps.systemCapability.displayCapabilities[1].windowCapabilities[1].keyboardC
 local keys = { "$", "#", "&" }
 
 local tcs = {
-  [01] = { customKeys = { } },                             -- lower out of bound
+  [01] = { customKeys = common.json.EMPTY_ARRAY },        -- lower out of bound
   [02] = { customKeys = common.getArrayValue(keys, 9) },  -- upper out of bound
-  [03] = { customKeys = 123 },                             -- invalid type
+  [03] = { customKeys = 123 },                            -- invalid type
 }
 
 --[[ Local Functions ]]

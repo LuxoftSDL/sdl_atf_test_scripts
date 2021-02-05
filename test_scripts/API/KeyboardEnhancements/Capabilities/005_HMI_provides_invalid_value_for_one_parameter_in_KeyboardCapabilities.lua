@@ -24,7 +24,8 @@ local tcs = {
   [05] = { supportedKeyboards = { { keyboardLayout = "QWERTY", numConfigurableKeys = nil }} },
   [06] = { supportedKeyboards = { { keyboardLayout = nil, numConfigurableKeys = 0 }} },
   [07] = { supportedKeyboards = common.getArrayValue({ { keyboardLayout = "QWERTY", numConfigurableKeys = 0 }}, 1001) },
-  [08] = { supportedKeyboards = { { keyboardLayout = "QWERTY", numConfigurableKeys = 11 }} }
+  [08] = { supportedKeyboards = { { keyboardLayout = "QWERTY", numConfigurableKeys = 11 }} },
+  [09] = { supportedKeyboards = common.json.EMPTY_ARRAY }
 }
 
 --[[ Local Functions ]]
