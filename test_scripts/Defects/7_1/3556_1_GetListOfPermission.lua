@@ -6,17 +6,19 @@
 --
 -- Preconditions:
 -- 1. Clean environment
--- 2. SDL, HMI, Mobile session is started
--- 3. App is registered
--- 4. App is activated
+-- 2. PT does not contain group with user_consent_prompt in default section
+-- 3. SDL, HMI, Mobile session are started
+-- 4. App is registered
+-- 5. App is activated
 -- Steps:
--- 1. HMI sends GetListOfPermissions requests
+-- 1. HMI sends GetListOfPermissions request
 -- SDL does:
 --  - sends GetListOfPermissions response with empty allowedFunctions array list
 ---------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local runner = require('user_modules/script_runner')
 local common = require("user_modules/sequences/actions")
+local json = require('modules/json')
 
 --[[ Test Configuration ]]
 runner.testSettings.restrictions.sdlBuildOptions = {{ extendedPolicy = { "EXTERNAL_PROPRIETARY" }}}
@@ -29,8 +31,8 @@ local function getListOfPermissions()
     result = {
       code = 0,
       method = "SDL.GetListOfPermissions",
-      allowedFunctions = { },
-      externalConsentStatus = { }
+      allowedFunctions = json.EMPTY_ARRAY,
+      externalConsentStatus = json.EMPTY_ARRAY
     }
   })
 end

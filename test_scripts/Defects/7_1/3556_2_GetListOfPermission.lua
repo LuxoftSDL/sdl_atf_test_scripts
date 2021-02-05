@@ -6,12 +6,12 @@
 --
 -- Preconditions:
 -- 1. Clean environment
--- 2. Structure groups of section default contain Group "Location_1" with  user_consent_prompt
--- 3. SDL, HMI, Mobile session is started
+-- 2. PT contains "Location_1" group with user_consent_prompt in default section
+-- 3. SDL, HMI, Mobile session are started
 -- 4. App is registered
 -- 5. App is activated
 -- Steps:
--- 1. HMI sends GetListOfPermissions requests
+-- 1. HMI sends GetListOfPermissions request
 -- SDL does:
 --  - sends GetListOfPermissions response with allowedFunctions { name = "Location" }
 ---------------------------------------------------------------------------------------------------
@@ -19,6 +19,7 @@
 local runner = require('user_modules/script_runner')
 local common = require("user_modules/sequences/actions")
 local utils = require("user_modules/utils")
+local json = require('modules/json')
 
 --[[ Test Configuration ]]
 runner.testSettings.restrictions.sdlBuildOptions = {{ extendedPolicy = { "EXTERNAL_PROPRIETARY" }}}
@@ -39,7 +40,7 @@ local function getListOfPermissions()
       code = 0,
       method = "SDL.GetListOfPermissions",
       allowedFunctions = {{ id = 156072572, name = "Location" }},
-      externalConsentStatus = { }
+      externalConsentStatus = json.EMPTY_ARRAY
     }
   })
 end
