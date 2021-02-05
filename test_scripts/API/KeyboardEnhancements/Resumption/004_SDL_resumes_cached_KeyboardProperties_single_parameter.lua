@@ -52,8 +52,6 @@ local function getParamsForReq(pParam)
     }
   }
   local out = {
-    vrHelpTitle = reqParams.vrHelpTitle,
-    vrHelp = reqParams.vrHelp,
     keyboardProperties = {}
   }
   out.keyboardProperties[pParam] = reqParams.keyboardProperties[pParam]
