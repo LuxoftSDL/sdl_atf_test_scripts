@@ -2,8 +2,8 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0238-Keyboard-Enhancements.md
 ----------------------------------------------------------------------------------------------------
--- Description: Check SDL is able to resume cached and set parameters from KeyboardProperties
--- after unexpected disconnect
+-- Description: Check SDL is able to resume previously defined by App one parameter from 'KeyboardProperties' after
+-- unexpected disconnect
 --
 -- Steps:
 -- 1. App is registered

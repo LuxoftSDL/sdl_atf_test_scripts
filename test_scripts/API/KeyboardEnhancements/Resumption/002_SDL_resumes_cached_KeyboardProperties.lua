@@ -8,7 +8,9 @@
 -- Steps:
 -- 1. App is registered
 -- 2. HMI provides 'KeyboardCapabilities' within 'OnSystemCapabilityUpdated' notification
--- 3. App sends 'SetGlobalProperties' with some non-default values for 'KeyboardProperties'
+-- 3. App sends 'SetGlobalProperties' with some non-default values for all parameters in 'KeyboardProperties'
+-- SDL does:
+--  - Cache all values of received parameters
 -- 4. App sends 'SetGlobalProperties' with empty 'KeyboardProperties'
 -- SDL does:
 --  - Keep values for language, keyboardLayout, autoCompleteList
