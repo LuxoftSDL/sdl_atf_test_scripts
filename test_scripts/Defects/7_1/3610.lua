@@ -42,6 +42,11 @@ local defaultSGPParams = {
   }
 }
 
+local resumedSGPParams = {
+  vrHelpTitle = "title",
+  vrHelp = { { text = "text1", position = 1 } }
+}
+
 --[[ Local Functions ]]
 local function reRegisterApp()
   common.getMobileSession():StartService(7)
@@ -51,7 +56,7 @@ local function reRegisterApp()
     local cid = common.getMobileSession():SendRPC("RegisterAppInterface", appParams)
     common.getHMIConnection():ExpectNotification("BasicCommunication.OnAppRegistered")
     :Do(function()
-        local dataToHMI = utils.cloneTable(sgpParams)
+        local dataToHMI = utils.cloneTable(resumedSGPParams)
         common.getHMIConnection():ExpectRequest("UI.SetGlobalProperties", dataToHMI)
         :Do(function(_, data)
             common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", {})
