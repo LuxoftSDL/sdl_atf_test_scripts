@@ -43,8 +43,8 @@ local defaultSGPParams = {
 }
 
 local resumedSGPParams = {
-  vrHelpTitle = "title",
-  vrHelp = { { text = "text1", position = 1 } }
+  vrHelpTitle = sgpParams.vrHelpTitle,
+  vrHelp = sgpParams.vrHelp
 }
 
 --[[ Local Functions ]]
