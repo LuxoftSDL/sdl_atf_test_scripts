@@ -35,7 +35,7 @@ local serviceParams = {
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.startWithoutOnSystemTimeReady)
-common.Step("Start unprotected RPC service", common.startunprotectedRPCservice)
+common.Step("Start unprotected RPC service", common.startUnprotectedRPCservice)
 
 common.Title("Test")
 common.Step("Start protected RPC Service, NACK", common.startProtectedServiceWithOnServiceUpdate, { serviceParams })

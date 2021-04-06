@@ -15,6 +15,7 @@
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/Defects/7_1/3620/common')
 
+--[[ Local Variables ]]
 local serviceParams = {
   serviceType = common.serviceType.RPC,
   serviceName = "RPC",
@@ -35,7 +36,7 @@ local serviceParams = {
 common.Title("Preconditions")
 common.Step("Clean environment", common.preconditions)
 common.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
-common.Step("Start unprotected RPC service", common.startunprotectedRPCservice)
+common.Step("Start unprotected RPC service", common.startUnprotectedRPCservice)
 
 common.Title("Test")
 common.Step("Start protected RPC Service, NACK", common.startProtectedServiceWithOnServiceUpdate, { serviceParams })

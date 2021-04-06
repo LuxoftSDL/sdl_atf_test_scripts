@@ -51,7 +51,7 @@ function common.startServiceNACKwithNonExistedSessionId(pServiceParams, isEncryp
   :Times(2)
 end
 
-function common.startunprotectedRPCservice()
+function common.startUnprotectedRPCservice()
   local session = common.getMobileSession()
   local msg = {
     serviceType = common.serviceType.RPC,
