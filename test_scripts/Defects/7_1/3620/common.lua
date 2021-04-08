@@ -15,12 +15,10 @@ common.FRAME_TYPE = constants.FRAME_TYPE
 common.FRAME_INFO = constants.FRAME_INFO
 
 --[[ Common Functions ]]
-function common.startServiceNACKwithNonExistedSessionId(pServiceParams, isEncrypted)
+function common.startServiceNACKwithNonExistedSessionId(pServiceParams, pNonExistedSessionId, isEncrypted)
   isEncrypted = isEncrypted or false
-  local protectionLable = isEncrypted and "a protected" or "an unprotected"
-  local nonExistedSessionId = 5
   local mobSession = common.getMobileSession()
-  mobSession.sessionId = nonExistedSessionId
+  mobSession.sessionId = pNonExistedSessionId
   local msg = {
     serviceType = pServiceParams.serviceType,
     frameType = common.FRAME_TYPE.CONTROL_FRAME,
@@ -34,15 +32,8 @@ function common.startServiceNACKwithNonExistedSessionId(pServiceParams, isEncryp
     encryption = false
   })
   :ValidIf(function(_, data)
-      local exp = {
-        reason = {
-          type = common.bsonType.STRING,
-          value = "Cannot start " .. protectionLable .. " service of type " .. pServiceParams.serviceType
-            .. ". Session " .. nonExistedSessionId .. " not found for connection 1"
-        }
-      }
       local act = common.bson_to_table(data.binaryData)
-      return compareValues(exp, act, "binaryData")
+      return compareValues(pServiceParams.nackParams, act, "binaryData")
     end)
   :Timeout(1000)
   common.hmi.getConnection():ExpectNotification("BasicCommunication.OnServiceUpdate",
