@@ -24,10 +24,10 @@ local serviceParams = {
   },
   nackParams = {
     reason = {
-        type = common.bsonType.STRING,
-        value = "Cannot start an unprotected service of type " .. common.serviceType.RPC ..
-          ". Session " .. nonExistedSessionId .. " not found for connection 1"
-      }
+      type = common.bsonType.STRING,
+      value = "Cannot start an unprotected service of type " .. common.serviceType.RPC ..
+        ". Session " .. nonExistedSessionId .. " not found for connection 1"
+    }
   }
 }
 
