@@ -501,6 +501,48 @@ function m.processSubscriptionRPC(pRPC, pParam, pAppId, isRequestOnHMIExpected)
   end)
 end
 
+--[[ @processSubscriptionRPCAllParams: subscribe to all VD params
+--! @parameters:
+--! pRPC: RPC for mobile request
+--! pParam: name of the VD parameter
+--! pAppId: application number (1, 2, etc.)
+--! isRequestOnHMIExpected: if true or omitted VI.Sub/UnsubscribeVehicleData request is expected on HMI,
+--!   otherwise - not expected
+--! @return: none
+--]]
+function m.processSubscriptionRPCAllParams(pRPC, pParam, pAppId, isRequestOnHMIExpected)
+  if pAppId == nil then pAppId = 1 end
+  if isRequestOnHMIExpected == nil then isRequestOnHMIExpected = true end
+  local responseParam = pParam
+  if pParam == "clusterModeStatus" then responseParam = "clusterModes" end
+  local mobileRequestParams = {}
+  local HMIResponseResult = {}
+  for param in m.spairs(m.getVDParams(true)) do
+    mobileRequestParams[param] = true
+    HMIResponseResult[param] = {
+      dataType = m.vd[param],
+      resultCode = "SUCCESS"
+    }
+  end
+  local cid = m.getMobileSession(pAppId):SendRPC(pRPC, mobileRequestParams)
+  if isRequestOnHMIExpected == true then
+    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, mobileRequestParams)
+    :Do(function(_,data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseResult)
+    end)
+  else
+    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC):Times(0)
+  end
+  -- TODO need to check that all params are present
+  m.getMobileSession(pAppId):ExpectResponse(cid,
+    { success = true, resultCode = "SUCCESS", [responseParam] = HMIResponseResult[responseParam] })
+  local ret = m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
+  :Do(function(_, data)
+    m.setHashId(data.payload.hashID, pAppId)
+  end)
+  return ret
+end
+
 --[[ @sendOnVehicleData: Processing OnVehicleData RPC
 --! @parameters:
 --! pParam: name of the VD parameter
@@ -530,6 +572,31 @@ function m.sendOnVehicleDataTwoApps(pParam, pExpTimesApp1, pExpTimesApp2)
   :Times(pExpTimesApp1)
   m.getMobileSession(2):ExpectNotification("OnVehicleData", { [pParam] = value })
   :Times(pExpTimesApp2)
+end
+
+--[[ @sendOnVehicleDataAllParams: HMI sends all params, SDL is expected to filter out pParam
+--! @parameters:
+--! pParam: name of the VD parameter
+--! pExpTime: number of notifications (0, 1 or more)
+--! pValue: data for the notification
+--! @return: none
+--]]
+function m.sendOnVehicleDataAllParams(pParam, pExpTime, pValue)
+  if pExpTime == nil then pExpTime = 1 end
+  if pValue == nil then pValue = m.vdValues[pParam] end
+  HMINotificationParams = {}
+  SDLNotificationParams = {}
+  for param in m.spairs(m.getVDParams(true)) do
+    if param == pParam then
+      HMINotificationParams[param] = pValue
+    else
+      HMINotificationParams[param] = m.vdValues[param]
+      SDLNotificationParams[param] = m.vdValues[param]
+    end
+  end
+  m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", HMINotificationParams)
+  m.getMobileSession():ExpectNotification("OnVehicleData", SDLNotificationParams)
+  :Times(pExpTime)
 end
 
 --[[ @unexpectedDisconnect: Unexpected disconnect sequence
