@@ -364,6 +364,7 @@ end
 --! @return: none
 --]]
 function m.processRPCFailureMultipleParams(pRPC, pParamsArray, pResult, pRequestValueOverrides)
+  if pRequestValueOverrides == nil then pRequestValueOverrides = {} end
   local HMIRequestParams = {}
   for _, param in pairs(pParamsArray) do
     if pRequestValueOverrides[param] == nil then
@@ -444,7 +445,7 @@ function m.processSubscriptionRPCMultipleParams(pRPC, pParamsArray, pAppId, isRe
   else
     m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC):Times(0)
   end
-  m.getMobileSession(pAppId):ExpectResponse(cid, HMIResponseResult)
+  m.getMobileSession(pAppId):ExpectResponse(cid, SDLResponseResult)
   local ret = m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Do(function(_, data)
     m.setHashId(data.payload.hashID, pAppId)
@@ -473,7 +474,7 @@ end
 --]]
 function m.sendOnVehicleDataMultipleParams(pParamsArray, pExpTime, pValueOverrides, pExclParam)
   if pExpTime == nil then pExpTime = 1 end
-  if pExclParams == nil then pExclParams = {} end
+  if pValueOverrides == nil then pValueOverrides = {} end
   local HMINotificationParams = {}
   local SDLNotificationParams = {}
   for _, param in pairs(pParamsArray) do
@@ -488,7 +489,12 @@ function m.sendOnVehicleDataMultipleParams(pParamsArray, pExpTime, pValueOverrid
   end
   m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", HMINotificationParams)
   m.getMobileSession():ExpectNotification("OnVehicleData", SDLNotificationParams)
-  :Times(pExpTime)
+  :Times(pExpTime):ValidIf(function(_, data)
+      if data.payload[pExclParam] ~= nil then
+        return false
+      end
+      return true
+    end)
 end
 
 --[[ @sendOnVehicleDataTwoApps: Processing OnVehicleData RPC for two apps
