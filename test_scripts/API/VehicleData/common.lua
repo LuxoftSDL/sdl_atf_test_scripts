@@ -333,13 +333,41 @@ end
 --]]
 function m.getVehicleData(pParam, pValue)
   if pValue == nil then pValue = m.vdValues[pParam] end
-  local cid = m.getMobileSession():SendRPC("GetVehicleData", { [pParam] = true })
-  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", { [pParam] = true })
+  m.getVehicleDataMultipleParams({ pParam }, { pParam = pValue })
+end
+
+--[[ @getVehicleDataMultipleParams: Successful processing of GetVehicleData RPC for multiple params
+--! @parameters:
+--! pParamsArray: array of VD parameters
+--! pValueOverrides: tabe with data to override default test values
+--! pExclParam: param which SDL is expected to exclude
+--! @return: none
+--]]
+function m.getVehicleDataMultipleParams(pParamsArray, pValueOverrides, pExclParam)
+  if pValueOverrides == nil then pValueOverrides = {} end
+  local mobileRequestParams = {}
+  local SDLRequestParams = {}
+  local HMIResponseParams = {}
+  local SDLResponseResult = { success = true, resultCode = "SUCCESS" }
+  for _, param in pairs(pParamsArray) do
+    mobileRequestParams[param] = true
+    if param ~= pExclParam then
+      SDLRequestParams[param] = true
+      if pValueOverrides[param] == nil then
+        HMIResponseParams[param] = m.vdValues[param]
+      else
+        HMIResponseParams[param] = pValueOverrides[param]
+      end
+      SDLResponseResult[param] = HMIResponseParams[param]
+    end
+  end
+  local cid = m.getMobileSession():SendRPC("GetVehicleData", mobileRequestParams)
+  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", SDLRequestParams)
   :Do(function(_, data)
-    m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { [pParam] = pValue })
+    m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseParams)
   end)
   m.getMobileSession():ExpectResponse(cid,
-    { success = true, resultCode = "SUCCESS", [pParam] = pValue })
+    SDLResponseResult)
 end
 
 --[[ @processRPCFailure: Processing VehicleData RPC with ERROR resultCode
@@ -374,6 +402,9 @@ function m.processRPCFailureMultipleParams(pRPC, pParamsArray, pResult, pRequest
     end
   end
   local cid = m.getMobileSession():SendRPC(pRPC, HMIRequestParams)
+  -- problem: only if there're only disallowed params SDL will not forward request and reply immediately
+  -- otherwise, it will filter out disallowed params and wait for HMI reply
+  -- how do we know disallowed params?
   m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC):Times(0)
   m.getMobileSession():ExpectResponse(cid, { success = false, resultCode = pResult })
 end
@@ -414,12 +445,14 @@ end
 --! pAppId: application number (1, 2, etc.)
 --! isRequestOnHMIExpected: if true or omitted VI.Sub/UnsubscribeVehicleData request is expected on HMI,
 --!   otherwise - not expected
+--! pExclParam: param which SDL is expected to exclude
 --! @return: none
 --]]
-function m.processSubscriptionRPCMultipleParams(pRPC, pParamsArray, pAppId, isRequestOnHMIExpected)
+function m.processSubscriptionRPCMultipleParams(pRPC, pParamsArray, pAppId, isRequestOnHMIExpected, pExclParam)
   if pAppId == nil then pAppId = 1 end
   if isRequestOnHMIExpected == nil then isRequestOnHMIExpected = true end
   local mobileRequestParams = {}
+  local SDLRequestParams = {}
   local HMIResponseResult = {}
   local SDLResponseResult = { success = true, resultCode = "SUCCESS" }
   for _, param in pairs(pParamsArray) do
@@ -430,15 +463,18 @@ function m.processSubscriptionRPCMultipleParams(pRPC, pParamsArray, pAppId, isRe
     else
       response_param = param
     end
-    HMIResponseResult[response_param] = {
-      dataType = m.vd[param],
-      resultCode = "SUCCESS"
-    }
-    SDLResponseResult[param] = HMIResponseResult[response_param]
+    if param ~= pExclParam then
+      SDLRequestParams[param] = true
+      HMIResponseResult[response_param] = {
+        dataType = m.vd[param],
+        resultCode = "SUCCESS"
+      }
+      SDLResponseResult[param] = HMIResponseResult[response_param]
+    end
   end
   local cid = m.getMobileSession(pAppId):SendRPC(pRPC, mobileRequestParams)
   if isRequestOnHMIExpected == true then
-    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, mobileRequestParams)
+    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, SDLRequestParams)
     :Do(function(_,data)
       m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseResult)
     end)
@@ -489,9 +525,10 @@ function m.sendOnVehicleDataMultipleParams(pParamsArray, pExpTime, pValueOverrid
   end
   m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", HMINotificationParams)
   m.getMobileSession():ExpectNotification("OnVehicleData", SDLNotificationParams)
-  :Times(pExpTime):ValidIf(function(_, data)
+  :Times(pExpTime)
+  :ValidIf(function(_, data)
       if data.payload[pExclParam] ~= nil then
-        return false
+        return false, "Unexpected ' .. pExclParam .. ' is received"
       end
       return true
     end)
