@@ -343,31 +343,42 @@ end
 --! pExclParam: param which SDL is expected to exclude
 --! @return: none
 --]]
-function m.getVehicleDataMultipleParams(pParamsArray, pValueOverrides, pExclParam)
+function m.getVehicleDataMultipleParams(pParamsArray, pValueOverrides, pDisallowedParam)
   if pValueOverrides == nil then pValueOverrides = {} end
-  local mobileRequestParams = {}
-  local SDLRequestParams = {}
-  local HMIResponseParams = {}
-  local SDLResponseResult = { success = true, resultCode = "SUCCESS" }
+  local mobileRequestData = {}
+  local SDLRequestData = {}
+  local HMIResponseData = {}
+  local SDLResponseData = { success = true, resultCode = "SUCCESS" }
   for _, param in pairs(pParamsArray) do
-    mobileRequestParams[param] = true
-    if param ~= pExclParam then
-      SDLRequestParams[param] = true
-      if pValueOverrides[param] == nil then
-        HMIResponseParams[param] = m.vdValues[param]
-      else
-        HMIResponseParams[param] = pValueOverrides[param]
-      end
-      SDLResponseResult[param] = HMIResponseParams[param]
+    mobileRequestData[param] = true
+    if pValueOverrides[param] == nil then
+      HMIResponseData[param] = m.vdValues[param]
+    else
+      HMIResponseData[param] = pValueOverrides[param]
+    end
+    if param ~= pDisallowedParam then
+      SDLRequestData[param] = true
+      SDLResponseData[param] = HMIResponseData[param]
     end
   end
-  local cid = m.getMobileSession():SendRPC("GetVehicleData", mobileRequestParams)
-  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", SDLRequestParams)
-  :Do(function(_, data)
-    m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseParams)
+  local cid = m.getMobileSession():SendRPC("GetVehicleData", mobileRequestData)
+  m.getHMIConnection():ExpectRequest("VehicleInfo.GetVehicleData", SDLRequestData)
+  :ValidIf(function(_, data)
+    if data.params[pDisallowedParam] ~= nil then
+      return false, "Disallowed param '" .. pDisallowedParam .. "'' is received by HMI"
+    end
+    return true
   end)
-  m.getMobileSession():ExpectResponse(cid,
-    SDLResponseResult)
+  :Do(function(_, data)
+    m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseData)
+  end)
+  m.getMobileSession():ExpectResponse(cid, SDLResponseData)
+  :ValidIf(function(_, data)
+    if data.payload[pDisallowedParam] ~= nil then
+      return false, "Disallowed param '" .. pDisallowedParam .. "'' is received by App"
+    end
+    return true
+  end)
 end
 
 --[[ @processRPCFailure: Processing VehicleData RPC with ERROR resultCode
@@ -393,15 +404,15 @@ end
 --]]
 function m.processRPCFailureMultipleParams(pRPC, pParamsArray, pResult, pRequestValueOverrides)
   if pRequestValueOverrides == nil then pRequestValueOverrides = {} end
-  local HMIRequestParams = {}
+  local HMIRequestData = {}
   for _, param in pairs(pParamsArray) do
     if pRequestValueOverrides[param] == nil then
-      HMIRequestParams[param] = true
+      HMIRequestData[param] = true
     else
-      HMIRequestParams[param] = pRequestValueOverrides[param]
+      HMIRequestData[param] = pRequestValueOverrides[param]
     end
   end
-  local cid = m.getMobileSession():SendRPC(pRPC, HMIRequestParams)
+  local cid = m.getMobileSession():SendRPC(pRPC, HMIRequestData)
   -- problem: only if there're only disallowed params SDL will not forward request and reply immediately
   -- otherwise, it will filter out disallowed params and wait for HMI reply
   -- how do we know disallowed params?
@@ -448,40 +459,52 @@ end
 --! pExclParam: param which SDL is expected to exclude
 --! @return: none
 --]]
-function m.processSubscriptionRPCMultipleParams(pRPC, pParamsArray, pAppId, isRequestOnHMIExpected, pExclParam)
+function m.processSubscriptionRPCMultipleParams(pRPC, pParamsArray, pAppId, isRequestOnHMIExpected, pDisallowedParam)
   if pAppId == nil then pAppId = 1 end
   if isRequestOnHMIExpected == nil then isRequestOnHMIExpected = true end
-  local mobileRequestParams = {}
-  local SDLRequestParams = {}
-  local HMIResponseResult = {}
-  local SDLResponseResult = { success = true, resultCode = "SUCCESS" }
+  local mobileRequestData = {}
+  local SDLRequestData = {}
+  local HMIResponseData = {}
+  local SDLResponseData = { success = true, resultCode = "SUCCESS" }
   for _, param in pairs(pParamsArray) do
-    mobileRequestParams[param] = true
+    mobileRequestData[param] = true
     local response_param
     if param == "clusterModeStatus" then
       response_param = "clusterModes"
     else
       response_param = param
     end
-    if param ~= pExclParam then
-      SDLRequestParams[param] = true
-      HMIResponseResult[response_param] = {
+    if param ~= pDisallowedParam then
+      SDLRequestData[param] = true
+      HMIResponseData[response_param] = {
         dataType = m.vd[param],
         resultCode = "SUCCESS"
       }
-      SDLResponseResult[param] = HMIResponseResult[response_param]
+      SDLResponseData[param] = HMIResponseData[response_param]
     end
   end
-  local cid = m.getMobileSession(pAppId):SendRPC(pRPC, mobileRequestParams)
+  local cid = m.getMobileSession(pAppId):SendRPC(pRPC, mobileRequestData)
   if isRequestOnHMIExpected == true then
-    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, SDLRequestParams)
+    m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC, SDLRequestData)
+    :ValidIf(function(_, data)
+        if data.params[pDisallowedParam] ~= nil then
+          return false, "Disallowed param '" .. pDisallowedParam .. "' is received by HMI"
+        end
+        return true
+      end)
     :Do(function(_,data)
-      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseResult)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", HMIResponseData)
     end)
   else
     m.getHMIConnection():ExpectRequest("VehicleInfo." .. pRPC):Times(0)
   end
-  m.getMobileSession(pAppId):ExpectResponse(cid, SDLResponseResult)
+  m.getMobileSession(pAppId):ExpectResponse(cid, SDLResponseData)
+  :ValidIf(function(_, data)
+      if pDisallowedParam ~= nil and data.payload[pDisallowedParam].resultCode ~= "DISALLOWED" then
+        return false, "Disallowed param '" .. pDisallowedParam .. "' is received by App"
+      end
+      return true
+    end)
   local ret = m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Do(function(_, data)
     m.setHashId(data.payload.hashID, pAppId)
@@ -508,27 +531,27 @@ end
 --! pExclParam: param which SDL is expected to exclude when passing the notification to the app
 --! @return: none
 --]]
-function m.sendOnVehicleDataMultipleParams(pParamsArray, pExpTime, pValueOverrides, pExclParam)
+function m.sendOnVehicleDataMultipleParams(pParamsArray, pExpTime, pValueOverrides, pDisallowedParam)
   if pExpTime == nil then pExpTime = 1 end
   if pValueOverrides == nil then pValueOverrides = {} end
-  local HMINotificationParams = {}
-  local SDLNotificationParams = {}
+  local HMINotificationData = {}
+  local SDLNotificationData = {}
   for _, param in pairs(pParamsArray) do
     if pValueOverrides[param] == nil then
-      HMINotificationParams[param] = m.vdValues[param]
+      HMINotificationData[param] = m.vdValues[param]
     else
-      HMINotificationParams[param] = pValueOverrides[param]
+      HMINotificationData[param] = pValueOverrides[param]
     end
-    if pExclParam ~= param then
-      SDLNotificationParams[param] = HMINotificationParams[param]
+    if param ~= pDisallowedParam then
+      SDLNotificationData[param] = HMINotificationData[param]
     end
   end
-  m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", HMINotificationParams)
-  m.getMobileSession():ExpectNotification("OnVehicleData", SDLNotificationParams)
+  m.getHMIConnection():SendNotification("VehicleInfo.OnVehicleData", HMINotificationData)
+  m.getMobileSession():ExpectNotification("OnVehicleData", SDLNotificationData)
   :Times(pExpTime)
   :ValidIf(function(_, data)
-      if data.payload[pExclParam] ~= nil then
-        return false, "Unexpected ' .. pExclParam .. ' is received"
+      if data.payload[pDisallowedParam] ~= nil then
+        return false, "Disallowed param '" .. pDisallowedParam .. "' is received by App"
       end
       return true
     end)

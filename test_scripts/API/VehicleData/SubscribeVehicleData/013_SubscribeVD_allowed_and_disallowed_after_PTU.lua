@@ -62,7 +62,11 @@ for param in common.spairs(common.getVDParams(true)) do
   common.runner.Step("Clean environment and update preloaded_pt file", common.preconditions)
   common.runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start)
   common.runner.Step("Register App", common.registerApp)
-  common.runner.Step("RPC " .. common.rpc.sub, common.processSubscriptionRPC, { common.rpc.sub, param })
+  common.runner.Step("RPC " .. common.rpc.sub, common.processSubscriptionRPCMultipleParams,
+    { common.rpc.sub, all_params })
+  -- so that test fails with clear "Disallowed param" error if param is not filtered
+  common.runner.Step("RPC " .. common.rpc.unsub, common.processSubscriptionRPCMultipleParams,
+    { common.rpc.unsub, all_params })
 
   common.runner.Title("Test")
   common.runner.Step("PTU with disabling permissions for VD parameter", policyTableUpdate, { param })
