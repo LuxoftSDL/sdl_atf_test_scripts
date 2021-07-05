@@ -1,3 +1,9 @@
 ./test_scripts/API/MainMenuUpdating/001_dynamic_update_capabilities_success.lua
 ./test_scripts/API/MainMenuUpdating/003_on_update_sub_menu_success.lua
 ./test_scripts/API/MainMenuUpdating/002_on_update_file_success.lua
+./test_scripts/API/MainMenuUpdating/004_dynamic_update_capabilities_success_with_ImageFieldNames_types.lua
+./test_scripts/API/MainMenuUpdating/005_dynamic_update_capabilities_mandatory_parameters.lua
+./test_scripts/API/MainMenuUpdating/006_on_update_sub_menu_boundary_values.lua
+./test_scripts/API/MainMenuUpdating/007_on_update_sub_menu_mandatory_parameters.lua
+./test_scripts/API/MainMenuUpdating/008_on_update_sub_menu_invalid_values.lua
+./test_scripts/API/MainMenuUpdating/009_on_update_file_boundary_values.lua
