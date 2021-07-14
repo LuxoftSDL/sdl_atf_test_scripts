@@ -1,0 +1,3 @@
+./test_scripts/TimeBeforeShutdown/001_SDL_takes_into_account_MaxTimeBeforeShutdown.lua
+./test_scripts/TimeBeforeShutdown/002_SDL_ignores_MaxTimeBeforeShutdown.lua
+./test_scripts/TimeBeforeShutdown/003_SDL_saves_all_logs.lua
