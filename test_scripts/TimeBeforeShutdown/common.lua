@@ -138,6 +138,7 @@ function m.createSlowDrive()
     .. " && sudo mount -o discard,relatime,sync /dev/mapper/".. slowDevice .. " " .. slowDriveDir
     .. " && sudo chown -R `id -u`:`id -g` " .. slowDriveDir)
   m.log(m.execCMD("sudo dmsetup ls"))
+  m.log(m.execCMD("dd if=/dev/zero of=" .. slowDriveDir .. "/speed_test count=100; rm " .. slowDriveDir .. "/speed_test;"))
 end
 
 function m.removeSlowDrive()
