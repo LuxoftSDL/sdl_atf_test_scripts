@@ -160,6 +160,10 @@ function m.restoreSDLLoggerConfig()
   SDL.LOGGER.set(sdlLogFileParamName, sdlLogFileParamCurrentValue)
 end
 
+function m.copySDLLog()
+  os.execute("cp " .. sdlLogFileParamNewValue .. " " .. config.pathToSDL)
+end
+
 function m.preconditions()
   actions.preconditions()
   m.createSlowDrive()
@@ -167,6 +171,7 @@ function m.preconditions()
 end
 
 function m.postconditions()
+  m.copySDLLog()
   actions.postconditions()
   m.removeSlowDrive()
   m.restoreSDLLoggerConfig()
