@@ -32,13 +32,11 @@ m.logNotComplete = false
 local ping = 1000 --ms
 local timeout = 120000
 local delay = 5000
-local fsFileName = "slowfile"
-local slowDriveDir = "slowdrv"
-local slowDevice = "dm-slow"
+
+local slowDriveDir = "/home/developer/slowdrv"
 local sdlLogFileParamName = "log4j.appender.SmartDeviceLinkCoreLogFile.File"
 
 --[[ Local Variables ]]
-local loopDevice
 local sdlLogFileParamCurrentValue
 local sdlLogFileParamNewValue
 local ts_start
@@ -119,42 +117,10 @@ function m.start()
   return actions.hmi.getConnection():ExpectEvent(event, "Start event")
 end
 
-function m.createSlowDrive()
-  local id = m.execCMD("sudo dmsetup ls | awk '{print $1}' | sort -r | head -n 1 | cut -d'_' -f2")
-  if id == "No" then id = 0 end
-  id = id + 1
-  m.log("DeviceId:", id)
-  fsFileName = fsFileName .. "_" .. id
-  slowDriveDir = slowDriveDir .. "_" .. id
-  slowDevice = slowDevice .. "_" .. id
-  m.execCMD("dd if=/dev/zero of=./" .. fsFileName .. " bs=512k count=10")
-  loopDevice = m.execCMD("sudo losetup --show --find " .. fsFileName)
-  m.log("Device:", loopDevice)
-  local size = m.execCMD("sudo blockdev --getsize " .. loopDevice)
-  m.log("Size:", size)
-  m.execCMD("sudo dmsetup create " .. slowDevice .. " --table '0 " .. size .. " delay " .. loopDevice .. " 0 1'"
-    .. " && sudo mkfs.ext2 -F -O ^has_journal /dev/mapper/" .. slowDevice
-    .. " && mkdir -p " .. slowDriveDir
-    .. " && sudo mount -o discard,relatime,sync /dev/mapper/".. slowDevice .. " " .. slowDriveDir
-    .. " && sudo chown -R `id -u`:`id -g` " .. slowDriveDir)
-  m.log(m.execCMD("sudo dmsetup ls"))
-  m.log(m.execCMD("dd if=/dev/zero of=" .. slowDriveDir .. "/speed_test count=100; rm " .. slowDriveDir .. "/speed_test;"))
-end
-
-function m.removeSlowDrive()
-  m.execCMD("sudo umount -f /dev/mapper/" .. slowDevice
-    .. " && sleep 1"
-    .. " && sudo dmsetup remove " .. slowDevice
-    .. " && sudo losetup -d " .. loopDevice)
-  m.execCMD("rm -rf " .. fsFileName)
-  m.execCMD("rm -rf " .. slowDriveDir)
-end
-
 function m.updateSDLLoggerConfig()
   sdlLogFileParamCurrentValue = SDL.LOGGER.get(sdlLogFileParamName)
-  sdlLogFileParamNewValue = m.execCMD("pwd") .. "/" .. slowDriveDir .. "/" .. sdlLogFileParamCurrentValue
-  SDL.LOGGER.set(sdlLogFileParamName, sdlLogFileParamNewValue
-    .. "\n" .. "log4j.appender.SmartDeviceLinkCoreLogFile.Threshold=DEBUG")
+  sdlLogFileParamNewValue = slowDriveDir .. "/" .. sdlLogFileParamCurrentValue
+  SDL.LOGGER.set(sdlLogFileParamName, sdlLogFileParamNewValue)
 end
 
 function m.restoreSDLLoggerConfig()
@@ -167,14 +133,13 @@ end
 
 function m.preconditions()
   actions.preconditions()
-  m.createSlowDrive()
+  m.log(m.execCMD("dd if=/dev/zero of=" .. slowDriveDir .. "/speed_test count=500; rm " .. slowDriveDir .. "/speed_test;"))
   m.updateSDLLoggerConfig()
 end
 
 function m.postconditions()
   m.copySDLLog()
   actions.postconditions()
-  m.removeSlowDrive()
   m.restoreSDLLoggerConfig()
 end
 
@@ -194,8 +159,8 @@ function m.checkSDLLog(pExpLogState)
 end
 
 function m.isTestApplicable()
-  if m.execCMD("grep :/docker /proc/self/cgroup | wc -l") ~= "0" then
-    runner.skipTest("Script is unable to be run in parallel mode (docker container)")
+  if m.execCMD("grep :/docker /proc/self/cgroup | wc -l") == "0" then
+    runner.skipTest("Script is unable to be run in consecutive mode (only parallel mode is supported)")
   end
 end
 
