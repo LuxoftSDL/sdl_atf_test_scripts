@@ -33,10 +33,11 @@ local ping = 1000 --ms
 local timeout = 120000
 local delay = 5000
 
-local slowDriveDir = "/home/developer/slowdrv"
+local slowDriveDir = "slowdrv"
 local sdlLogFileParamName = "log4j.appender.SmartDeviceLinkCoreLogFile.File"
 
 --[[ Local Variables ]]
+local loopDevice
 local sdlLogFileParamCurrentValue
 local sdlLogFileParamNewValue
 local ts_start
@@ -119,7 +120,7 @@ end
 
 function m.updateSDLLoggerConfig()
   sdlLogFileParamCurrentValue = SDL.LOGGER.get(sdlLogFileParamName)
-  sdlLogFileParamNewValue = slowDriveDir .. "/" .. sdlLogFileParamCurrentValue
+  sdlLogFileParamNewValue = m.execCMD("pwd") .. "/" .. slowDriveDir .. "/" .. sdlLogFileParamCurrentValue
   SDL.LOGGER.set(sdlLogFileParamName, sdlLogFileParamNewValue)
 end
 
@@ -131,16 +132,34 @@ function m.copySDLLog()
   os.execute("cp " .. sdlLogFileParamNewValue .. " " .. config.pathToSDL)
 end
 
+local function mount()
+  loopDevice = m.execCMD("echo $LOOPBACK_DEVICE")
+  m.log("loopDevice", loopDevice)
+  local id = string.gsub(loopDevice, "/dev/loop", "")
+  m.log("ID", id)
+  slowDriveDir = slowDriveDir .. "_" .. id
+  m.execCMD("mkdir " .. slowDriveDir)
+  m.execCMD("sudo mount -o sync " .. loopDevice .. " " .. m.execCMD("pwd") .. "/" .. slowDriveDir)
+  m.log(m.execCMD("sudo chown -R `id -u`:`id -g` " .. slowDriveDir))
+end
+
 function m.preconditions()
+  mount()
   actions.preconditions()
   m.log(m.execCMD("dd if=/dev/zero of=" .. slowDriveDir .. "/speed_test count=500; rm " .. slowDriveDir .. "/speed_test;"))
   m.updateSDLLoggerConfig()
+end
+
+local function umount()
+  m.execCMD("sudo umount -f " .. loopDevice)
+  m.execCMD("rm -rf " .. slowDriveDir)
 end
 
 function m.postconditions()
   m.copySDLLog()
   actions.postconditions()
   m.restoreSDLLoggerConfig()
+  umount()
 end
 
 function m.setSDLIniParams(pParamValues)
