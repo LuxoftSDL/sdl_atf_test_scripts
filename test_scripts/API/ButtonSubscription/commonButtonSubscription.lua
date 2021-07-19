@@ -32,6 +32,8 @@ m.registerAppWOPTU = actions.app.registerNoPTU
 m.getAppsCount = actions.getAppsCount
 m.getConfigAppParams = actions.getConfigAppParams
 m.policyTableUpdate = actions.policyTableUpdate
+m.getHMICapabilitiesFromFile = actions.sdl.getHMICapabilitiesFromFile
+m.setHMICapabilitiesToFile = actions.sdl.setHMICapabilitiesToFile
 m.getDefaultHMITable = hmi_values.getDefaultHMITable
 m.hashId = {}
 m.wait = utils.wait
@@ -43,7 +45,6 @@ m.createEvent = actions.run.createEvent
 m.isExpected = 1
 m.isNotExpected = 0
 m.customButtonID = 1
-
 
 m.buttons = {
   "OK",
@@ -117,6 +118,13 @@ m.errorCode = {
   "GENERIC_ERROR",
   "USER_DISALLOWED",
   "READ_ONLY"
+}
+
+m.customButtonCapabilities = {
+  name = "CUSTOM_BUTTON",
+  shortPressAvailable = true,
+  longPressAvailable = true,
+  upDownAvailable = true
 }
 
 --[[ Common Functions ]]
@@ -376,15 +384,62 @@ function m.removeButtonFromCapabilities(pButtonName)
   return hmiValues
 end
 
+--[[ @addButtonToCapabilities: add button to HMI capabilities
+--! @parameters:
+--! pButtonCapabilities - button capabilities
+--! @return: returns HMI Table with supported button
+--]]
+function m.addButtonToCapabilities(pButtonCapabilities)
+  local hmiValues = m.getDefaultHMITable()
+  for i, buttonNameTab in pairs(hmiValues.Buttons.GetCapabilities.params.capabilities) do
+    if (buttonNameTab.name == pButtonCapabilities.name) then
+      table.remove(hmiValues.Buttons.GetCapabilities.params.capabilities, i)
+    end
+  end
+  table.insert(hmiValues.Buttons.GetCapabilities.params.capabilities, pButtonCapabilities)
+  return hmiValues
+end
+
+--[[ @removeButtonFromHMICapabilitiesFile: remove button support from hmi_capabilities.json file
+--! @parameters:
+--! pButtonName - button name
+--]]
+function m.removeButtonFromHMICapabilitiesFile(pButtonName)
+  local hmiCapTbl = m.getHMICapabilitiesFromFile()
+  for i, buttonNameTab in pairs(hmiCapTbl.Buttons.capabilities) do
+    if (buttonNameTab.name == pButtonName) then
+      table.remove(hmiCapTbl.Buttons.capabilities, i)
+    end
+  end
+  m.setHMICapabilitiesToFile(hmiCapTbl)
+end
+
+--[[ @addButtonToHMICapabilitiesFile: add button support to hmi_capabilities.json file
+--! @parameters:
+--! pButtonCapabilities - button capabilities
+--]]
+function m.addButtonToHMICapabilitiesFile(pButtonCapabilities)
+  local hmiCapTbl = m.getHMICapabilitiesFromFile()
+  for i, buttonNameTab in pairs(hmiCapTbl.Buttons.capabilities) do
+    if (buttonNameTab.name == pButtonCapabilities.name) then
+      table.remove(hmiCapTbl.Buttons.capabilities, i)
+    end
+  end
+  table.insert(hmiCapTbl.Buttons.capabilities, pButtonCapabilities)
+  m.setHMICapabilitiesToFile(hmiCapTbl)
+end
+
 --[[ @registerAppSubCustomButton: register App with subscription to "CUSTOM_BUTTON"
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
 --! pResultCode - result code
+--! pExpRequest - count of expected Buttons.OnButtonSubscription requests from SDL to HMI)
 --! @return: none
 --]]
-function m.registerAppSubCustomButton(pAppId, pResultCode)
+function m.registerAppSubCustomButton(pAppId, pResultCode, pExpRequest)
   if not pAppId then pAppId = 1 end
   if not pResultCode then pResultCode = "SUCCESS" end
+  if not pExpRequest then pExpRequest = 1 end
   local session = actions.mobile.createSession(pAppId)
   session:StartService(7)
   :Do(function()
@@ -398,6 +453,7 @@ function m.registerAppSubCustomButton(pAppId, pResultCode)
           :Do(function(_, data)
               m.getHMIConnection():SendResponse(data.id, data.method, pResultCode, { })
             end)
+          :Times(pExpRequest)
           m.getHMIConnection():ExpectNotification("Buttons.OnButtonSubscription")
           :Times(0)
           m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
