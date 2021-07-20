@@ -25,7 +25,7 @@
 -- In case:
 -- 5. HMI sends OnButtonEvent and OnButtonPress notifications to SDL
 -- SL does:
--- - resend OnButtonEvent and OnButtonPress notifications to mobile App for CUSTOM_BUTTON
+-- - not resend OnButtonEvent and OnButtonPress notifications to mobile App for CUSTOM_BUTTON
 ------------------------------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]
 local common = require('test_scripts/API/ButtonSubscription/commonButtonSubscription')
@@ -37,11 +37,8 @@ local isCacheNotUsed = false
 
 --[[ Local Functions ]]
 local function checkResumptionData(pAppId)
-  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton",
-    { appID = common.getHMIAppId(pAppId), buttonName = "CUSTOM_BUTTON" })
-  :Do(function(_, data)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
-    end)
+  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton")
+  :Times(0)
   common.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Times(0)
 end
@@ -91,14 +88,14 @@ common.runner.Step("App activation", common.activateApp)
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("IGNITION OFF", common.ignitionOff)
 common.runner.Step("IGNITION ON, HMI sends different cppu_version", common.startCacheUsed,
-  { removeButtonFromCapabilities(common.customButtonCapabilities, "cppu_version_2"), isCacheNotUsed  })
+  { removeButtonFromCapabilities(buttonName, "cppu_version_2"), isCacheNotUsed  })
 
 common.runner.Title("Test")
-common.runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,
-  { appSessionId1, checkResumptionData, common.resumptionFullHMILevel })
+common.runner.Step("Reregister App resumption data, SDL doesn't send Subscribe CUSTOM_BUTTON",
+  common.reRegisterAppSuccess, { appSessionId1, checkResumptionData })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
-  { appSessionId1, buttonName, common.isExpected, common.customButtonID })
+  { appSessionId1, buttonName, common.isNotExpected, common.customButtonID })
 
 common.runner.Title("Postconditions")
 common.runner.Step("Stop SDL", common.postconditions)

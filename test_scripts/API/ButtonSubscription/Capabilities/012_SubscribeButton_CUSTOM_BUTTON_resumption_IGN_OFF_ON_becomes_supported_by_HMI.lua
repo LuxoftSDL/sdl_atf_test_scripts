@@ -85,8 +85,9 @@ common.runner.Step("Clean environment", common.preconditions)
 common.runner.Step("Remove CUSTOM_BUTTON from hmi_capabilities.json",
   common.removeButtonFromHMICapabilitiesFile, { buttonName })
 common.runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start,
-  { removeButtonFromCapabilities(common.customButtonCapabilities, "cppu_version_1")})
-common.runner.Step("App registration and send Subscribe CUSTOM_BUTTON", common.registerAppSubCustomButton)
+  { removeButtonFromCapabilities(buttonName, "cppu_version_1")})
+common.runner.Step("App registration and SDL doesn't send Subscribe CUSTOM_BUTTON",
+  common.registerAppSubCustomButton, { appSessionId1, "SUCCESS", common.isNotExpected })
 common.runner.Step("App activation", common.activateApp)
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("IGNITION OFF", common.ignitionOff)
@@ -94,8 +95,8 @@ common.runner.Step("IGNITION ON, HMI sends different cppu_version", common.start
   { addButtonToCapabilities(common.customButtonCapabilities, "cppu_version_2"), isCacheNotUsed  })
 
 common.runner.Title("Test")
-common.runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,
-  { appSessionId1, checkResumptionData, common.resumptionFullHMILevel })
+common.runner.Step("Reregister App resumption data, send Subscribe CUSTOM_BUTTON",
+  { appSessionId1, checkResumptionData })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
   { appSessionId1, buttonName, common.isExpected, common.customButtonID })
