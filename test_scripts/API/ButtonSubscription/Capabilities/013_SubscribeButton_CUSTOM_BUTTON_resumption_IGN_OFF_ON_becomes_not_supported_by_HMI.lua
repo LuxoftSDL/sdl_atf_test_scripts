@@ -18,10 +18,7 @@
 -- 3. HMI doesn't support CUSTOM_BUTTON (HMI sends Buttons.GetCapabilities response without CUSTOM_BUTTON)
 -- 4. App re-registered with actual HashId
 -- SDL does:
--- - send request Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
--- - wait respond Buttons.SubscribeButtons(SUCCESS) from HMI
--- - receive Buttons.SubscribeButton(SUCCESS)
--- - not send OnHashChange with updated hashId to mobile app
+-- - not send Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
 -- In case:
 -- 5. HMI sends OnButtonEvent and OnButtonPress notifications to SDL
 -- SL does:
