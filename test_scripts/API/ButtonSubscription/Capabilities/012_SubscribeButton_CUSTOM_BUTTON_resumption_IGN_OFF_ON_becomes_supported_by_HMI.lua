@@ -13,7 +13,7 @@
 -- 3. HMI supported CUSTOM_BUTTON (SDL receives Buttons.GetCapabilities response from HMI with supported CUSTOM_BUTTON)
 -- 4. Mobile app is registered and activated
 -- In case:
--- 1. Unexpected disconnect and connect are performed
+-- 1. IGN_OFF and IGN_ON are performed
 -- 2. App re-registered with actual HashId
 -- SDL does:
 -- - send request Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
