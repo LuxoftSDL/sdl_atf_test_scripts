@@ -95,7 +95,7 @@ common.runner.Step("IGNITION ON, HMI sends different cppu_version", common.start
   { addButtonToCapabilities(common.customButtonCapabilities, "cppu_version_2"), isCacheNotUsed  })
 
 common.runner.Title("Test")
-common.runner.Step("Reregister App resumption data, send Subscribe CUSTOM_BUTTON",
+common.runner.Step("Reregister App resumption data, send Subscribe CUSTOM_BUTTON", common.reRegisterAppSuccess,
   { appSessionId1, checkResumptionData })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
