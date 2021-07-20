@@ -38,6 +38,7 @@ common.runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start
 common.runner.Step("App registration and SDL doesn't send Subscribe CUSTOM_BUTTON",
   common.registerAppSubCustomButton, { appSessionId1, "SUCCESS", common.isNotExpected })
 common.runner.Step("Activate app", common.activateApp)
+common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 
 common.runner.Title("Test")
 common.runner.Step("Failure Subscribe on CUSTOM_BUTTON with error UNSUPPORTED_RESOURCE", common.rpcUnsuccess,

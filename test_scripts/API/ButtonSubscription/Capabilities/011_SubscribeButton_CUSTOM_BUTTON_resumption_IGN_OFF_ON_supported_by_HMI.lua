@@ -47,13 +47,11 @@ common.runner.Step("Clean environment", common.preconditions)
 common.runner.Step("Remove CUSTOM_BUTTON from hmi_capabilities.json",
   common.removeButtonFromHMICapabilitiesFile, { buttonName })
 common.runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start,
-  { common.addButtonToHMICapabilitiesFile(common.customButtonCapabilities) })
+  { common.addButtonToCapabilities(common.customButtonCapabilities) })
 common.runner.Step("App registration and send Subscribe CUSTOM_BUTTON", common.registerAppSubCustomButton)
 common.runner.Step("App activation", common.activateApp)
-common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("IGNITION OFF", common.ignitionOff)
-common.runner.Step("IGNITION ON", common.start,
-  { common.addButtonToHMICapabilitiesFile(common.customButtonCapabilities) })
+common.runner.Step("IGNITION ON, uses the values from HMI Capabilities cache file", common.start)
 
 common.runner.Title("Test")
 common.runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,

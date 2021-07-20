@@ -31,8 +31,7 @@ local buttonName = "CUSTOM_BUTTON"
 
 --[[ Local Functions ]]
 local function checkResumptionData(pAppId)
-  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton",
-    { appID = common.getHMIAppId(pAppId), buttonName = "CUSTOM_BUTTON" })
+  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton")
   :Times(0)
   common.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Times(0)

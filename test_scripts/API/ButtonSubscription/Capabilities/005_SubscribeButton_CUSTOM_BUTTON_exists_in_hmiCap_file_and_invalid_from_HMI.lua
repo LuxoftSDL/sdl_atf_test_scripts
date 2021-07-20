@@ -13,10 +13,10 @@
 -- In case:
 -- 1. Mobile app starts registration
 -- SDL does:
--- - send request Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
--- In case:
--- 2. HMI sends OnButtonEvent and OnButtonPress notifications to SDL
--- SDL does:
+-- - send Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
+-- - wait response Buttons.SubscribeButtons(SUCCESS) from HMI
+-- - receive Buttons.SubscribeButton(SUCCESS)
+-- - not send OnHashChange with updated hashId to mobile app
 -- - resend OnButtonEvent and OnButtonPress notifications to mobile App for CUSTOM_BUTTON
 ------------------------------------------------------------------------------------------------------------------------
 --[[ Required Shared libraries ]]

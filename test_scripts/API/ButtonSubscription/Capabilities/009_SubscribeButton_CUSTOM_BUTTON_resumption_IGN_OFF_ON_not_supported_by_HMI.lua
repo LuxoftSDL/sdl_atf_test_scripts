@@ -31,8 +31,7 @@ local buttonName = "CUSTOM_BUTTON"
 
 --[[ Local Functions ]]
 local function checkResumptionData(pAppId)
-  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton",
-    { appID = common.getHMIAppId(pAppId), buttonName = "CUSTOM_BUTTON" })
+  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton")
   :Times(0)
   common.getMobileSession(pAppId):ExpectNotification("OnHashChange")
   :Times(0)
@@ -48,13 +47,13 @@ common.runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start
 common.runner.Step("App registration and SDL doesn't send Subscribe CUSTOM_BUTTON",
   common.registerAppSubCustomButton, { appSessionId1, "SUCCESS", common.isNotExpected })
 common.runner.Step("App activation", common.activateApp)
-common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("IGNITION OFF", common.ignitionOff)
-common.runner.Step("IGNITION ON", common.start, { common.removeButtonFromCapabilities(buttonName) })
+common.runner.Step("IGNITION ON, uses the values from HMI Capabilities cache file", common.start)
 
 common.runner.Title("Test")
 common.runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,
   { appSessionId1, checkResumptionData })
+common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
   { appSessionId1, buttonName, common.isNotExpected, common.customButtonID })
 
