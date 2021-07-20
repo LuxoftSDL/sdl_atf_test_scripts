@@ -14,6 +14,12 @@ local color = require("user_modules/consts").color
 config.defaultProtocolVersion = 2
 runner.testSettings.isSelfIncluded = false
 
+--[[ Overridden Functions ]]
+-- local initHMI_onReady_Orig = test.initHMI_onReady
+-- function test:initHMI_onReady(hmi_table)
+--   return initHMI_onReady_Orig(self, hmi_table, false)
+-- end
+
 --[[ Module ]]
 local m = {}
 
@@ -128,6 +134,33 @@ m.customButtonCapabilities = {
 }
 
 --[[ Common Functions ]]
+--[[ @start: starting sequence: starting of SDL, initialization of HMI
+--! @pHMIParams - parameters with HMI capabilities
+--! @isCacheUsed - true if it's expected SDL will use HMI capabilities cache, otherwise false
+--! @return: Start event expectation
+--]]
+function m.startCacheUsed(pHMIParams, isCacheUsed)
+  local event = actions.run.createEvent()
+  actions.init.SDL()
+  :Do(function()
+      actions.init.HMI()
+      :Do(function()
+        utils.cprint(35, "HMI initialized")
+        test:initHMI_onReady(pHMIParams, isCacheUsed)
+          :Do(function()
+              actions.init.connectMobile()
+              :Do(function()
+                  actions.init.allowSDL()
+                  :Do(function()
+                      actions.hmi.getConnection():RaiseEvent(event, "Start event")
+                    end)
+                end)
+            end)
+        end)
+    end)
+  return actions.hmi.getConnection():ExpectEvent(event, "Start event")
+end
+
 --[[ @rpcSuccess: performs button Subscription and Unsubscription with SUCCESS resultCode
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
