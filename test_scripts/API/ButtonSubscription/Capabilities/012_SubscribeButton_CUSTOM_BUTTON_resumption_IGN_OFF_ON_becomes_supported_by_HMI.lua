@@ -2,7 +2,7 @@
 -- Proposal:
 -- https://github.com/smartdevicelink/sdl_evolution/blob/master/proposals/0205-Avoid_custom_button_subscription_when_HMI_does_not_support.md
 ------------------------------------------------------------------------------------------------------------------------
--- Description: Check that SDL sends SubscribeButton RPC with 'CUSTOM_BUTTON' parameter parameter during resumption
+-- Description: Check that SDL sends SubscribeButton RPC with 'CUSTOM_BUTTON' parameter during resumption
 --  after Ignition Cycle in case:
 --  - 'CUSTOM_BUTTON' is missing in the hmi_capabilities.json file
 --  - 'CUSTOM_BUTTON' becomes supported by HMI after Ignition cycle
