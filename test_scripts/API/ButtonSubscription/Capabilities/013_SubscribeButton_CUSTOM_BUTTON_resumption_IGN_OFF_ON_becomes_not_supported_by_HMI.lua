@@ -18,6 +18,8 @@
 -- SDL does:
 -- - send request Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
 -- - wait respond Buttons.SubscribeButtons(SUCCESS) from HMI
+-- - receive Buttons.SubscribeButton(SUCCESS)
+-- - not send OnHashChange with updated hashId to mobile app
 -- In case:
 -- 3. HMI sends OnButtonEvent and OnButtonPress notifications to SDL
 -- SL does:
