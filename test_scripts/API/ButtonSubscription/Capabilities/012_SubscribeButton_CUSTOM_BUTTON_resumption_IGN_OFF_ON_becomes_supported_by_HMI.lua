@@ -10,18 +10,20 @@
 -- Preconditions:
 -- 1. CUSTOM_BUTTON is missing in the hmi_capabilities.json
 -- 2. SDL and HMI are started
--- 3. HMI supported CUSTOM_BUTTON (SDL receives Buttons.GetCapabilities response from HMI with supported CUSTOM_BUTTON)
+-- 3. HMI doesn't support CUSTOM_BUTTON (HMI sends Buttons.GetCapabilities response without CUSTOM_BUTTON)
 -- 4. Mobile app is registered and activated
 -- In case:
 -- 1. IGN_OFF and IGN_ON are performed
--- 2. App re-registered with actual HashId
+-- 2. HMI sends GetSystemInfo with new ccpu_version_2 to SDL
+-- 3. HMI supported CUSTOM_BUTTON (SDL receives Buttons.GetCapabilities response from HMI with supported CUSTOM_BUTTON)
+-- 4. App re-registered with actual HashId
 -- SDL does:
 -- - send request Buttons.SubscribeButtons(CUSTOM_BUTTON) to HMI
 -- - wait respond Buttons.SubscribeButtons(SUCCESS) from HMI
 -- - receive Buttons.SubscribeButton(SUCCESS)
 -- - not send OnHashChange with updated hashId to mobile app
 -- In case:
--- 3. HMI sends OnButtonEvent and OnButtonPress notifications to SDL
+-- 5. HMI sends OnButtonEvent and OnButtonPress notifications to SDL
 -- SL does:
 -- - resend OnButtonEvent and OnButtonPress notifications to mobile App for CUSTOM_BUTTON
 ------------------------------------------------------------------------------------------------------------------------

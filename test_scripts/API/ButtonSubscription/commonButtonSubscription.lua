@@ -430,6 +430,7 @@ end
 --[[ @removeButtonFromHMICapabilitiesFile: remove button support from hmi_capabilities.json file
 --! @parameters:
 --! pButtonName - button name
+--! @return: none
 --]]
 function m.removeButtonFromHMICapabilitiesFile(pButtonName)
   local hmiCapTbl = m.getHMICapabilitiesFromFile()
@@ -444,6 +445,7 @@ end
 --[[ @addButtonToHMICapabilitiesFile: add button support to hmi_capabilities.json file
 --! @parameters:
 --! pButtonCapabilities - button capabilities
+--! @return: none
 --]]
 function m.addButtonToHMICapabilitiesFile(pButtonCapabilities)
   local hmiCapTbl = m.getHMICapabilitiesFromFile()
