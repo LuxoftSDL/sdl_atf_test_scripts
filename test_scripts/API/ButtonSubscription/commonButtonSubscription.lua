@@ -14,12 +14,6 @@ local color = require("user_modules/consts").color
 config.defaultProtocolVersion = 2
 runner.testSettings.isSelfIncluded = false
 
---[[ Overridden Functions ]]
--- local initHMI_onReady_Orig = test.initHMI_onReady
--- function test:initHMI_onReady(hmi_table)
---   return initHMI_onReady_Orig(self, hmi_table, false)
--- end
-
 --[[ Module ]]
 local m = {}
 
