@@ -128,7 +128,7 @@ m.customButtonCapabilities = {
 }
 
 --[[ Common Functions ]]
---[[ @start: starting sequence: starting of SDL, initialization of HMI
+--[[ @startCacheUsed: starting sequence: starting of SDL, initialization of HMI
 --! @pHMIParams - parameters with HMI capabilities
 --! @isCacheUsed - true if it's expected SDL will use HMI capabilities cache, otherwise false
 --! @return: Start event expectation
@@ -538,7 +538,7 @@ function m.registerSoftButton()
   m.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
 end
 
---[[ @getUpdatedHMICaps:
+--[[ @getUpdatedHMICaps: update HMI capabilities
 --! @parameters:
 --! pVersion - 'ccpu_version' parameter for GetSystemInfo response
 --! pHMIParams - parameters with HMI capabilities

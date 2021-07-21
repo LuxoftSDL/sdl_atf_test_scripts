@@ -53,7 +53,7 @@ common.runner.Step("IGNITION ON, HMI sends different cppu_version", common.start
 
 common.runner.Title("Test")
 common.runner.Step("Reregister App resumption data, send Subscribe CUSTOM_BUTTON", common.reRegisterAppSuccess,
-  { appSessionId1, common.checkResumptionData })
+  { appSessionId1, common.checkResumptionData, common.isExpected })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
   { appSessionId1, buttonName, common.isExpected, common.customButtonID })

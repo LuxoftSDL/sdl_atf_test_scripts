@@ -46,7 +46,7 @@ common.runner.Step("IGNITION ON, uses the values from HMI Capabilities cache fil
 
 common.runner.Title("Test")
 common.runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,
-  { appSessionId1, common.checkResumptionData })
+  { appSessionId1, common.checkResumptionData, common.isExpected })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
   { appSessionId1, buttonName, common.isExpected, common.customButtonID })
