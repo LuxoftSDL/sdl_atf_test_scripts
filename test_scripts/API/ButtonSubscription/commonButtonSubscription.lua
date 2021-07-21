@@ -519,4 +519,23 @@ function m.registerSoftButton()
   m.getMobileSession():ExpectResponse(cid, { success = true, resultCode = "SUCCESS" })
 end
 
+--[[ @getUpdatedHMICaps:
+--! @parameters:
+--! pVersion - 'ccpu_version' parameter for GetSystemInfo response
+--! pHMIParams - parameters with HMI capabilities
+--! @return: none
+--]]
+function m.getUpdatedHMICaps(pVersion, pHMIParams)
+  if not pHMIParams then pHMIParams = m.getDefaultHMITable end
+  local hmiValues = pHMIParams
+  hmiValues.BasicCommunication.GetSystemInfo = {
+    params = {
+      ccpu_version = pVersion,
+      language = "EN-US",
+      wersCountryCode = "wersCountryCode"
+    }
+  }
+  return hmiValues
+end
+
 return m

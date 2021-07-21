@@ -40,52 +40,19 @@ local function checkResumptionData(pAppId)
   :Times(0)
 end
 
-local function updateHMISystemInfo(pVersion)
-  local hmiValues = common.getDefaultHMITable()
-  hmiValues.BasicCommunication.GetSystemInfo = {
-    params = {
-      ccpu_version = pVersion,
-      language = "EN-US",
-      wersCountryCode = "wersCountryCode"
-    }
-  }
-  return hmiValues
-end
-
-local function removeButtonFromCapabilities(pButtonName, pVersion)
-  local hmiValues = updateHMISystemInfo(pVersion)
-  for i, buttonNameTab in pairs(hmiValues.Buttons.GetCapabilities.params.capabilities) do
-    if (buttonNameTab.name == pButtonName) then
-      table.remove(hmiValues.Buttons.GetCapabilities.params.capabilities, i)
-    end
-  end
-  return hmiValues
-end
-
-local function addButtonToCapabilities(pButtonCapabilities, pVersion)
-  local hmiValues = updateHMISystemInfo(pVersion)
-  for i, buttonNameTab in pairs(hmiValues.Buttons.GetCapabilities.params.capabilities) do
-    if (buttonNameTab.name == pButtonCapabilities.name) then
-      table.remove(hmiValues.Buttons.GetCapabilities.params.capabilities, i)
-    end
-  end
-  table.insert(hmiValues.Buttons.GetCapabilities.params.capabilities, pButtonCapabilities)
-  return hmiValues
-end
-
 --[[ Scenario ]]
 common.runner.Title("Preconditions")
 common.runner.Step("Clean environment", common.preconditions)
 common.runner.Step("Remove CUSTOM_BUTTON from hmi_capabilities.json",
   common.removeButtonFromHMICapabilitiesFile, { buttonName })
 common.runner.Step("Start SDL, HMI, connect Mobile, start Session", common.start,
-  { addButtonToCapabilities(common.customButtonCapabilities, "cppu_version_1") })
+  { common.getUpdatedHMICaps("cppu_version_1", common.addButtonToCapabilities(common.customButtonCapabilities)) })
 common.runner.Step("App registration and send Subscribe CUSTOM_BUTTON", common.registerAppSubCustomButton)
 common.runner.Step("App activation", common.activateApp)
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("IGNITION OFF", common.ignitionOff)
 common.runner.Step("IGNITION ON, HMI sends different cppu_version", common.startCacheUsed,
-  { removeButtonFromCapabilities(buttonName, "cppu_version_2"), isCacheNotUsed  })
+  { common.getUpdatedHMICaps("cppu_version_2", common.removeButtonFromCapabilities(buttonName)), isCacheNotUsed })
 
 common.runner.Title("Test")
 common.runner.Step("Reregister App resumption data, SDL doesn't send Subscribe CUSTOM_BUTTON",
