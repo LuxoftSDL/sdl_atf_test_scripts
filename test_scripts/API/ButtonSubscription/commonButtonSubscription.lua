@@ -311,13 +311,32 @@ function m.unexpectedDisconnect()
     end)
 end
 
+--[[ @checkResumptionData: function to check resumption
+--! @parameters:
+--! pAppId - application number (1, 2, etc.)
+--! pExpTime - number of expected Buttons.SubscribeButton requests from SDL to HMI
+--! @return: none
+--]]
+function m.checkResumptionData(pAppId, pExpTime)
+  if not pExpTime then pExpTime = m.isExpected end
+  m.getHMIConnection():ExpectRequest("Buttons.SubscribeButton",
+    { appID = m.getHMIAppId(pAppId), buttonName = "CUSTOM_BUTTON" })
+  :Do(function(_, data)
+      m.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
+    end)
+  :Times(pExpTime)
+  m.getMobileSession(pAppId):ExpectNotification("OnHashChange")
+  :Times(0)
+end
+
 --[[ @reRegisterAppSuccess: re-register application with SUCCESS resultCode
 --! @parameters:
 --! pAppId - application number (1, 2, etc.)
 --! pCheckResumptionData - verification function for resumption data
+--! pExpTime - number of expectations
 --! @return: none
 --]]
-function m.reRegisterAppSuccess(pAppId, pCheckResumptionData)
+function m.reRegisterAppSuccess(pAppId, pCheckResumptionData, pExpTime)
   if not pAppId then pAppId = 1 end
   local mobSession = m.getMobileSession(pAppId)
   mobSession:StartService(7)
@@ -332,7 +351,7 @@ function m.reRegisterAppSuccess(pAppId, pCheckResumptionData)
           mobSession:ExpectNotification("OnPermissionsChange")
         end)
     end)
-  pCheckResumptionData(pAppId)
+  pCheckResumptionData(pAppId, pExpTime)
   m.getHMIConnection():ExpectRequest("BasicCommunication.ActivateApp", { appID = m.getHMIAppId(pAppId) })
   :Do(function(_, data)
       m.getHMIConnection():SendResponse(data.id, "BasicCommunication.ActivateApp", "SUCCESS", {})

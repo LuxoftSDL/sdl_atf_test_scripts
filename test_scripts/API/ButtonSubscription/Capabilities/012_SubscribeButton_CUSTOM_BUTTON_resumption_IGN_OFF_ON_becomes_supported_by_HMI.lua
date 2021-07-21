@@ -35,17 +35,6 @@ local appSessionId1 = 1
 local buttonName = "CUSTOM_BUTTON"
 local isCacheNotUsed = false
 
---[[ Local Functions ]]
-local function checkResumptionData(pAppId)
-  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton",
-    { appID = common.getHMIAppId(pAppId), buttonName = "CUSTOM_BUTTON" })
-  :Do(function(_, data)
-      common.getHMIConnection():SendResponse(data.id, data.method, "SUCCESS", { })
-    end)
-  common.getMobileSession(pAppId):ExpectNotification("OnHashChange")
-  :Times(0)
-end
-
 --[[ Scenario ]]
 common.runner.Title("Preconditions")
 common.runner.Step("Clean environment", common.preconditions)
@@ -64,7 +53,7 @@ common.runner.Step("IGNITION ON, HMI sends different cppu_version", common.start
 
 common.runner.Title("Test")
 common.runner.Step("Reregister App resumption data, send Subscribe CUSTOM_BUTTON", common.reRegisterAppSuccess,
-  { appSessionId1, checkResumptionData })
+  { appSessionId1, common.checkResumptionData })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
   { appSessionId1, buttonName, common.isExpected, common.customButtonID })

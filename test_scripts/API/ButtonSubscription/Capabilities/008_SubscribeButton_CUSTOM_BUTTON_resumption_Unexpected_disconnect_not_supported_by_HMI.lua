@@ -29,14 +29,6 @@ local common = require('test_scripts/API/ButtonSubscription/commonButtonSubscrip
 local appSessionId1 = 1
 local buttonName = "CUSTOM_BUTTON"
 
---[[ Local Functions ]]
-local function checkResumptionData(pAppId)
-  common.getHMIConnection():ExpectRequest("Buttons.SubscribeButton")
-  :Times(0)
-  common.getMobileSession(pAppId):ExpectNotification("OnHashChange")
-  :Times(0)
-end
-
 --[[ Scenario ]]
 common.runner.Title("Preconditions")
 common.runner.Step("Clean environment", common.preconditions)
@@ -52,7 +44,7 @@ common.runner.Title("Test")
 common.runner.Step("Unexpected disconnect", common.unexpectedDisconnect)
 common.runner.Step("Connect mobile", common.connectMobile)
 common.runner.Step("Reregister App resumption data", common.reRegisterAppSuccess,
-  { appSessionId1, checkResumptionData })
+  { appSessionId1, common.checkResumptionData, common.isNotExpected })
 common.runner.Step("Subscribe on Soft button", common.registerSoftButton)
 common.runner.Step("On Custom_button press", common.buttonPress,
   { appSessionId1, buttonName, common.isNotExpected, common.customButtonID })
